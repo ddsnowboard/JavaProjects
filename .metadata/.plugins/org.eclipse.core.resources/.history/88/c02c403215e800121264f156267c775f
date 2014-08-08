@@ -1,0 +1,51 @@
+package com.ddsnowboard.cartextresponder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import android.os.Bundle;
+import android.app.Activity;
+import android.view.Menu;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.bluetooth.*;
+import android.content.Intent;
+
+
+public class MainActivity extends Activity {
+//	private TextView myText;
+	public BluetoothAdapter MainAdapter= BluetoothAdapter.getDefaultAdapter();
+	public boolean ready=false;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		Intent start = new Intent(this, BluetoothService.class);
+		startService(start);
+		Set<BluetoothDevice> pairs=BluetoothAdapter.getDefaultAdapter().getBondedDevices();
+		BluetoothDevice[] devices = (BluetoothDevice[]) pairs.toArray();
+//		for(int i=0; i<pairs.size();i++)
+//		{
+//			List<String> listOfPairs = new ArrayList<String>();
+//			listOfPairs.add(devices[i].getName());
+//		}
+		final ListView listview = (ListView) findViewById(R.id.listView);
+		final ArrayAdapter adapter = new ArrayAdapter(this,
+		        android.R.layout.simple_list_item_1, devices);
+		    listview.setAdapter(adapter);
+//	Button button = (Button) findViewById(R.id.activate);
+//	button.setOnClickListener(new View.OnClickListener(){
+//		public void onClick(View v)
+//		{
+//			BluetoothAdapter.getDefaultAdapter().disable();
+//		}
+//	});
+	}
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+}
+

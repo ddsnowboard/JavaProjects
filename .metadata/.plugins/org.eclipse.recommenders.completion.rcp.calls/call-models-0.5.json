@@ -1,0 +1,17 @@
+{
+  "E:\\Eclipse\\androidSDK\\platforms\\android-8\\android.jar": {
+    "location": "E:\\Eclipse\\androidSDK\\platforms\\android-8\\android.jar",
+    "status": "UNRESOLVED",
+    "error": "No call model found for \u0027E:\\Eclipse\\androidSDK\\platforms\\android-8\\android.jar\u0027. Neither fingerprint \u00272567fcef5bb2ca93e22a9df4f2dbf895daeb3e33\u0027 nor symbolic name \u0027android\u0027 are known."
+  },
+  "E:\\Dropbox\\Android Projects\\CarTextResponder\\gen": {
+    "location": "E:\\Dropbox\\Android Projects\\CarTextResponder\\gen",
+    "status": "UNRESOLVED",
+    "error": "No class path info available for \u0027E:\\Dropbox\\Android Projects\\CarTextResponder\\gen\u0027. Skipped."
+  },
+  "E:\\Dropbox\\Android Projects\\CarTextResponder\\src": {
+    "location": "E:\\Dropbox\\Android Projects\\CarTextResponder\\src",
+    "status": "UNRESOLVED",
+    "error": "No class path info available for \u0027E:\\Dropbox\\Android Projects\\CarTextResponder\\src\u0027. Skipped."
+  }
+}

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename compilation unit &apos;com.ddsnowboard.cartextresponder.BackgroundService.java&apos; to &apos;BluetoothService.java&apos;&#x0D;&#x0A;- Original project: &apos;CarTextResponder&apos;&#x0D;&#x0A;- Original element: &apos;com.ddsnowboard.cartextresponder.BackgroundService.java&apos;&#x0D;&#x0A;- Renamed element: &apos;com.ddsnowboard.cartextresponder.BluetoothService.java&apos;" description="Rename compilation unit &apos;BackgroundService.java&apos;" flags="2" id="org.eclipse.jdt.ui.rename.compilationunit" input="/src&lt;com.ddsnowboard.cartextresponder{BackgroundService.java" name="BluetoothService.java" references="false" stamp="1370359723611" version="1.0"/>
+</session>

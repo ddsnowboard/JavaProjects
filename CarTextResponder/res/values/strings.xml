@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Car Text Responder</string>
+    <string name="action_settings">Start Service</string>
+    <string name="TextBox">Which is your vehicle?</string>
+</resources>

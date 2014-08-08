@@ -1,0 +1,51 @@
+package com.ddsnowboard.cartextresponder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import android.os.Bundle;
+import android.app.Activity;
+import android.view.Menu;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.bluetooth.*;
+import android.content.Intent;
+// I am trying to get the list on the Main Activity to list everything paired to the bluetooth, then I'm trying to
+// get the phone to see whenever a device is connected to turn on the text responder if it's the car. 
+
+public class MainActivity extends Activity {
+//	private TextView myText;
+	public BluetoothAdapter MainAdapter= BluetoothAdapter.getDefaultAdapter();
+	public boolean ready=false;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		Intent start = new Intent(this, BluetoothService.class);
+		startService(start);
+		Set<BluetoothDevice> pairs=BluetoothAdapter.getDefaultAdapter().getBondedDevices();
+		Object[] devices = pairs.toArray();
+		List<String> listOfPairs = new ArrayList<String>();
+//		for(int i=0; i<pairs.size();i++)
+//		{
+//			listOfPairs.add(devices[i].getName());
+//		}
+//		 ListView listview = (ListView) findViewById(R.id.listview);
+//		 ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1, devices);
+//		    listview.setAdapter(adapter);
+//	Button button = (Button) findViewById(R.id.activate);
+//	button.setOnClickListener(new View.OnClickListener(){
+//		public void onClick(View v)
+//		{
+//			BluetoothAdapter.getDefaultAdapter().disable();
+//		}
+//	});
+	}
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+}
+
