@@ -1,60 +1,42 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
 public class Euler3 {
 
 	public static void main(String[] args) {
-		long num=600851475143L;
-		List <Integer> primes = sieve(num);
-		List <Integer> factors = new ArrayList<Integer>();
-//		for(int m=0;m<primes.size();m++)
-//		{
-//			int l=primes.get(m);
-//			System.out.print(l);
-//			System.out.print("\n");
-//		}
-		for(int i=0;i<primes.size();i++)
+		long num=600851475143l;
+		List <Integer> primes = sieve((long)(num/2)+1);
+		Collections.reverse(primes);
+		for (int i : primes)
 		{
-			if((num % (primes.get(new Integer(i))))==0)
+			if (i%num == 0)
 			{
-				num= num/primes.get(new Integer(i));
-				factors.add(primes.get(new Integer(i)));
-				i=0;
+				System.out.print(i);
+				return;
 			}
 		}
-		
-		for (int i=0;i<factors.size();i++)
-		{
-			long k=factors.get(i);
-			System.out.print(k);
-			System.out.print("\n");
-		}
-
 	}
-	public static List<Integer> sieve(Long num)
+	public static List<Integer> sieve(long j)
 	{
 		List <Integer>primes = new ArrayList<Integer>();
 		int p;
-		for(int i=2;i<=num;i++)
+		for(int i=2;i<=j;i++)
 		{
 			primes.add(i);
 		}
 		for (int i = 0;i<primes.size();i++)
 		{
+			
 			p=primes.get(i);
-			for(int q=2;q<num/2;q++)
+			for(int q=2;q<j;q++)
 			{
 				if(primes.contains(p*q))
 				{
 					primes.remove((p*q));
 				}
 			}
-		}
-		for(int m=0;m<primes.size();m++)
-		{
-			System.out.print(primes.get(m));
-			System.out.print("\n");
 		}
 		return primes;
 		
