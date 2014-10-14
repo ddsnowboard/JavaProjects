@@ -7,45 +7,43 @@ import java.util.List;
 
 public class Euler3 {
 
-	public static void main(String[] args) {
-		long num=600851475143l;
-		List<Long> primes = sieve((long)(num/2)+1);
-//		List<Long> primes = sieve((long)(10000));
-		Collections.reverse(primes);
-//		System.out.println(primes.get(0));
-		for (long i : primes)
-		{
-			if (i%num == 0)
-			{
-				System.out.printf("The largest prime factor is %d", i);
-				return;
-			}
-		}
-	}
-	public static List<Long> sieve(long j)
-	{
-		List<Long>primes = new ArrayList<Long>();
-		System.out.println("Did something");
-		primes.add(2l);
-		for(long i=3;i<=j;i+=2)
-		{
-			primes.add(i);
-		}
-		long p = 0;
-		List<Long> primeprime = primes;
-		for (int i = 0;i<(long)(Math.sqrt(primes.size())+1);i++)
-		{
-			p=primes.get(i);
-			for(int q=2;q<j;q++)
-			{
-				if(primeprime.contains(p*q))
-				{
-					primeprime.remove(primeprime.indexOf(p*q));
-				}
-			}
-		}
-		return primes;
-		
-	}
+    public static void main(String[] args) {
+        long num = 600851475143l;
+        List<Long> primes = primeFactor(num);
+        Collections.sort(primes);
+        System.out.println(primes.get(primes.size() - 1));
+    }
+
+    public static List<Long> primeFactor(long j) {
+
+        List<Long> primes = new ArrayList<>();
+        boolean prime;
+        if (j % 2 == 0) {
+            primes.add(2l);
+            primes.addAll(primeFactor(j / 2l));
+            return primes;
+        } else if (j % 3 == 0) {
+            primes.add(3l);
+            primes.addAll(primeFactor(j / 3l));
+            return primes;
+        } else {
+            for (long i = 5; i <= j; i += 2) {
+                prime = true;
+                for (long p = 2; p <= Math.sqrt(i) + 1; p++) {
+                    if (i % p == 0) {
+                        prime = false;
+                        break;
+                    }
+                }
+                if (prime && j % i == 0) {
+                    primes.add(i);
+                    primes.addAll(primeFactor(j / i));
+                    return primes;
+                }
+            }
+            primes.add(j);
+            return primes;
+        }
+    }
 
 }
