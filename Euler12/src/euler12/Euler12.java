@@ -1,5 +1,7 @@
 package euler12;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author ddsnowboard
@@ -11,30 +13,30 @@ public class Euler12 {
      */
     public static void main(String[] args) {
         long index = 1;
-        long thisTriangle = triangle(index);
+        long thisTriangle = 1;
+        int counter = 0;
         while (factors(thisTriangle) < 500) {
             index++;
-            thisTriangle = triangle(index);
+            thisTriangle += index;
+            if(counter==100)
+            {
+                counter = 0;
+            }
+            counter++;
         }
         System.out.println(thisTriangle);
     }
 
     public static int factors(long n) {
-        int out = 0;
+        ArrayList<Long> factors = new ArrayList<>();
         for (long i = 1; i <= n / 2; i++) {
-            if (n % i == 0) {
-                out++;
+            if(factors.contains(i) == true)
+                break;
+            else if (n % i == 0) {
+                factors.add(i);
+                factors.add(n/i);
             }
         }
-        out++; // For the number itself
-        return out;
-    }
-
-    public static int triangle(long index) {
-        int out = 0;
-        for (int i = 0; i <= index; i++) {
-            out += i;
-        }
-        return out;
+        return factors.size();
     }
 }
