@@ -1,3 +1,5 @@
+import datetime
+now = datetime.datetime.now()
 times_list = {}
 def collatz(start):
 	global times_list
@@ -14,11 +16,9 @@ def collatz(start):
 		except KeyError:
 			pass
 	return times
-counter = 0
 for i in range(1,1000000,2):
 	times_list[i] = collatz(i)
-	counter += 1
-	if counter == 5000:
-		counter = 0
-		print(i)
+end = datetime.datetime.now()
+print((end-now).total_seconds())
 print(max(times_list.items(), key= lambda x: x[1])[0])
+input()
