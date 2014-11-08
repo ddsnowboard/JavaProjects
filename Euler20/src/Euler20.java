@@ -16,7 +16,7 @@ public class Euler20 {
 	}
 
 	private static BigInteger fact(int i) {
-		BigInteger end = new BigInteger(String.valueOf(1));
+		BigInteger end = new BigInteger("1");
 		for(int p = i;p>0;p--)
 		{
 			end = end.multiply(BigInteger.valueOf(p));
