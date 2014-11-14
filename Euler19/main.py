@@ -9,7 +9,7 @@ next_day = lambda: next(weekdays)
 days_total = []
 # This is the months in order with a function that returns the amount of days in them, 
 # with the input to the function being the year. For every month other than Februray,it doesn't
-# do anything, but in Februray it tells whether the year is a leap year. 
+# do anything, but in February it tells whether the year is a leap year. 
 months = [lambda x: 31, lambda x: 29 if (x % 4 == 0 and x % 100 != 0) or (x % 400 == 0) else 28, lambda x: 31, lambda x:30, lambda x: 31, lambda x : 30, lambda x: 31, lambda x: 31, lambda x: 30, lambda x: 31, lambda x: 30, lambda x: 31]
 for i in range(1900, 2001):
 	for j in months:
