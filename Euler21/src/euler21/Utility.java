@@ -6,6 +6,7 @@
 package euler21;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  *
@@ -21,7 +22,7 @@ public class Utility {
         }
         for (int i = 2; i < max; i++) {
             if (output.contains(i)) {
-                current = i*2;
+                current = i * 2;
                 while (current < max) {
                     output.remove(current);
                     current += i;
@@ -33,12 +34,18 @@ public class Utility {
 
     public static ArrayList<Integer> factorize(Integer[] primes, int number) {
         ArrayList<Integer> output = new ArrayList<>();
+        int orig = number;
         while (number != 1) {
             for (Integer i : primes) {
                 if (number % i == 0) {
-                    output.add(i);
-                    number /= i;
-                    break;
+                    try {
+                        output.add(i);
+                        number /= i;
+                        break;
+                    } catch (OutOfMemoryError e) {
+                        System.out.printf("Orig was %d; number was %d", orig, number);
+                        throw e;
+                    }
                 }
             }
         }
@@ -46,7 +53,7 @@ public class Utility {
     }
 
     public static ArrayList<ArrayList<Boolean>> allCombinations(int size) {
-        double num = Math.pow(2, size);
+        double num = Math.pow(2, size) - 1;
         ArrayList<String> binaryStrings = new ArrayList<>();
         ArrayList<ArrayList<Boolean>> output = new ArrayList<>();
         StringBuilder currString;
@@ -58,7 +65,7 @@ public class Utility {
             binaryStrings.add(currString.toString());
         }
         for (String s : binaryStrings) {
-            output.add(new ArrayList<>());
+            output.add(new ArrayList<Boolean>());
             for (int i = 0; i < s.length(); i++) {
                 output.get(output.size() - 1).add((s.charAt(i) == '1'));
             }
@@ -74,5 +81,13 @@ public class Utility {
         // Explanation of method: https://math.stackexchange.com/questions/141302/how-to-find-all-possible-combinations-of-a-set-of-options
         // Help on printing binary numbers (they'll need to be zero-padded):https://stackoverflow.com/questions/4421400/how-to-get-0-padded-binary-representation-of-an-integer-in-java
         // https://stackoverflow.com/questions/5263187/print-an-integer-in-binary-format-in-java
+    }
+
+    public static int sum(Set<Integer> s) {
+        int out = 0;
+        for (Integer i : s) {
+            out += i;
+        }
+        return out;
     }
 }
