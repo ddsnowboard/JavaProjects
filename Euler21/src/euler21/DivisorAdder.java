@@ -20,10 +20,10 @@ public class DivisorAdder {
         fastPrimes = Utility.sieve(MAX_NUMBER);
     }
 
-    public int sumDivisors(int input) {
-        ArrayList<Integer> possibleFactors = new ArrayList<>();
-        ArrayList<Integer> primeFactors = Utility.factorize(fastPrimes, input);
-        // Use Utility.allCombinations to get all the combinations of the prime 
-        // factors. That will give you all the divisors. 
-    }
+//    public int sumDivisors(int input) {
+//        ArrayList<Integer> possibleFactors = new ArrayList<>();
+//        ArrayList<Integer> primeFactors = Utility.factorize(fastPrimes, input);
+//        // Use Utility.allCombinations to get all the combinations of the prime 
+//        // factors. That will give you all the divisors. 
+//    }
 }

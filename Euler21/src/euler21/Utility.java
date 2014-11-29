@@ -21,7 +21,7 @@ public class Utility {
         }
         for (int i = 2; i < max; i++) {
             if (output.contains(i)) {
-                current = i;
+                current = i*2;
                 while (current < max) {
                     output.remove(current);
                     current += i;
@@ -33,18 +33,37 @@ public class Utility {
 
     public static ArrayList<Integer> factorize(Integer[] primes, int number) {
         ArrayList<Integer> output = new ArrayList<>();
-        for (Integer i : primes) {
-            if (number % i == 0) {
-                output.add(i);
+        while (number != 1) {
+            for (Integer i : primes) {
+                if (number % i == 0) {
+                    output.add(i);
+                    number /= i;
+                    break;
+                }
             }
         }
         return output;
     }
-    public static Integer[] allCombinations(int size)
-    {
+
+    public static ArrayList<ArrayList<Boolean>> allCombinations(int size) {
         double num = Math.pow(2, size);
-        String[] binaryStrings = new String[new Double(Math.pow(2, list.size())).intValue()];
-        
+        ArrayList<String> binaryStrings = new ArrayList<>();
+        ArrayList<ArrayList<Boolean>> output = new ArrayList<>();
+        StringBuilder currString;
+        for (int i = 1; i < num; i++) {
+            currString = new StringBuilder(Integer.toBinaryString(i));
+            while (currString.length() < size) {
+                currString.insert(0, "0");
+            }
+            binaryStrings.add(currString.toString());
+        }
+        for (String s : binaryStrings) {
+            output.add(new ArrayList<>());
+            for (int i = 0; i < s.length(); i++) {
+                output.get(output.size() - 1).add((s.charAt(i) == '1'));
+            }
+        }
+        return output;
         // So, I need to find a way to get all the combinations, and to do that I'm 
         // going to get the binary string representations of all the numbers between one and 
         // 2^(list.size()+1)-1), which will give me every possible permutation
@@ -52,8 +71,8 @@ public class Utility {
         // through each of them and use them to return the list of lists of booleans
         // (not yet denoted) that I can use elsewhere. So if I put in 2, it should 
         // give me every possible set of one and zero that is 2 long (00, 10, 01, 11)
-		// Explanation of method: https://math.stackexchange.com/questions/141302/how-to-find-all-possible-combinations-of-a-set-of-options
-		// Help on printing binary numbers (they'll need to be zero-padded):https://stackoverflow.com/questions/4421400/how-to-get-0-padded-binary-representation-of-an-integer-in-java
-		// https://stackoverflow.com/questions/5263187/print-an-integer-in-binary-format-in-java
+        // Explanation of method: https://math.stackexchange.com/questions/141302/how-to-find-all-possible-combinations-of-a-set-of-options
+        // Help on printing binary numbers (they'll need to be zero-padded):https://stackoverflow.com/questions/4421400/how-to-get-0-padded-binary-representation-of-an-integer-in-java
+        // https://stackoverflow.com/questions/5263187/print-an-integer-in-binary-format-in-java
     }
 }

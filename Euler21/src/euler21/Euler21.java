@@ -11,24 +11,14 @@ package euler21;
  */
 public class Euler21 {
 
+    public static final int MAX_NUMBER = 10000;
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        DivisorAdder divisorAdder = new DivisorAdder();
-        int end = 0;
-//        for (int i = 0; i < 10000; i++) {
-//            for (int j = 0; j < 10000; j++) {
-        int i = 220;
-        int j = 284;
-        System.out.printf("%d, %d", divisorAdder.sumDivisors(j), divisorAdder.sumDivisors(i));
-                if (divisorAdder.sumDivisors(i) == j && divisorAdder.sumDivisors(j) == i) {
-                    end += i;
-                    end += j;
-                }
-//            }
-//        }
-        System.out.println(end);
+        DivisorAdder divisorAdder = new DivisorAdder(Euler21.MAX_NUMBER);
+        System.out.println(Utility.factorize(Utility.sieve(100),55));
     }
 
 }
