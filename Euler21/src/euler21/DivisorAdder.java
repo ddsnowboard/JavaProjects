@@ -6,7 +6,6 @@
 package euler21;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +22,6 @@ public class DivisorAdder {
     public DivisorAdder(int maximum) {
         MAX_NUMBER = maximum;
         fastPrimes = Utility.sieve(MAX_NUMBER);
-        System.out.println(Arrays.toString(fastPrimes));
     }
 
     public int sumDivisors(int input) {

@@ -23,7 +23,7 @@ public class Utility {
         for (int i = 2; i < max; i++) {
             if (output.contains(i)) {
                 current = i * 2;
-                while (current < max) {
+                while (current <= max) {
                     output.remove(current);
                     current += i;
                 }
@@ -35,7 +35,7 @@ public class Utility {
     public static ArrayList<Integer> factorize(Integer[] primes, int number) {
         ArrayList<Integer> output = new ArrayList<>();
         int orig = number;
-        while (number != 1) {
+        while (number > 1) {
             for (Integer i : primes) {
                 if (number % i == 0) {
                     try {
