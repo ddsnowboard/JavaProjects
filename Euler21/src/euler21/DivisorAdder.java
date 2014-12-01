@@ -17,9 +17,10 @@ public class DivisorAdder {
 
     private final Integer[] fastPrimes;
     private final int MAX_NUMBER;
-    private HashMap<Integer, Integer> cache = new HashMap<>();
+    private final HashMap<Integer, Integer> cache;
 
     public DivisorAdder(int maximum) {
+        cache = new HashMap<>();
         MAX_NUMBER = maximum;
         fastPrimes = Utility.sieve(MAX_NUMBER);
     }

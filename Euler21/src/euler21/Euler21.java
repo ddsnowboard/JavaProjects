@@ -1,4 +1,3 @@
-
 package euler21;
 
 import java.util.HashMap;
@@ -21,14 +20,13 @@ public class Euler21 {
         for (int i = 0; i < MAX_NUMBER; i++) {
             for (int j = 0; j < MAX_NUMBER; j++) {
                 if (divisorAdder.sumDivisors(i) == j && divisorAdder.sumDivisors(j) == i && i != j) {
-                    amici.put(j, Boolean.TRUE);
-                    amici.put(i, Boolean.TRUE);
+                    amici.put(j, true);
+                    amici.put(i, true);
                 }
             }
         }
-        for(Integer i : amici.keySet())
-        {
-            out+=i;
+        for (Integer i : amici.keySet()) {
+            out += i;
         }
         System.out.println(out);
     }
