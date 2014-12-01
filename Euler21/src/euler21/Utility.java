@@ -52,6 +52,8 @@ public class Utility {
         return output;
     }
 
+// There are too many gross, slow string operations here. See if you can do this with bitwise or's. You can either use Math.pow
+// every time, or maybe it would be possible to evaluate all the powers of two at the beginning and then cache them somewhere. 
     public static ArrayList<ArrayList<Boolean>> allCombinations(int size) {
         double num = Math.pow(2, size) - 1;
         ArrayList<String> binaryStrings = new ArrayList<>();
