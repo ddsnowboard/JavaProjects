@@ -14,7 +14,7 @@ public class main {
 		final int number=9;
 		int running=number;
 		int test=2;
-		List <Integer> factors=new ArrayList<Integer>();
+		ArrayList <Integer> factors=new ArrayList<Integer>();
 		while(!(test >= number/2))
 		{
 			if((running%test == 0)&& !(running<=2))
