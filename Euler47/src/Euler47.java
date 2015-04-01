@@ -2,8 +2,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Euler47 {
-// https://projecteuler.net/problem=47
-	// I really don't understand the question. It says distinct prime factors, but they aren't all distinct. They have two like three times. I'm confused. 
+	// https://projecteuler.net/problem=47
+	// I understand the question now. The thing they're asking is whether there are three numbers in a row that each 
+	// themselves have three distinct prime factors, or four with four. Ok. Got it. 
 	public static void main(String[] args) {
 		Factorizer factorizer = new Factorizer();
 		int currentFirstNumber = 2;
