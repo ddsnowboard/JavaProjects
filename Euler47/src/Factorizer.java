@@ -32,7 +32,7 @@ public class Factorizer {
 				}
 			}
 			prime = true;
-			for (int i = 3; i < curr/2+1; i++) {
+			for (int i = 3; i < curr / 2 + 1; i++) {
 				if (curr % i == 0) {
 					prime = false;
 					break;
@@ -48,14 +48,15 @@ public class Factorizer {
 	public ArrayList<Integer> primeFactors(int input) {
 		ArrayList<Integer> out = new ArrayList<Integer>();
 		if (primes.get(primes.size() - 1) < Math.sqrt(input))
-			fillPrimes(Math.sqrt(input));
+			fillPrimes((int) (input / 2) + 1);
 		for (Integer i : primes) {
 			if (i < input) {
 				if (input % i == 0) {
 					out.add(i);
 				}
-			} else
+			} else {
 				break;
+			}
 		}
 		return out;
 	}
