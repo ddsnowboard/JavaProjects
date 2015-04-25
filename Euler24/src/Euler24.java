@@ -1,39 +1,38 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class Euler24 {
 
-	public static ArrayList<ArrayList<Integer>> permutations(int[] orig) {
-		ArrayList<ArrayList<Integer>> out = new ArrayList<ArrayList<Integer>>();
+	public static ArrayList<List> permutations(Integer[] orig) {
+		ArrayList<List> out = new ArrayList<List>();
 		ArrayList<Integer> currentPrefix;
-		for (Integer i : orig) {
-			currentPrefix = new ArrayList<Integer>();
-			currentPrefix.add(i);
-			out.addAll(permuatationsAux(Arrays.copyOfRange(orig, 1, orig.length),
-					currentPrefix));
-		}
-		return out;
-	}
-
-	public static ArrayList<ArrayList<Integer>> permuatationsAux(int[] orig,
-			ArrayList<Integer> prefix) {
-		ArrayList<ArrayList<Integer>> out = new ArrayList<ArrayList<Integer>>();
-		if (orig.length == 1) {
-			out.add(orig[0]);
+		ArrayList<List> currentPermutation;
+		if(orig.length == 2)
+		{
+			out.add(Arrays.asList(orig));
+			ArrayList<Integer> temp = (ArrayList<Integer>) Arrays.asList(orig);
+			Collections.reverse(temp);
+			out.add((ArrayList<Integer>) temp);
 			return out;
 		}
-		ArrayList<Integer> currPrefix;
-		for (Integer i : orig) {
-			currPrefix = new ArrayList<Integer>();
-			currPrefix.addAll(prefix);
-			currPrefix.add(i);
-			out.addAll(permuatationsAux(Arrays.copyOfRange(orig, 1, orig.length), currPrefix));
+		for (int i = 0; i < orig.length; i++) {
+			currentPrefix = new ArrayList<Integer>();
+			currentPrefix.add(orig[i]);
+			currentPermutation = permutations(Arrays.copyOfRange(orig, 1,
+					orig.length));
+			for (int j = 0; j < currentPermutation.size(); j++) {
+				currentPermutation.get(j).addAll(0, currentPrefix);
+				out.add(currentPermutation.get(j));
+			}
 		}
 		return out;
 	}
 
 	public static void main(String[] args) {
-		final int[] NUMBERS = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
+		// final Integer[] NUMBERS = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
+		final Integer[] NUMBERS = { 1, 2 };
 		System.out.println(permutations(NUMBERS));
 
 	}
