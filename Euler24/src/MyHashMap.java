@@ -11,11 +11,12 @@ public class MyHashMap<K, V> extends HashMap<K, V> {
 	// What is the K right over there? I need to figure that out. And also write
 	// this. Just do a reduce thing, it'll be nice.
 	public boolean findAllInKeys(List<K> l) {
-		boolean out = true;
 		for (K i : l) {
-			out = out && this.containsKey(i);
+			if (!this.containsKey(i)) {
+				return false;
+			}
 		}
-		return out;
+		return true;
 	}
 
 }
