@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 public class Euler24B {
 	public static void main(String[] args) {
 		ArrayList<Double> foundNumbers = new ArrayList<>();
-		final double GOAL = 6;
-		Integer[] NUMBERS = { 0, 1, 2, 3, 4, 5 };
+		final double GOAL = 5;
+		Integer[] NUMBERS = { 0, 1, 2};
 		// final double GOAL = 1e6;
 		// double currentNumber = 0123456789d;
 		// final Integer[] NUMBERS = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -67,6 +67,6 @@ public class Euler24B {
 		for (Integer i : a) {
 			sb.append(i);
 		}
-		return Double.valueOf(sb.toString());
+		return Double.valueOf(Integer.valueOf(sb.toString()));
 	}
 }
