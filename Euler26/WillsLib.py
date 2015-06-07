@@ -55,12 +55,12 @@ def DBupdate(connection, table_name, set, which):
 	# Set and which will be dictionaries that have the syntax {column: value}
 	# "Which" could also be the string "all"
 	if not set:
-		raise Exception("""You didn't give the right parameters!\nYou need 
+		raise Exception("""You didn't give the right parameters!\nYou need
 						 to give 2 dictionaries, \"set\" and \"which\", that\n
 						 are in the format {attribute:value}. See the \n
 						 documentation for more details.""")
 	elif not which:
-		raise Exception("""You didn't give the right parameters!\nYou need 
+		raise Exception("""You didn't give the right parameters!\nYou need
 						 to give 2 dictionaries, \"set\" and \"which\", that\n
 						 are in the format {attribute:value}. See the \n
 						 documentation for more details.\n
@@ -86,7 +86,7 @@ def DBdelete(connection, table_name, which):
 	strings = [sanitize(i)+ " = ?" for i in which.keys()]
 	connection.cursor().execute("delete from "+sanitize(table_name)+" WHERE "+' and '.join(strings),tuple([i for i in which.values()]))
 	connection.commit()
-# A generator that will generate perfect squares forever. 
+# A generator that will generate perfect squares forever.
 def squares():
 	out = 1
 	odd = 3
@@ -94,7 +94,7 @@ def squares():
 		yield out
 		out+=odd
 		odd+=2
-# This generator will kick out primes forever, given enough memory and time.  
+# This generator will kick out primes forever, given enough memory and time.
 def primes():
 	yield 2
 	prime = True
@@ -108,7 +108,7 @@ def primes():
 			yield out
 		out+=2
 # This is a class for polynomial equations. Give it the equation as a string, and you can evaluate it and maybe find the intersection
-# with another line. 
+# with another line.
 class Equation:
 	def __init__(self, eq):	# y=2x^2-3x+5
 		self.coefficients = defaultdict(float)
@@ -120,7 +120,7 @@ class Equation:
 			if not re.compile(r"[A-Za-z]").search(i):
 				self.coefficients[0] += float(i)  # "+5"
 			elif re.compile(r"[\+-]?[\d\.]+[A-Za-z]$").search(i):
-				self.coefficients[1]+=float(re.compile(r"[A-Za-z]").subn('',i)[0])  	#"-3" 
+				self.coefficients[1]+=float(re.compile(r"[A-Za-z]").subn('',i)[0])  	#"-3"
 			elif re.compile(r"[\+-]?[\d\.]+[A-Za-z]\*\*\d+").match(i):
 				self.coefficients[i[i.index("**")+2:]] += float(i[:re.compile("[A-Za-z]").search(i).span()[1]-1]) # '2'
 		self.degree = len(self.coefficients)-1
@@ -133,8 +133,8 @@ class Equation:
 		if not type(other) == type(Equation("2x^2-4x+5")):
 			raise Exception("You seem to have made a stupid; this is supposed to take another equation and find the intersection")
 			return
-		# Left will be variables; right will be constants. 
-		# Left starts as self, right starts as other. 
+		# Left will be variables; right will be constants.
+		# Left starts as self, right starts as other.
 		left = defaultdict(float)
 		right = 0
 		for i, j in self.coefficients.items():
@@ -160,7 +160,7 @@ def myIndex(l, value, func = lambda x: x):
 	for i, j in enumerate(l):
 		if func(j) == value:
 			return i
-			
+
 def tabsToList(input_list, output_filename, type = "ordered"):
 	with open(output_filename, "w") as w:
 		tabs = lambda x: x.count("\t")
@@ -168,7 +168,7 @@ def tabsToList(input_list, output_filename, type = "ordered"):
 			tag = ["<ol>", "</ol>"]
 		elif type == "unordered":
 			tag = ["<ul>", "</ul>"]
-		# In case they give it to me as a file. 
+		# In case they give it to me as a file.
 		l = list(input_list)
 		depth = 0
 		w.write("<html>{}".format(tag[0]))
@@ -242,11 +242,10 @@ class PrimeFactorizer:
     def factorize(self, number):
         out = []
         current_number = number
-        # I have to do this weird for loop thing because I'm changing the length of the 
-        # list as I go. 
+        # I have to do this weird for loop thing because I'm changing the length of the
+        # list as I go.
         counter = 0
         while True:
-            print(current_number)
             if current_number in self.primes:
                 out.append(current_number)
                 return out
@@ -258,5 +257,5 @@ class PrimeFactorizer:
                 out.append(self.primes[counter])
                 current_number /= self.primes[counter]
                 counter = 0
-            else: 
+            else:
                 counter += 1
