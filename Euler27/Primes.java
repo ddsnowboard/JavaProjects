@@ -5,7 +5,6 @@ import java.lang.Boolean;
 import java.util.Map;
 
 
-
 class Primes {
     public HashMap<Integer, Boolean> primes;
     public Primes(int start)
@@ -47,15 +46,13 @@ class Primes {
     }
     private Boolean checkPrimality(Integer i)
     {
-        Boolean prime = true;
         for(int o = 2;o < (int)(i / 2 + 1);o++)
         {
-            if(prime && i % o == 0)
+            if(i % o == 0)
             {
-                prime = false;
-                break;
+                return Boolean.FALSE;
             }
         }
-        return prime;
+        return Boolean.TRUE;
     }
 }

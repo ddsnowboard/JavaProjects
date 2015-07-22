@@ -35,10 +35,6 @@ class Euler27
                 }
             }
         }
-        System.out.printf("The highest number is %d and the highest product is %d. i was %d and j was %d.%nThe numbers are:%n", highestNumber, highestProduct, nums.get("i"), nums.get("j"));
-        for(int i : highestList)
-        {
-            System.out.println(i);
-        }
+        System.out.printf("The highest number is %d and the highest product is %d. i was %d and j was %d.%n", highestNumber, highestProduct, nums.get("i"), nums.get("j"));
     }
 }
