@@ -26,9 +26,10 @@ class Primes {
     }
     public boolean isPrime(Integer number)
     {
+        number = Math.abs(number);
         if(!primes.containsKey(number))
         {
-            checkPrimality(number);
+            primes.put(number, checkPrimality(number));
         }
         return primes.get(number);
     }
