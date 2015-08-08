@@ -13,23 +13,24 @@ int main(int argc, char** argv)
     int currLength = LENGTH;
     char* currNumber;
     int i = 1;
+    int currentLengthOfNumber = 1;
     for(;i<LENGTH;i++)
     {
-        printf("We're on %d\n", i);
-        printf("mallocing %d\n", (int) (log(i) / log(10)) + 2);
-        currNumber = malloc(((int) log(i) / log(10)) + 1);
-        printf("Got past currnumber\n");
+        if((int) (log(i) / log(10)) + 2 > currentLengthOfNumber)
+        {
+            free(currNumber);
+            currNumber = malloc(++currentLengthOfNumber);
+        }
         sprintf(currNumber, "%d", i);
         if(strlen(currNumber) + strlen(number) > currLength)
         {
             strcpy(holder, currNumber);
             free(currNumber);
-            currNumber = malloc(currLength * 2);
             currLength *= 2;
+            currNumber = malloc(currLength);
             strcpy(currNumber, holder);
         }
         strcat(number, currNumber);
-        free(currNumber);
     } 
     printf("%s\n", number);
     return 0;
