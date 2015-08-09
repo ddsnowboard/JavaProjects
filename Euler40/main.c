@@ -18,9 +18,9 @@ int main(int argc, char** argv)
     {
         if((int) (log(i) / log(10)) + 2 > currentLengthOfNumber)
         {
-            free(currNumber);
-            currNumber = malloc(++currentLengthOfNumber);
+            currNumber = realloc(currNumber, ++currentLengthOfNumber);
         }
+        printf("currNumber is %s and i is %d\n", (char*)currNumber, i);
         sprintf(currNumber, "%d", i);
         if(strlen(currNumber) + strlen(number) > currLength)
         {
