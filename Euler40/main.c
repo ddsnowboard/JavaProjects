@@ -8,8 +8,8 @@
 
 int main(int argc, char** argv)
 {
-    char* number = malloc(LENGTH);
-    char* holder = malloc(LENGTH);
+    char number[LENGTH];
+    char holder[LENGTH];
     int currLength = LENGTH;
     char* currNumber;
     int i = 1;
@@ -20,7 +20,7 @@ int main(int argc, char** argv)
         {
             currNumber = realloc(currNumber, ++currentLengthOfNumber);
         }
-        printf("currNumber is %s and i is %d\n", (char*)currNumber, i);
+        printf("currNumber is %s and i is %d\n", currNumber, i);
         sprintf(currNumber, "%d", i);
         if(strlen(currNumber) + strlen(number) > currLength)
         {
