@@ -3,8 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 // https://projecteuler.net/problem=40
-// #define LENGTH 1000000
-#define LENGTH 300000
+#define LENGTH 1000000
 
 int main(int argc, char** argv)
 {
@@ -16,11 +15,14 @@ int main(int argc, char** argv)
     int currentLengthOfNumber = 1;
     for(;i<LENGTH;i++)
     {
+        // It's plus two because it will round down (that's one) and I want to have some cushion.
         if((int) (log(i) / log(10)) + 2 > currentLengthOfNumber)
         {
             currNumber = realloc(currNumber, ++currentLengthOfNumber);
+            printf("Realloced\n");
         }
-        printf("currNumber is %s and i is %d\n", currNumber, i);
+        if(i % 10000 == 0)
+            printf("currNumber is %s and i is %d\n", currNumber, i);
         sprintf(currNumber, "%d", i);
         if(strlen(currNumber) + strlen(number) > currLength)
         {
