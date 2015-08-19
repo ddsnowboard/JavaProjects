@@ -10,7 +10,7 @@ int main(int argc, char** argv)
     char number[LENGTH];
     char holder[LENGTH];
     int currLength = LENGTH;
-    char* currNumber;
+    char* currNumber = malloc(10);
     int i = 1;
     int currentLengthOfNumber = 1;
     for(;i<LENGTH;i++)
