@@ -7,33 +7,34 @@
 
 int main(int argc, char** argv)
 {
-    char number[LENGTH];
-    char holder[LENGTH];
+    char* number = malloc(LENGTH * sizeof(char));
     int currLength = LENGTH;
+    int charAmt = 0;
+    int currNumLen = 0;
     char* currNumber = malloc(10);
     int i = 1;
-    int currentLengthOfNumber = 1;
+    strcat(number, ".");
     for(;i<LENGTH;i++)
     {
-        // It's plus two because it will round down (that's one) and I want to have some cushion.
-        if((int) (log(i) / log(10)) + 2 > currentLengthOfNumber)
-        {
-            currNumber = realloc(currNumber, ++currentLengthOfNumber);
-            printf("Realloced\n");
-        }
-        if(i % 10000 == 0)
-            printf("currNumber is %s and i is %d\n", currNumber, i);
+         if(i % 10000 == 0)
+             printf("currNumber is %s and i is %d\n", currNumber, i);
+        currNumber[0] = '\0';
         sprintf(currNumber, "%d", i);
-        if(strlen(currNumber) + strlen(number) > currLength)
+        currNumLen = strlen(currNumber);
+        charAmt += currNumLen;
+        if(currNumLen + charAmt >= currLength)
         {
-            strcpy(holder, currNumber);
-            free(currNumber);
             currLength *= 2;
-            currNumber = malloc(currLength);
-            strcpy(currNumber, holder);
+            number = realloc(number, currLength);
         }
         strcat(number, currNumber);
     } 
-    printf("%s\n", number);
+    int out = 1;
+    int numbers[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
+    i = 0; 
+    i = 0;
+    for(;i<6;i++)
+        out *= atoi((char[]) {number[numbers[i]], '\0'});
+    printf("The result is %d\n", out);
     return 0;
 }
