@@ -11,15 +11,17 @@ char* mystrcat(char* dest, char* src)
     {
         printf("copying %c\n", *(dest - 1));
     }
-    printf("is dest %s?\n", dest - 5);
-    return --dest;
+    return dest - 2;
 }
 int main(int argc, char** argv)
 {
     char* a = malloc(10);
     char* b = malloc(10);
-    strcpy(a, "test");
-    strcpy(b, "bed");
-    mystrcat(a, b);
+    char* c = "apples";
+    strcpy(a, ".");
+    strcpy(b, "2");
+    char* i = mystrcat(a, b);
+    printf("%s\n", a);
+    mystrcat(i, c);
     printf("%s\n", a);
 }
