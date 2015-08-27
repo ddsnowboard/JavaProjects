@@ -1,5 +1,5 @@
 main : main.c
-	gcc -Wall -o main -g main.c -lm 
+	gcc -Wall -o main -g main.c -lm -ggdb
 Euler40 : Euler40.java
 	javac Euler40.java
 clean : 

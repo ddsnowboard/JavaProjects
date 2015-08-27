@@ -4,7 +4,7 @@
 #include <stdio.h>
 // https://projecteuler.net/problem=40
 // #define LENGTH 1000000
-#define LENGTH 30
+#define LENGTH 100
 
 char* mystrcat(char*, char*);
 int main(int argc, char** argv)
@@ -20,26 +20,25 @@ int main(int argc, char** argv)
     number[1] = '\0';
     for(;i<LENGTH;i++)
     {
-         if(i % 10000 == 0)
-             printf("currNumber is %s and i is %d\n", currNumber, i);
+        if(i % 10000 == 0)
+            printf("currNumber is %s and i is %d\n", currNumber, i);
         currNumber[0] = '\0';
         sprintf(currNumber, "%d", i);
         currNumLen = strlen(currNumber);
         charAmt += currNumLen;
         if(charAmt >= currLength)
         {
-            printf("realloced\n");
             currLength *= 2;
             number = realloc(number, currLength);
+            printf("Realloced; now %s\n", number);
         }
         // printf("currLength is %d and charAmt is %d\n", currLength, charAmt);
         currentDestination = mystrcat(currentDestination, currNumber);
-        printf("%s", number);
+        printf("%s\n", number);
     } 
     int out = 1;
     int numbers[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
     i = 0; 
-    i = 0;
     for(;i<6;i++)
         out *= atoi((char[]) {number[numbers[i]], '\0'});
     printf("The result is %d\n", out);
@@ -47,7 +46,9 @@ int main(int argc, char** argv)
 }
 char* mystrcat(char* dest, char* src)
 {
-    while(*++dest)
+    if(dest != '\0'){
+        while(*++dest);
+    }
     while(*dest++ = *src++);
-    return --dest;
+    return dest - 2;
 }
