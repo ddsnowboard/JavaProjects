@@ -49,5 +49,5 @@ char* mystrcat(char* dest, char* src)
 {
     while(*++dest)
     while(*dest++ = *src++);
-    return dest - 2;
+    return --dest;
 }
