@@ -30,6 +30,7 @@ int main(int argc, char** argv)
         {
             currLength *= 2;
             number = realloc(number, currLength);
+            currentDestination = number;
             printf("Realloced; now %s\n", number);
         }
         // printf("currLength is %d and charAmt is %d\n", currLength, charAmt);
@@ -39,8 +40,11 @@ int main(int argc, char** argv)
     int out = 1;
     int numbers[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
     i = 0; 
-    for(;i<6;i++)
+    for(;i < 6; i++)
+    {
+        printf("Multiplying %c\n", number[numbers[i]]);
         out *= atoi((char[]) {number[numbers[i]], '\0'});
+    }
     printf("The result is %d\n", out);
     return 0;
 }
@@ -50,5 +54,6 @@ char* mystrcat(char* dest, char* src)
         while(*++dest);
     }
     while(*dest++ = *src++);
+    // I think that --dest is just pointing to \0 so it won't work. I'm not sure though. 
     return dest - 2;
 }
