@@ -5,7 +5,7 @@
 int collatz(int);
 
 // int main(int argc, char** argv)
-int main(void)
+int main(int argc, char** argv)
 {
     int i;
     for(i = 0;i<MAX;i++)
