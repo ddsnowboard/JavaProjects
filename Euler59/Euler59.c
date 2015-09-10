@@ -31,6 +31,8 @@ int main(int argc, char** argv)
     return 0;
 }
 
+// Returns the amount of numbers that are to be converted to an ASCII character
+// in f. 
 int letterCount(FILE *f)
 {
     char curr;
