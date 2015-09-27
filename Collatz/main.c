@@ -9,8 +9,12 @@ int main(int argc, char** argv)
 {
     int i;
     for(i = 0;i<MAX;i++)
+    {
         if(collatz(i) != 0)
-        printf("%d returned 1\n", i);
+        {
+            printf("%d returned 1\n", i);
+        }
+    }
     return 0;
 }
 
