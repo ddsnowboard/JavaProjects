@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # My implementation of Richard Dawkin's weasel program, complete with questionable algorithms
 
 from random import choice, randint, random
