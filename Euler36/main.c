@@ -3,23 +3,22 @@
 #include <stdlib.h>
 #include <string.h>
 char* reverse(char* s);
-char* itoa(int i);
-char* itobin(int i);
+char* itoa(int i, int base);
+int palindrome(char* a);
 
 int main(int argc, char** argv) 
 {
-    printf("%s", itoa(350));
-    // int tot = 0;
-    // char* currNum;
-    // for(int i = 0; i <= 1000000; ++i)
-    // {
-    //     currNum = malloc(10);
-    //     sprintf(currNum, "%d", i);
-    //     if(strcmp(currNum, reverse(currNum)) == 0)
-    //     {
-    //         tot += i;
-    //     }
-    // }
+    int tot = 0;
+    // char* currDec;
+    // char* currBin;
+    for(int i = 1; i <= 1000000; ++i)
+    {
+        if(palindrome(itoa(i, 10)) == 0 && palindrome(itoa(i, 2)) == 0)
+        {
+            tot += i;
+        }
+    }
+    printf("Total is %d\n", tot);
 }
 char* reverse(char* s)
 {
@@ -33,18 +32,32 @@ char* reverse(char* s)
     out[j + 1] = '\0';
     return out;
 }
-char* itoa(int i)
+char* itoa(int i, int base)
 {
-    int exp = 1;
+    int sign = i > 0;
+    if(!sign)
+        i *= -1;
+    int exp = base;
     int idx = 0;
-    char* out = malloc(30);
-    while(i % exp != i)
+    char* out = malloc(20);
+    while(i % (exp / base) != i)
     {
-        printf("exp is %d", exp);
-        out[idx] = (i % exp) + '0';
-        exp *= 10;
+        out[idx] = (i % exp) / (exp / base) + '0';
+        exp *= base;
         idx++;
     }
+    if(!sign)
+        out[idx++] = '-';
     out[idx] = '\0';
     return reverse(out);
+}
+int palindrome(char* a)
+{
+    size_t len = strlen(a);
+    for(int i = 0, j = len - 1; i <= len / 2; ++i, --j)
+    {
+        if(a[i] != a[j])
+            return 1;
+    }
+    return 0;
 }
