@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <pthread.h>
-#define MAX 9999999 
+// #define MAX 9999999 
+#define MAX 9999 
 int numLen(int i);
 int* digits(int i);
 int fact(int i);
