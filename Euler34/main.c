@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <pthread.h>
-// #define MAX 9999999 
-#define MAX 9999 
+#define MAX 9999999 
 int numLen(int i);
 int* digits(int i);
 int fact(int i);
@@ -20,6 +19,7 @@ int main(int argc, char** argv)
     int i = 3;
     int out = 0;
     int counter = 0;
+    pthread_t* threads = malloc(MAX * sizeof(pthread_t));
     for(; i < MAX; ++i)
     {
         pthread_t thread;
@@ -29,10 +29,15 @@ int main(int argc, char** argv)
         input.counter = &counter;
         pthread_create(&thread, NULL, &test, (void *)&input);
     }
-    while(counter < MAX)
+    i = 0;
+    for(; i < MAX; ++i)
     {
-        printf("counter is %d", counter);
+        pthread_join(threads[i], NULL);
     }
+    //     while(counter < MAX)
+    //     {
+    //         printf("counter is %d", counter);
+    //     }
     printf("The sum is %d\n", out);
     return 0;
 }
@@ -42,7 +47,6 @@ void* test(void* s)
     struct Inputs* inputs = (struct Inputs *)s;
     int i = inputs -> i;
     int* nums = digits(i);
-    printf("Entered thread with i = %d", i);
     int len = numLen(i);
     int c = 0;
     int tot = 0;
@@ -54,7 +58,7 @@ void* test(void* s)
     {
         *(inputs -> tot) += i;
     }
-    (*(inputs -> counter))++;
+    ++(*(inputs -> counter));
     return 0;
 }
 int numLen(int i)
