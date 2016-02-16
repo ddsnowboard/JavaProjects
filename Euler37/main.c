@@ -2,12 +2,16 @@
 #include <stdlib.h>
 #define MAX 10000
 /* Use a binary tree to memoize the primes, because why not? */
-struct Node {
+struct TreeNode {
     int value;
-    struct Node *right;
-    struct Node *left;
+    struct TreeNode *right;
+    struct TreeNode *left;
 };
-extern struct Node head;
+struct ListNode {
+    int value;
+    struct ListNode *next;
+};
+extern struct TreeNode head;
 int isPrime(int i);
 int treeSearch(int i);
 int treeAdd(int i);
@@ -40,7 +44,7 @@ int isPrime(int i)
     }
     else 
     {
-        struct Node walker = head;
+        struct TreeNode walker = head;
     }
     return 0;
 }
