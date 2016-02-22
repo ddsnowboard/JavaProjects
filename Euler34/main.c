@@ -34,10 +34,6 @@ int main(int argc, char** argv)
     {
         pthread_join(threads[i], NULL);
     }
-    //     while(counter < MAX)
-    //     {
-    //         printf("counter is %d", counter);
-    //     }
     printf("The sum is %d\n", out);
     return 0;
 }
