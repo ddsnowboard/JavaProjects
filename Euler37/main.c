@@ -38,6 +38,8 @@ int main(int argc, char** argv)
 
 int isPrime(int i)
 {
+    /* Returns 1 if prime, 0 otherwise */ 
+
     // This function only works if it gets each number in order
     if(i % 2 == 0)
     {
@@ -78,10 +80,10 @@ int isTruncatablePrime(int i)
 {
     int orig = i;
     int out = isPrime(i);
-    int counter = (int)10e9;
+    long counter = 10e9;
     while(i % counter == i)
         counter /= 10;
-    while((out & isPrime(i %= counter)) && i)
+    while((out && isPrime(i % counter)) && i)
         counter /= 10;
     i = orig;
     while((out & isPrime(i /= 10)) && i);
