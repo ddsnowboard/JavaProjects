@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX 10000
+// #define MAX 10000
+#define MAX 100
 /* Use a binary tree to memoize the primes, because why not? */
 struct ListNode {
     int value;
@@ -11,17 +12,20 @@ int isPrime(int i);
 int push(struct ListNode *list, int toAdd);
 int isTruncatablePrime(int i);
 
+// Debugging
+void printPrimes();
+
 int main(int argc, char** argv)
 {
     // Add sample primes
     struct ListNode *ptr = malloc(sizeof(struct ListNode));
     primes = *ptr;
-    primes.value = 1;
+    primes.value = 2;
     primes.next = NULL;
-    push(&primes, 2);
     push(&primes, 3);
     push(&primes, 5);
     push(&primes, 7);
+
     int tot = 0;
     int i = 10;
     for(; i < MAX; ++i)
@@ -32,15 +36,16 @@ int main(int argc, char** argv)
             tot += i;
         }
     }
-    printf("The sum is %d\n", i);
+    printf("The sum is %d\n", tot);
     return 0;
 }
 
 int isPrime(int i)
 {
-    /* Returns 1 if prime, 0 otherwise */ 
-
-    // This function only works if it gets each number in order
+    /* 
+     * Returns 1 if prime, 0 otherwise 
+     * This function only works if it gets each number in order
+     */ 
     if(i % 2 == 0)
     {
         return 0;
@@ -48,9 +53,13 @@ int isPrime(int i)
     else
     {
         // Skip 1 and 2
-        struct ListNode walker = *(primes.next -> next);
-        while(walker.next && i != walker.value && i % walker.value != 0)
+        struct ListNode walker = *(primes.next);
+        // printf("orig walker.value is %d, and walker.next is %p\n", walker.value, walker.next);
+        while(walker.next && i % walker.value != 0)
+        {
             walker = *walker.next;
+            // printf("walker.value is %d, and walker.next is %p\n", walker.value, walker.next);
+        }
         if(walker.next)
         {
             if(i == walker.value)
@@ -58,12 +67,16 @@ int isPrime(int i)
             else if(i % walker.value == 0)
                 return 0;
         }
+        // If there are no numbers higher than this and none of the lower ones are divisible, 
+        // it's prime.
         else
         {
+            // printf("Entered else");
             push(&primes, i);
             return 1;
         }
     }
+    // printf("\n\n\n\n\n");
     return 0;
 }
 int push(struct ListNode *list, int toAdd)
@@ -73,7 +86,9 @@ int push(struct ListNode *list, int toAdd)
         walker = walker -> next;
     struct ListNode *next = malloc(sizeof(struct ListNode));
     next -> value = toAdd;
+    next -> next = NULL;
     walker -> next = next;
+    printPrimes();
     return 0;
 }
 int isTruncatablePrime(int i)
@@ -88,4 +103,13 @@ int isTruncatablePrime(int i)
     i = orig;
     while((out & isPrime(i /= 10)) && i);
     return out;
+}
+
+void printPrimes()
+{
+    struct ListNode *walker = &primes;
+    printf("%d\n", walker -> value);
+    while((walker = walker -> next))
+        printf("%d\n", walker -> value);
+    printf("\n\n\n");
 }
