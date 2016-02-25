@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from os import listdir
 from sys import argv
 from re import compile
@@ -24,4 +25,3 @@ if "-f" in argv or not OUTPUT_NAME in listdir():
         w.write(": \n".join(files))
 else:
     print("Use masterGenerator.py -f to force a new file")
-    input("Press ENTER to continue ...")
