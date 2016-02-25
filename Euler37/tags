@@ -5,12 +5,11 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 ListNode	./main.c	/^struct ListNode {$/;"	s	file:
-MAX	./main.c	4;"	d	file:
+MAX	./main.c	3;"	d	file:
 isPrime	./main.c	/^int isPrime(int i)$/;"	f
 isTruncatablePrime	./main.c	/^int isTruncatablePrime(int i)$/;"	f
 main	./main.c	/^int main(int argc, char** argv)$/;"	f
 next	./main.c	/^    struct ListNode *next;$/;"	m	struct:ListNode	typeref:struct:ListNode::ListNode	file:
 primes	./main.c	/^struct ListNode primes;$/;"	v	typeref:struct:ListNode
-printPrimes	./main.c	/^void printPrimes()$/;"	f
 push	./main.c	/^int push(struct ListNode *list, int toAdd)$/;"	f
 value	./main.c	/^    int value;$/;"	m	struct:ListNode	file:
