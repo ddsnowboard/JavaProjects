@@ -1,2 +1,2 @@
 siteGenerator : siteGenerator.c
-	gcc -Wall -g siteGenerator.c -o siteGenerator
+	gcc -Wall -g -O3 siteGenerator.c -o siteGenerator
