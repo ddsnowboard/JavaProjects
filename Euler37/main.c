@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX 10000
+#define MAX 10000000
 struct ListNode {
     int value;
     struct ListNode *next;
@@ -21,27 +21,26 @@ int main(int argc, char** argv)
     push(&primes, 5);
     push(&primes, 7);
 
-    printf("Is 3937 truncatably prime? %d", isTruncatablePrime(3797));
-    // int tot = 0;
-    // int i = 10;
-    // int truncatablePrimes[11];
-    // int primesLen = 0;
-    // for(; i < MAX; ++i)
-    // {
-    //     if(isTruncatablePrime(i))
-    //     {
-    //         printf("%d\n", i);
-    //         tot += i;
-    //         truncatablePrimes[primesLen++] = i;
-    //     }
-    // }
-    // int count = 0;
-    // printf("Primes are: ");
-    // for(; count < primesLen; ++count)
-    // {
-    //     printf("%d, ", truncatablePrimes[count]);
-    // }
-    // printf("The sum is %d\n", tot);
+    int tot = 0;
+    int i = 10;
+    int truncatablePrimes[11];
+    int primesLen = 0;
+    for(; i < MAX; i += 2)
+    {
+        if(isTruncatablePrime(i))
+        {
+            printf("%d\n", i);
+            tot += i;
+            truncatablePrimes[primesLen++] = i;
+        }
+    }
+    int count = 0;
+    printf("Primes are: ");
+    for(; count < primesLen; ++count)
+    {
+        printf("%d, ", truncatablePrimes[count]);
+    }
+    printf("The sum is %d\n", tot);
     return 0;
 }
 
@@ -96,24 +95,18 @@ int isTruncatablePrime(int i)
     int orig = i;
     int out = isPrime(i);
     long counter = 10e9;
+    if(!out)
+        return 0;
     // Bring down counter...
     while(i % counter == i)
         counter /= 10;
 
-    while((out = out && isPrime(i % counter)) && counter > 1)
+    while(counter > 1 && out)
     {
-        printf("Out is for %d\n", i);
+        out = out && isPrime(i % counter);
         counter /= 10;
     }
     i = orig;
-    if(out)
-    {
-        printf("i is %d", i);
-        printf("Out is true");
-    }
-    while((out = out && isPrime(i /= 10)) && i)
-    {
-        printf("i is %d", i);
-    }
+    while(i > 10 && (out = out && isPrime(i /= 10)));
     return out;
 }
