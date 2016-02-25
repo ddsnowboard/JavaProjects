@@ -1,0 +1,60 @@
+01 Overture ALL: 
+03-01 Six Months: 
+03-02 Cue 221: 
+04 Six MonthsPlayoff: 
+05-01 Goodbye Old: 
+05-02 Cue 41: 
+06-01 Heart: 
+06-02 Cue 2: 
+06-03 Cue 3 Begin: 
+07 Heart Encore: 
+07a-01 Joe At Bat: 
+07a-02 Cue 51.2: 
+07a-03 Cue 59.2: 
+07a-04 Cue 74: 
+08-09 Shoeless-Dance: 
+10 Man Doesnt: 
+11 Woo-Woo: 
+12 Brains: 
+13 Brains Playoff: 
+14 Man Doesnt REP: 
+14a Scene Chnge: 
+15 Lola: 
+17 Heart reprise: 
+18 Fanfare: 
+19 Pain: 
+19a Pain Playoff: 
+20-01 Act 1 Finale: 
+20-02 Cue timp hit: 
+20-03 Cue 10.4: 
+22 New Entracte: 
+24-01 Game: 
+24-02 Cue 37: 
+24-03 Cue 39: 
+24-04 Cue 41.4: 
+24-05 Cue 81: 
+24-06 Cue 83: 
+24-07 Cue 85.2: 
+24-08 Cue 168: 
+24-09 Cue 186: 
+24-10 Cue 188: 
+24-11 Cue 190.2: 
+24-12 Cue 196: 
+24a Game Playoff: 
+25-01 Near To You: 
+25-02 Cue 51: 
+25-03 Cue 76.3: 
+25-04 Cue 99: 
+25a Nev Feel Sorry: 
+26-01 Good Old: 
+26-02 Cue 26: 
+26-03 Cue 50: 
+27 Courtroom SC: 
+27a Limbo: 
+28 Two Lost Souls: 
+28a LS Playoff: 
+28b Old Joe Again: 
+28c Sports Wrap: 
+31-32 Joe-Finale: 
+33 Bows: 
+34 New Exit
