@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     push(&primes, 7);
 
     int tot = 0;
-    int i = 10;
+    int i = 11;
     int truncatablePrimes[11];
     int primesLen = 0;
     for(; i < MAX; i += 2)
