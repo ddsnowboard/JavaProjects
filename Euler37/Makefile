@@ -1,6 +1,6 @@
 .PHONY: clean tags
 all : main.c
-	gcc -Wall -g main.c -o run
+	gcc -Wall -g -O3 main.c -o run
 clean : 
 	$(RM) run
 tags : 
