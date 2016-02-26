@@ -81,17 +81,18 @@ int isPrime(int i)
 }
 int push(struct ListNode *list, int toAdd)
 {
-    struct ListNode *walker = list;
-    while(walker -> next)
-        walker = walker -> next;
+    struct ListNode *walker = &tip;
     struct ListNode *next = malloc(sizeof(struct ListNode));
     next -> value = toAdd;
     next -> next = NULL;
     walker -> next = next;
+    tip = *next;
     return 0;
 }
 int isTruncatablePrime(int i)
 {
+    if(i % 10 == 9)
+        return 0;
     int orig = i;
     int out = isPrime(i);
     long counter = 10e9;
