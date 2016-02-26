@@ -5,8 +5,9 @@ struct ListNode {
     int value;
     struct ListNode *next;
 };
+
 struct ListNode primes;
-struct ListNode tip;
+struct ListNode *tip;
 int isPrime(int i);
 int push(struct ListNode *list, int toAdd);
 int isTruncatablePrime(int i);
@@ -18,7 +19,7 @@ int main(int argc, char** argv)
     ptr -> value = 2;
     ptr -> next = NULL;
     primes = *ptr;
-    tip = *ptr;
+    tip = &primes;
     push(&primes, 3);
     push(&primes, 5);
     push(&primes, 7);
@@ -58,7 +59,7 @@ int isPrime(int i)
     }
     else
     {
-        // Skip 1 and 2
+        // Skip 2, because we already took care of it.
         struct ListNode walker = *(primes.next);
         while(walker.next && i % walker.value != 0)
         {
@@ -83,12 +84,11 @@ int isPrime(int i)
 }
 int push(struct ListNode *list, int toAdd)
 {
-    struct ListNode *walker = &tip;
     struct ListNode *next = malloc(sizeof(struct ListNode));
     next -> value = toAdd;
     next -> next = NULL;
-    walker -> next = next;
-    tip = *next;
+    tip -> next = next;
+    tip = next;
     return 0;
 }
 int isTruncatablePrime(int i)
