@@ -6,6 +6,7 @@ struct ListNode {
     struct ListNode *next;
 };
 struct ListNode primes;
+struct ListNode tip;
 int isPrime(int i);
 int push(struct ListNode *list, int toAdd);
 int isTruncatablePrime(int i);
@@ -14,9 +15,10 @@ int main(int argc, char** argv)
 {
     // Add sample primes
     struct ListNode *ptr = malloc(sizeof(struct ListNode));
+    ptr -> value = 2;
+    ptr -> next = NULL;
     primes = *ptr;
-    primes.value = 2;
-    primes.next = NULL;
+    tip = *ptr;
     push(&primes, 3);
     push(&primes, 5);
     push(&primes, 7);
