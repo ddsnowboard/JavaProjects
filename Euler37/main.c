@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX 10000000
+#define MAX 1000000
 struct ListNode {
     int value;
     struct ListNode *next;
@@ -53,14 +53,13 @@ int isPrime(int i)
      * Returns 1 if prime, 0 otherwise 
      * This function only works if it gets each number in order
      */ 
-    if(i % 2 == 0 || i == 0 || i == 1)
+    if((i != 2 && i % 2 == 0) || i == 0 || i == 1)
     {
         return 0;
     }
     else
     {
-        // Skip 2, because we already took care of it.
-        struct ListNode walker = *(primes.next);
+        struct ListNode walker = primes;
         while(walker.next && i % walker.value != 0)
         {
             walker = *walker.next;
