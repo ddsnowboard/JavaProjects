@@ -1,6 +1,6 @@
 #lang racket
-(define nextFib n l 
+(define (nextFib n l)
   (if (= n 0) l 
-    ((cons (+ (list-ref (- (length l) 1)) (list-ref (- (length l) 1))) l))))
-(display (for/sum ([i (lambda (n) 
-                        (let ([a 1] [b 2])
+    (nextFib (- n 1) (append* l (+ (list-ref l (- (length l) 1)) (list-ref  l (- (length l) 2)))))))
+(display (for/sum ([i (nextFib 20 '(1 2))]) i))
+
