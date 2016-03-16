@@ -1,6 +1,9 @@
 #lang racket
-(define (nextFib n l)
-  (if (= n 0) l 
-    (nextFib (- n 1) (append* l (+ (list-ref l (- (length l) 1)) (list-ref  l (- (length l) 2)))))))
-(display (for/sum ([i (nextFib 20 '(1 2))]) i))
-
+(define (smallFibs l)
+  (define (nextFib li)
+    (+ (last li) (list-ref li (- (length li) 2))))
+  (define next (nextFib l))
+  (if (<= next 4000000)
+    (set! l (smallFibs (append l next)))
+    (l)))
+(display (for/sum ([i (smallFibs '(1 2))]) i))
