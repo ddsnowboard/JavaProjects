@@ -1,4 +1,4 @@
 c : main.c
-	gcc -Wall -g -std=c99 main.c -lm -o run
+	gcc -Wall -g main.c -lm -o run
 clean :
 	$(RM) run
