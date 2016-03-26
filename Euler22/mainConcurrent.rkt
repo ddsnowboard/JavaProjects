@@ -74,4 +74,4 @@
                      ([i (runWithFuture lNames)]) 
                      (touch i))))
   (display (for/sum ([i scores]) i)))
-(visualize-futures-thunk mainFunc)
+(mainFunc)
