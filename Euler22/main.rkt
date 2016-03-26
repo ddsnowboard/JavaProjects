@@ -54,10 +54,11 @@
   (helper l 1))
 
 (define (mainFunc)
-(define input (open-input-file "input.txt"))
-(define sNames (read-line input))
-(close-input-port input)
-(define lNames (sort (string-split (list->string (remove* '(#\") (string->list sNames))) ",") string<?))
-(define scores (multiplyByPlace (for/list ([i lNames]) (scoreWord i))))
-(display (for/sum ([i scores]) i)))
-(profile-thunk mainFunc #:repeat 50)
+  ; This exists so it is easier to do profiling and stuff
+  (define input (open-input-file "input.txt"))
+  (define sNames (read-line input))
+  (close-input-port input)
+  (define lNames (sort (string-split (list->string (remove* '(#\") (string->list sNames))) ",") string<?))
+  (define scores (multiplyByPlace (for/list ([i lNames]) (scoreWord i))))
+  (display (for/sum ([i scores]) i)))
+(mainFunc)

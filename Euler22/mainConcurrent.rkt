@@ -64,6 +64,7 @@
 (define sNames (read-line input))
 (close-input-port input)
 (define (mainFunc)
+  ; This exists so it is easier to do profiling and stuff
   (define lNames (sort 
                    (string-split 
                      (list->string 
