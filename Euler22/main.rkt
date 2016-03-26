@@ -4,6 +4,7 @@
 ; 
 ; What is the total of all the name scores in the file?
 #lang racket
+(require profile)
 (define (index needle haystack)
   (define (helper needle haystack n)
     (if (>= n (string-length haystack))
@@ -42,7 +43,8 @@
   (hash-ref scores (string letter)))
 
 (define (scoreWord str)
-  (for/sum ([j (string->list str)]) (score j)))
+  (define l (string->list str))
+  (for/sum ([j l]) (score j)))
 
 (define (multiplyByPlace l)
   (define (helper l n)
@@ -51,9 +53,11 @@
       (cons (* (car l) n) (helper (cdr l) (+ 1 n)))))
   (helper l 1))
 
+(define (mainFunc)
 (define input (open-input-file "input.txt"))
 (define sNames (read-line input))
 (close-input-port input)
 (define lNames (sort (string-split (list->string (remove* '(#\") (string->list sNames))) ",") string<?))
 (define scores (multiplyByPlace (for/list ([i lNames]) (scoreWord i))))
-(display (for/sum ([i scores]) i))
+(display (for/sum ([i scores]) i)))
+(profile-thunk mainFunc #:repeat 50)
