@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package euler22;
 
 import java.io.File;
@@ -13,15 +8,7 @@ import java.util.Collections;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-/**
- *
- * @author ddsnowboard
- */
 public class Euler22 {
-
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) throws FileNotFoundException {
         int total = 0;
         int currScore;
@@ -40,10 +27,7 @@ public class Euler22 {
                 currScore += currName.charAt(j)-64;
             }
             total += currScore * (i + 1);
-            if(currName.equals("COLIN"))
-                System.out.printf("Found Colin; score is %d, spot is %d%n", currScore, i+1);
         }
         System.out.println(total);
     }
-
 }
