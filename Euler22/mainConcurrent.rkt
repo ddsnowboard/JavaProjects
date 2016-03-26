@@ -4,9 +4,8 @@
 ; 
 ; What is the total of all the name scores in the file?
 #lang racket
-(require profile)
-(require future-visualizer)
-(require racket/future)
+(require profile
+ racket/future)
 (define (index needle haystack)
   (define (helper needle haystack n)
     (if (>= n (string-length haystack))
