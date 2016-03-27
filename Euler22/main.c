@@ -42,18 +42,18 @@ int main(int argc, char** argv)
 void push(char *val)
 {
     struct Node *curr = head;
-    struct Node new;
-    new.val = val;
-    new.next = NULL;
+    struct Node *new = (struct Node *) malloc(sizeof(struct Node));
+    new->val = val;
+    new->next = NULL;
     if(head == NULL)
     {
         printf("Head was null; reassigning to %s\n", val);
-        head = &new;
+        head = new;
         return;
     }
     while(curr->next != NULL)
         curr = curr->next;
-    curr->next = &new;
+    curr->next = new;
 }
 
 char* get(int idx)
