@@ -11,6 +11,7 @@ struct Node *head;
 
 void push(char *val);
 char* get(int idx);
+void printList();
 
 int main(int argc, char** argv)
 {
@@ -64,4 +65,14 @@ char* get(int idx)
         curr = curr->next;
     }
     return curr->val;
+}
+
+void printList(void)
+{
+    struct Node *curr = head;
+    while(curr->next != NULL)
+    {
+        printf("%s\n", curr->val);
+        curr = curr->next;
+    }
 }
