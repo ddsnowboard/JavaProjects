@@ -173,6 +173,8 @@ void sort(struct Node *first, struct Node *last)
         sorted = 1;
         do
         {
+            if(curr == NULL)
+                printf("Something bad happened!\n");
             if(compare(curr->prev, curr) > 0)
             {
                 swap(curr->prev, curr);
