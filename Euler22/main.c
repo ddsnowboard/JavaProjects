@@ -167,28 +167,17 @@ int sliceLength(struct Node *first, struct Node *last)
 
 void sort(struct Node *first, struct Node *last)
 {
-    if(first == last)
-    {
-        return;
-    }
-    else
-    {
-        struct Node *pivot = last;
-        struct Node *curr = first;
-        do{
-            if(compare(curr, pivot) > 0)
+    int sorted = 1;
+    struct Node *curr = first->next;
+    do{
+        sorted = 1;
+        do
+        {
+            if(compare(curr->prev, curr) > 0)
             {
-                // Lomuto partition scheme (?)
-                // This might work fine, but if the pivot is an end, everything falls apart. How do I fix this? I dunno. Maybe tell it to swap with 
-                // next instead of prev. Who knows. 
-                char* temp = curr->val;
-                curr->val = pivot->prev->val;
-                pivot->prev->val = pivot->val;
-                pivot->val = temp;
-                pivot = pivot->prev;
+                swap(curr->prev, curr);
+                sorted = 0;
             }
         } while((curr = curr->next) != NULL);
-        sort(first, pivot->prev);
-        sort(pivot->next, last);
-    }
+    } while(!sorted);
 }
