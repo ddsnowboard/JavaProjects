@@ -18,7 +18,9 @@ void printList();
 void swap(struct Node *a, struct Node *b);
 void swapIdx(int a, int b);
 int compare(struct Node *a, struct Node *b);
-void sort(struct Node *head, struct Node *tail);
+void sort(struct Node *first, struct Node *last);
+int length(struct Node *list);
+int sliceLength(struct Node *first, struct Node *last);
 
 int main(int argc, char** argv)
 {
@@ -43,6 +45,7 @@ int main(int argc, char** argv)
             currString[currStrLen++] = next;
         }
     }
+    sort(head, tail);
     printList();
     return 0; 
 }
@@ -138,7 +141,54 @@ int compare(struct Node *a, struct Node *b)
     return strcmp(a->val, b->val);
 }
 
-void sort(struct Node *head, struct Node *tail)
+int length(struct Node *list)
 {
+    if(list == NULL)
+        return 0;
+    int out = 0;
+    struct Node *curr = list;
+    do
+        out++;
+    while((curr = curr->next) != NULL);
+    return out;
+}
 
+int sliceLength(struct Node *first, struct Node *last)
+{
+    if(first == last)
+        return 1;
+    int out = 0;
+    struct Node *curr = first;
+    do
+        out++;
+    while((curr = curr->next) != last);
+    return out;
+}
+
+void sort(struct Node *first, struct Node *last)
+{
+    if(first == last)
+    {
+        return;
+    }
+    else
+    {
+        struct Node *pivot = last;
+        struct Node *curr = first;
+        do{
+            if(compare(curr, pivot) > 0)
+            {
+                // Lomuto partition scheme (?)
+                // This might work fine, but if the pivot is an end, everything falls apart. How do I fix this? I dunno. Maybe tell it to swap with 
+                // next instead of prev. Who knows. 
+                char* temp = curr->val;
+                curr->val = pivot->prev->val;
+                pivot->prev->val = pivot->val;
+                pivot->val = temp;
+                pivot = pivot->prev;
+            }
+        } while((curr = curr->next) != NULL);
+        sort(first, pivot->prev);
+        sort(pivot->next, last);
+    }
 }
