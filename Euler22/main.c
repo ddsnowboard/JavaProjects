@@ -21,6 +21,7 @@ int compare(struct Node *a, struct Node *b);
 void sort(struct Node *first, struct Node *last);
 int length(struct Node *list);
 int sliceLength(struct Node *first, struct Node *last);
+int score(char *word);
 
 int main(int argc, char** argv)
 {
@@ -47,6 +48,13 @@ int main(int argc, char** argv)
     }
     sort(head, tail);
     // printList();
+    long total = 0;
+    struct Node *curr = head;
+    int idx = 1;
+    do{
+        total += score(curr->val) * idx++;
+    } while((curr = curr->next) != NULL);
+    printf("Output was %ld\n", total);
     return 0; 
 }
 
@@ -171,11 +179,11 @@ void sort(struct Node *first, struct Node *last)
     do{
         sorted = 1;
         curr = first->next;
-        while(curr->next != NULL)
+        while(curr != NULL)
         {
             if(curr == NULL)
                 printf("Something bad happened!\n");
-            if(compare(curr->prev, curr) < 0)
+            if(compare(curr->prev, curr) > 0)
             {
                 swap(curr->prev, curr);
                 sorted = 0;
@@ -183,4 +191,16 @@ void sort(struct Node *first, struct Node *last)
             curr = curr->next;
         }
     } while(!sorted);
+}
+
+int score(char *word)
+{
+    char c;
+    int i = 0;
+    int out = 0;
+    while((c = word[i++]))
+    {
+        out += c - 'A' + 1;
+    }
+    return out;
 }
