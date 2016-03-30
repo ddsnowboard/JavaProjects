@@ -46,7 +46,7 @@ int main(int argc, char** argv)
         }
     }
     sort(head, tail);
-    printList();
+    // printList();
     return 0; 
 }
 
@@ -57,7 +57,6 @@ void push(char *val)
     new->next = NULL;
     if(head == NULL)
     {
-        printf("Head was null; reassigning to %s\n", val);
         new->prev = NULL;
         head = new;
         tail = new;
@@ -171,15 +170,17 @@ void sort(struct Node *first, struct Node *last)
     struct Node *curr = first->next;
     do{
         sorted = 1;
-        do
+        curr = first->next;
+        while(curr->next != NULL)
         {
             if(curr == NULL)
                 printf("Something bad happened!\n");
-            if(compare(curr->prev, curr) > 0)
+            if(compare(curr->prev, curr) < 0)
             {
                 swap(curr->prev, curr);
                 sorted = 0;
             }
-        } while((curr = curr->next) != NULL);
+            curr = curr->next;
+        }
     } while(!sorted);
 }
