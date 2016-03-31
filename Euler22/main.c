@@ -52,8 +52,10 @@ int main(int argc, char** argv)
     struct Node *curr = head;
     int idx = 1;
     do{
+        printf("The current word is %s\n", curr->val);
         total += score(curr->val) * idx++;
     } while((curr = curr->next) != NULL);
+    printf("curr is %s\n", curr->val);
     printf("Output was %ld\n", total);
     return 0; 
 }
@@ -105,17 +107,17 @@ void printList(void)
 {
     printf("First, forward\n");
     struct Node *curr = head;
-    while((curr = curr->next) != NULL)
+    do
     {
         printf("%s\n", curr->val);
-    }
+    } while((curr = curr->next) != NULL);
     printf("\n\n\n\nNow, backward\n");
     curr = tail;
-    while(curr->prev != NULL)
+    do
     {
         printf("%s\n", curr->val);
         curr = curr->prev;
-    }
+    } while(curr != NULL);
 }
 
 void swap(struct Node *a, struct Node *b)
