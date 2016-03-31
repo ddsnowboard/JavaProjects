@@ -46,16 +46,15 @@ int main(int argc, char** argv)
             currString[currStrLen++] = next;
         }
     }
+    push(currString);
     sort(head, tail);
     // printList();
     long total = 0;
     struct Node *curr = head;
     int idx = 1;
     do{
-        printf("The current word is %s\n", curr->val);
         total += score(curr->val) * idx++;
     } while((curr = curr->next) != NULL);
-    printf("curr is %s\n", curr->val);
     printf("Output was %ld\n", total);
     return 0; 
 }
@@ -202,7 +201,7 @@ int score(char *word)
     int out = 0;
     while((c = word[i++]))
     {
-        out += c - 'A' + 1;
+        out += (c - 'A' + 1);
     }
     return out;
 }
