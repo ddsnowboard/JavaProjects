@@ -60,5 +60,6 @@
   (close-input-port input)
   (define lNames (sort (string-split (list->string (remove* '(#\") (string->list sNames))) ",") string<?))
   (define scores (multiplyByPlace (for/list ([i lNames]) (scoreWord i))))
-  (display (for/sum ([i scores]) i)))
+  (display (for/sum ([i scores]) i))
+  (display "\n"))
 (mainFunc)
