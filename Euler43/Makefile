@@ -1,0 +1,2 @@
+all :
+	racket main.rkt
