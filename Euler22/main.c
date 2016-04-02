@@ -173,25 +173,38 @@ int sliceLength(struct Node *first, struct Node *last)
     return out;
 }
 
+int cmp(const void *a, const void *b)
+{
+    struct Node **alpha = (struct Node **)a;
+    struct Node **beta = (struct Node **)b;
+    return compare(*alpha, *beta);
+}
 void sort(struct Node *first, struct Node *last)
 {
-    int sorted = 1;
-    struct Node *curr = first->next;
-    do{
-        sorted = 1;
-        curr = first->next;
-        while(curr != NULL)
-        {
-            if(curr == NULL)
-                printf("Something bad happened!\n");
-            if(compare(curr->prev, curr) > 0)
-            {
-                swap(curr->prev, curr);
-                sorted = 0;
-            }
-            curr = curr->next;
-        }
-    } while(!sorted);
+    int len = length(first);
+    struct Node** arr = malloc(len * sizeof(struct Node*));
+    int i = 0;
+    struct Node *curr = first;
+    do
+    {
+        arr[i] = curr;
+        curr = curr->next;
+    } while(++i < len);
+    qsort(arr, len, sizeof(struct Node*), cmp);
+    head = arr[0];
+    arr[0]->next = arr[1];
+    arr[0]->prev = NULL;
+    i = 0;
+    while(++i < len - 1)
+    {
+        arr[i]->prev = arr[i - 1];
+        arr[i]->next = arr[i + 1];
+    }
+    arr[i]->prev = arr[i - 1];
+    arr[i]->next = NULL;
+    tail = arr[i];
+    free(arr);
+    return;
 }
 
 int score(char *word)
