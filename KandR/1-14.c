@@ -13,7 +13,7 @@ int main(int argc, char** argv)
         lens[i] = 0;
     char curr;
     while((curr = fgetc(in)) != EOF)
-        lens[curr]++;
+        lens[(unsigned int) curr]++;
 
 
     int highest = 0;
