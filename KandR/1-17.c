@@ -13,7 +13,7 @@ int main(int argc, char** argv)
     while(strcmp(curr = getLine(f), "") != 0)
     {
         if(strlen(curr) > 80)
-            printf(curr);
+            printf("%s", curr);
         free(curr);
     }
     return 0;
