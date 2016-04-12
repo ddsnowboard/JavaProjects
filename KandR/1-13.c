@@ -3,6 +3,8 @@
 #define BARCHAR '#'
 #include <stdio.h>
 
+// Vertical histogram of lengths of words in input
+
 int nextLen();
 
 int main(int argc, char** argv)

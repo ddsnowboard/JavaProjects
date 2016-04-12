@@ -3,6 +3,8 @@
 #define BARCHAR '#'
 #include <stdio.h>
 
+// Character frequency histogram
+
 int main(int argc, char** argv)
 {
     FILE *in = argc == 1 ? stdin : fopen(argv[1], "r");

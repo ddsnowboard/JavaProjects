@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Write a program to remove trailing blanks and tabs from each line of input, 
+// and to delete entirely blank lines.
+
 int main(int argc, char** argv)
 {
     size_t SIZE = 0;
