@@ -10,6 +10,7 @@
 void insert(char *s, int idx, char toInsert, int times);
 void unshift(char *s, int idx);
 void detab(char *line);
+char *embiggen(char *s, char toCount, int factor);
 
 int main(int argc, char **argv)
 {
@@ -17,6 +18,7 @@ int main(int argc, char **argv)
     size_t size = 0;
     while(getline(&line, &size, stdin) != -1)
     {
+        line = embiggen(line, '\t', TABSTOP);
         detab(line);
         printf("%s", line);
         free(line);
@@ -29,16 +31,17 @@ int main(int argc, char **argv)
 
 void detab(char *line)
 {
+    // If you don't have enough memory allocated to hold the end result, you're screwwwwwwwwwed
     char c = line[0];
     int i = 0;
     do
     {
         if(c == '\t')
         {
-            line = (char *) realloc((void *) line, strlen(line) + 5);
             unshift(line, i);
             insert(line, i, ' ', TABSTOP - (i % TABSTOP));
             detab(line);
+            return;
         }
     } while((c = line[++i]));
     return;
@@ -72,3 +75,12 @@ void unshift(char *s, int idx)
     } while(s[++idx]);
 }
 
+char *embiggen(char *s, char toCount, int factor)
+{
+    // This function allocates enough memory to hold a maximum factor characters replacing each toCount
+    int count = 0;
+    while(*s++)
+        if(*s == toCount)
+            count++;
+    return (char *) realloc((void *)s, strlen(s) + factor * count);
+}
