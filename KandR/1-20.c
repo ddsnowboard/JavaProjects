@@ -36,6 +36,7 @@ void detab(char *line)
         if(c == '\t')
         {
             line = (char *) realloc((void *) line, strlen(line) + 5);
+            unshift(line, i);
             insert(line, i, ' ', TABSTOP - (i % TABSTOP));
             detab(line);
         }
@@ -65,6 +66,9 @@ void insert(char *s, int idx, char toInsert, int times)
 
 void unshift(char *s, int idx)
 {
-    // This should remove a character and unshift everything.
+    do
+    {
+        s[idx] = s[idx + 1];
+    } while(s[++idx]);
 }
 
