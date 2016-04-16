@@ -78,9 +78,10 @@ void unshift(char *s, int idx)
 char *embiggen(char *s, char toCount, int factor)
 {
     // This function allocates enough memory to hold a maximum factor characters replacing each toCount
+    char *walker = s;
     int count = 0;
-    while(*s++)
-        if(*s == toCount)
+    while(*walker++)
+        if(*walker == toCount)
             count++;
     return (char *) realloc((void *)s, strlen(s) + factor * count);
 }
