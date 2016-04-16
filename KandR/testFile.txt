@@ -1,4 +1,5 @@
 	|	|	|	|	|	|	|
+This shou	ld line up wi	th the bars ab	ove
 
 This is a test line with lots of spaces         
 
@@ -7,5 +8,3 @@ This one will have	tabs
 This line should be the same 
 
 There should be nothing between these lines
-
-This shou	ld line up wi	th the bars ab	ove
