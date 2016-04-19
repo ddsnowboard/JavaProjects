@@ -25,3 +25,21 @@ void fold(char **line)
 {
 
 }
+
+void insert(char *s, int idx, char toInsert, int times)
+{
+    if(times == 0)
+        return;
+    char last = s[idx];
+    int index = idx;
+    s[idx] = toInsert;
+    ++idx;
+    char temp;
+    do
+    {
+        temp = s[idx];
+        s[idx] = last;
+        last = temp;
+    } while(s[idx++] != '\0');
+    insert(s, index, toInsert, --times);
+}
