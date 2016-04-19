@@ -49,8 +49,6 @@ void detab(char *line)
 
 void insert(char *s, int idx, char toInsert, int times)
 {
-    // Implement this function. It should insert toInsert into s at idx times times by shifting everything
-    // and then recursing.
     if(times == 0)
         return;
     char last = s[idx];
