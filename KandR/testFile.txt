@@ -1,4 +1,4 @@
-	|	|	|	|	|	|	|
+	|	|	|	|	|	|	|      80 characters-> | 
 This shou	ld line up wi	th the bars ab	ove
 
 This is a test line with lots of spaces         
@@ -8,3 +8,7 @@ This one will have	tabs
 This line should be the same 
 
 There should be nothing between these lines
+
+This line needs to have a bunch of characters in it. Like, more than 80. Unfortunately, I don't know how I'm 
+going to make up that many characters. Maybe I'll write a poem. Roses are red, violets are blue, this keyboard is loud, 
+but what can you do? 
