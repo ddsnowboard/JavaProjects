@@ -1,4 +1,6 @@
 #define MAXLEN 80
+#include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 // Wirte a program to "fold" long input lines into two or more shorter lines after the last non-blank
@@ -7,6 +9,10 @@
 
 void fold(char **line);
 void insert(char *s, int idx, char toInsert, int times);
+void unshift(char *s, int idx);
+void _fold(char **origPointer, char **line);
+void chomp(char *line);
+int isPrintableCharacter(char c);
 
 int main(int argc, char **argv)
 {
@@ -14,16 +20,50 @@ int main(int argc, char **argv)
     size_t size = 0;
     while(getline(&line, &size, stdin) != -1)
     {
-        fold(line);
+        chomp(line);
+        fold(&line);
         printf("%s", line);
         line = NULL;
         size = 0;
     }
+    return 0;
 }
 
 void fold(char **line)
 {
+    _fold(line, line);
+}
 
+void _fold(char **origPointer, char **line)
+{
+    int lastCharIndex = 0;
+    char *s = *line;
+    int i = 0;
+    char curr;
+    while((curr = s[i++]))
+    {
+        if(i >= MAXLEN)
+        {
+            if(lastCharIndex == 0)
+            {
+                (*origPointer) = realloc(*origPointer, strlen(*origPointer) + 3);
+                insert(s, lastCharIndex + 1, '-', 1);
+                insert(s, lastCharIndex + 1, '\n', 1);
+            }
+            else
+            {
+                while(!(isPrintableCharacter(s[lastCharIndex + 1]) || s[lastCharIndex + 1] == '\n'))
+                    unshift(*line, lastCharIndex + 1);
+                insert(s, lastCharIndex + 1, '\n', 1);
+            }
+            // _fold(origPointer, &(s + lastCharIndex + 2));
+            char *newString = &(s[lastCharIndex + 2]);
+            _fold(origPointer, &newString);
+            break;
+        }
+        else if(isPrintableCharacter(curr))
+            lastCharIndex = i;
+    }
 }
 
 void insert(char *s, int idx, char toInsert, int times)
@@ -42,4 +82,30 @@ void insert(char *s, int idx, char toInsert, int times)
         last = temp;
     } while(s[idx++] != '\0');
     insert(s, index, toInsert, --times);
+}
+
+void chomp(char *line)
+{
+    int lastCharIndex = 0;
+    int i = 0;
+    char curr;
+    while((curr = line[i++]))
+    {
+        if(isPrintableCharacter(curr))
+            lastCharIndex = i;
+    }
+    line[lastCharIndex + 1] = '\0';
+}
+
+int isPrintableCharacter(char c)
+{
+    return (c <= '~' && c >= '!');
+}
+
+void unshift(char *s, int idx)
+{
+    do
+    {
+        s[idx] = s[idx + 1];
+    } while(s[++idx]);
 }
