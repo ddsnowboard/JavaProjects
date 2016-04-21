@@ -22,7 +22,7 @@ int main(int argc, char **argv)
     {
         chomp(line);
         fold(&line);
-        printf("%s", line);
+        printf("%s\n", line);
         line = NULL;
         size = 0;
     }
@@ -52,7 +52,7 @@ void _fold(char **origPointer, char **line)
             }
             else
             {
-                line[lastBreakableIndex] = "\n";
+                s[lastBreakableIndex] = '\n';
             }
             char *newString = &(s[lastBreakableIndex + 1]);
             _fold(origPointer, &newString);
