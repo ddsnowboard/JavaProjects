@@ -36,34 +36,31 @@ void fold(char **line)
 
 void _fold(char **origPointer, char **line)
 {
-    int lastCharIndex = 0;
+    int lastBreakableIndex = 0;
     char *s = *line;
     int i = 0;
-    char curr;
-    while((curr = s[i++]))
+    char curr = s[i];
+    do
     {
         if(i >= MAXLEN)
         {
-            if(lastCharIndex == 0)
+            if(lastBreakableIndex == 0)
             {
                 (*origPointer) = realloc(*origPointer, strlen(*origPointer) + 3);
-                insert(s, lastCharIndex + 1, '-', 1);
-                insert(s, lastCharIndex + 1, '\n', 1);
+                insert(s, lastBreakableIndex + 1, '-', 1);
+                insert(s, lastBreakableIndex + 1, '\n', 1);
             }
             else
             {
-                while(!(isPrintableCharacter(s[lastCharIndex + 1]) || s[lastCharIndex + 1] == '\n'))
-                    unshift(*line, lastCharIndex + 1);
-                insert(s, lastCharIndex + 1, '\n', 1);
+                line[lastBreakableIndex] = "\n";
             }
-            // _fold(origPointer, &(s + lastCharIndex + 2));
-            char *newString = &(s[lastCharIndex + 2]);
+            char *newString = &(s[lastBreakableIndex + 1]);
             _fold(origPointer, &newString);
             break;
         }
-        else if(isPrintableCharacter(curr))
-            lastCharIndex = i;
-    }
+        else if(!isPrintableCharacter(curr))
+            lastBreakableIndex = i;
+    } while((curr = s[++i]));
 }
 
 void insert(char *s, int idx, char toInsert, int times)
