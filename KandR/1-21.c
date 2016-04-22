@@ -47,8 +47,9 @@ void _fold(char **origPointer, char **line)
             if(lastBreakableIndex == 0)
             {
                 (*origPointer) = realloc(*origPointer, strlen(*origPointer) + 3);
-                insert(s, lastBreakableIndex + 1, '-', 1);
+                lastBreakableIndex = MAXLEN;
                 insert(s, lastBreakableIndex + 1, '\n', 1);
+                insert(s, lastBreakableIndex + 1, '-', 1);
             }
             else
             {
@@ -85,12 +86,12 @@ void chomp(char *line)
 {
     int lastCharIndex = 0;
     int i = 0;
-    char curr;
-    while((curr = line[i++]))
+    char curr = line[i];
+    do
     {
         if(isPrintableCharacter(curr))
             lastCharIndex = i;
-    }
+    } while((curr = line[++i]));
     line[lastCharIndex + 1] = '\0';
 }
 
