@@ -18,7 +18,8 @@ int main(int argc, char **argv)
         do{
             if(curr == '/' && lastChar == '/' && commentable == 1)
             {
-                line[i] = '\0';
+                // We know that i - 1 is the first /, so we remove it.
+                line[i - 1] = '\0';
                 break;
             }
             else if(curr == '\'' || curr == '"')
