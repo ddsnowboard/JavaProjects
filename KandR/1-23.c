@@ -8,6 +8,7 @@ int main(int argc, char **argv)
 {
     char *line = NULL;
     size_t length = 0;
+    int inBlock = 0;
     while(getline(&line, &length, stdin) != -1)
     {
         int i = 0;
@@ -16,31 +17,45 @@ int main(int argc, char **argv)
         int commentable = 1;
         char beginningDelimiter;
         do{
-            if(curr == '/' && lastChar == '/' && commentable == 1)
+            if(!(inBlock == 1))
             {
-                // We know that i - 1 is the first /, so we remove it.
-                line[i - 1] = '\0';
-                break;
-            }
-            else if(curr == '\'' || curr == '"')
-            {
-                if(!(lastChar == '\\'))
+                if(curr == '/' && lastChar == '/' && commentable == 1)
                 {
-                    if(commentable)
+                    // We know that i - 1 is the first /, so we remove it.
+                    line[i - 1] = '\0';
+                    break;
+                }
+                else if(curr == '*' && lastChar == '/')
+                {
+                    inBlock = 1;
+                }
+                else if(curr == '\'' || curr == '"')
+                {
+                    if(!(lastChar == '\\'))
                     {
-                        commentable = 0;
-                        beginningDelimiter = curr;
-                    }
-                    else
-                    {
-                        if(beginningDelimiter == curr)
-                            commentable = 1;
+                        if(commentable)
+                        {
+                            commentable = 0;
+                            beginningDelimiter = curr;
+                        }
+                        else
+                        {
+                            if(beginningDelimiter == curr)
+                                commentable = 1;
+                        }
                     }
                 }
             }
+            else
+            {
+                if(curr == '/' && lastChar == '*')
+                    inBlock = 0;
+                else
+                    line[0] = '\0';
+            }
             lastChar = curr;
         } while((curr = line[++i]));
-        printf("%s\n", line);
+        printf("%s", line);
     }
     return 0;
 }
