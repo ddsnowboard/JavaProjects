@@ -6,6 +6,9 @@ fast :
 	$(MAKE) all -j $(PROCESSORS)
 all : $(files)
 
+1-24.o:
+	gcc 1-24.c hashTable.c -g -o $@ -Wall
+
 $(files) : 
 	gcc $(subst .o,.c,$@) -g -o $@ -Wall
 clean :

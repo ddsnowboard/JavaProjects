@@ -8,6 +8,6 @@ typedef struct HT_Node **HashTable;
 
 HashTable ht_create(int size);
 
-int *HT_get(HashTable table, char key);
+int *ht_get(HashTable table, char key);
 
-void HT_put(HashTable table, char key, int value);
+void ht_put(HashTable table, char key, int value);
