@@ -20,17 +20,34 @@ struct ht_Table *ht_create(int size)
 int *ht_get(struct ht_Table *table, char key)
 {
     int idx = _hash(table, key);
-    struct ht_Node node = table->table[idx];
-    // This isn't done yet. I'm not really in a good spot to do it though.
-    while(node->next)
+    struct ht_Node *node = &(table->table[idx]);
+    do
     {
-        node = node->next;
-    }
+        if(node->key == key)
+            return &(node->value);
+    } while((node = node->next));
+    return NULL;
 }
 
 void ht_put(struct ht_Table *table, char key, int value)
 {
-
+    int idx = _hash(table, key);
+    struct ht_Node *node = &(table->table[idx]);
+    do
+    {
+        if(node->key == key)
+        {
+            node->value = value;
+            return;
+        }
+    } while(node->next && (node = node->next));
+    // If we've gotten here, we need a new node.
+    struct ht_Node *newNode = (struct ht_Node *) malloc(sizeof(struct ht_Node));
+    newNode->key = key;
+    newNode->value = value;
+    newNode->next = NULL;
+    node->next = newNode;
+    return;
 }
 
 int _hash(struct ht_Table *table, char key)
