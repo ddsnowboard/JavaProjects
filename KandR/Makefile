@@ -12,3 +12,5 @@ $(files) :
 	gcc $(subst .o,.c,$@) -g -o $@ -Wall
 clean :
 	$(RM) *.o
+tags : 
+	zsh -c "ctags -R ./**/*.c(N) ./**/*.py(N) ./**/*.html(N) ./**/*.js(N) ./**/*.java(N)"
