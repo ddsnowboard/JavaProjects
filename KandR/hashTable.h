@@ -1,13 +1,16 @@
-struct HT_Node {
+struct ht_Node {
     char key;
     int value;
-    struct HT_Node *next;
+    struct ht_Node *next;
 };
 
-typedef struct HT_Node **HashTable;
+struct ht_Table {
+    size_t length;
+    struct ht_Node *table;
+};
 
-HashTable ht_create(int size);
+struct ht_Table *ht_create(int size);
 
-int *ht_get(HashTable table, char key);
+int *ht_get(struct ht_Table *table, char key);
 
-void ht_put(HashTable table, char key, int value);
+void ht_put(struct ht_Table *table, char key, int value);

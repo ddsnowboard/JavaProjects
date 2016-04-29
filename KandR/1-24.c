@@ -4,6 +4,6 @@
 
 int main(int argc, char **argv)
 {
-    HashTable table = ht_create(5);
+    struct ht_Table *table = ht_create(5);
     return 0;
 }
