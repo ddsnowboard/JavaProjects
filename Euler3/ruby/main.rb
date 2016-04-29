@@ -1,0 +1,3 @@
+class Primerator
+    @primes = []
+end
