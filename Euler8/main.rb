@@ -4,9 +4,9 @@ DIGITS = 13
 biggest = 0
 
 for i in 0..NUMBER.length - DIGITS - 1
-    product = NUMBER[i...i + DIGITS].each_char.reduce(1) {|acc, l| acc * l.to_i}
-    if product > biggest
-        biggest = product
-    end
+  product = NUMBER[i...i + DIGITS].each_char.reduce(1) {|acc, l| acc * l.to_i}
+  if product > biggest
+    biggest = product
+  end
 end
 puts biggest
