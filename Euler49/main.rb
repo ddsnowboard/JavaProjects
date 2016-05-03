@@ -62,11 +62,15 @@ end
 pm = PrimeMachine.new
 n = 0
 while (n = pm.next_prime) < 10000
+  puts n
   if n < 1000
     next
   else
     if pm.is_prime(n)
       for i in 1...(10000 - n)
+        if i == 3330
+          puts "i is 3330, the first number is #{i + n}, and the second number is #{n + 2 * i}. #{i + n} #{pm.is_prime(i + n) ? "is" : "isn't"} prime, and #{i + 2 * n} #{pm.is_prime(i + 2 * n) ? "is" : "isn't"} prime."
+        end
         if pm.is_prime(n + i) and pm.is_prime(n + 2 * i)
           if is_permutation(n, n + i) and is_permutation(n, n + 2 * i)
             puts "#{n} #{(n + i)} #{(n + 2 * i)}"
