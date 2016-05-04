@@ -27,10 +27,18 @@ class PrimeMachine
   def is_prime(n)
     # You better have already generated all the prime numbers
     # below this one, or else this function won't work.
+    printing = false
+    if n == 4819
+      puts @@primes.index(n)
+      printing = true
+    end
     if @@primes.index(n) != nil
       return true
     end
     for i in @@primes
+      if printing
+        puts i
+      end
       if n % i == 0
         return false
       elsif i > (n / 2)
@@ -42,6 +50,7 @@ class PrimeMachine
 end
 
 def is_permutation(a, b)
+  puts a, b
   nA = 0
   nB = 0
   a.to_s.each_byte do |l|
@@ -69,7 +78,7 @@ while (n = pm.next_prime) < 10000
     if pm.is_prime(n)
       for i in 1...(10000 - n)
         if i == 3330
-          puts "i is 3330, the first number is #{i + n}, and the second number is #{n + 2 * i}. #{i + n} #{pm.is_prime(i + n) ? "is" : "isn't"} prime, and #{i + 2 * n} #{pm.is_prime(i + 2 * n) ? "is" : "isn't"} prime."
+          # puts "i is 3330, the first number is #{i + n}, and the second number is #{n + 2 * i}. #{i + n} #{pm.is_prime(i + n) ? "is" : "isn't"} prime, and #{n + 2 * i} #{pm.is_prime(n + 2 * i) ? "is" : "isn't"} prime."
         end
         if pm.is_prime(n + i) and pm.is_prime(n + 2 * i)
           if is_permutation(n, n + i) and is_permutation(n, n + 2 * i)
