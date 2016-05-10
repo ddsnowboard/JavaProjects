@@ -1,30 +1,49 @@
+#include <stdlib.h>
 #include <stdio.h>
-#define MAX 1000000000
+#include <pthread.h>
+#define MAX 1000000
+#define NUM_THREADS 8
 
 
-int collatz(int);
+void *collatz(void *info);
 
-// int main(int argc, char** argv)
+struct Info {
+    int i;
+};
 int main(int argc, char** argv)
 {
-    int i;
-    for(i = 0;i<MAX;i++)
+    pthread_t threads[NUM_THREADS];
+    struct Info infos[NUM_THREADS];
+    int i = 0;
+    while(i <= MAX)
     {
-        if(collatz(i) != 0)
+        int processor;
+        for(processor = 0; processor < NUM_THREADS; processor++)
         {
-            printf("%d returned 1\n", i);
+            infos[processor].i = i;
+            pthread_create(&threads[processor], NULL, &collatz, (void *) &infos[processor]);
+            i++;
+        }
+        for(processor = 0; processor < NUM_THREADS; processor++)
+        {
+            pthread_join(threads[processor], NULL);
         }
     }
     return 0;
 }
 
 // Returns 0 if Collatz Conjecture works, a number if otherwise.
-int collatz(int i)
+void *collatz(void *info)
 {
-    return 0;
-    int originali = i;
+    struct Info *input = (struct Info *)info;
+    int i = input->i;
+    if(i == 113383)
+        printf("We hit it");
     if(i == 0)
-        return 1;
+    {
+        return NULL;
+    }
+    printf("number is %d\n", i);
     // These are to make sure that we aren't just going in a circle.
     int newest = 0;
     int secondNewest = 0;
@@ -41,17 +60,16 @@ int collatz(int i)
         else
         {
             printf("Something really bad just happened...");
-            return 124;
+            return NULL;
         }
         if(i == newest || i == secondNewest)
         {
-            printf("Doesn't work for %d", originali);
-            return 1;
+            printf("Doesn't work for %d", input->i);
         }
         else 
         {
             secondNewest = newest, newest = i;
         }
     }
-    return 0;
+    return NULL;
 }

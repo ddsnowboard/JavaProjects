@@ -1,4 +1,4 @@
 main : main.c
-	gcc -Wall -g -o main main.c
+	gcc -Wall -g -lpthread -o main main.c
 clean : 
 	$(RM) main
