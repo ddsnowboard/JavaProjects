@@ -45,12 +45,12 @@ def is_permutation(a, b)
   nA = 0
   nB = 0
   a.to_s.each_byte do |l|
-    nA = nA | (2 ** l - '0'.ord)
+    nA = nA | (2 ** (l - '0'.ord))
   end
   b.to_s.each_byte do |l|
-    nB = nB | (2 ** l - '0'.ord)
+    nB = nB | (2 ** (l - '0'.ord))
   end
-  return a == b
+  return nA == nB
 end
 
 pm = PrimeMachine.new
@@ -66,7 +66,7 @@ while (n = pm.next_prime) < 10000
     next
   else
     if pm.is_prime(n)
-      for i in 1...(10000 - n)
+      for i in 1...((10000 - n) / 2)
         if pm.is_prime(n + i) and pm.is_prime(n + 2 * i)
           if is_permutation(n, n + i) and is_permutation(n, n + 2 * i)
             puts "#{n} #{(n + i)} #{(n + 2 * i)}"
