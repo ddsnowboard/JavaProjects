@@ -13,3 +13,5 @@
 *.class
 *.o
 */tags
+*/__pycache__/*
+*.pyc
