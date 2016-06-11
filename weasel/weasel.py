@@ -39,7 +39,7 @@ while s != OUTCOME:
     for i in range(randint(MIN_OFFSPRING, MAX_OFFSPRING)):
         nextGen.append(replicate(s))
     s = min(nextGen, key=lambda x: distance(x, OUTCOME))
-    print(s)
-    print("\n")
+    # print(s)
+    # print("\n")
     generations += 1
 print("It took {} generations".format(generations))
