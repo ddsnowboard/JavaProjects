@@ -4,12 +4,12 @@
 #define LOWEST 40755
 #define BASE_ADD 1
 #define ARRAY_LENGTH 100000
-int search(long *haystack, int length, long needle);
 int fillArrayWithPentagonal(long *arr, int startIdx);
 long pentagonal(long i);
 int isHexagonal(long i);
 int isPentagonal(long i);
 long triangle(long i);
+int search(long *haystack, int startIdx, int endIdx, long needle);
 
 int main(int argc, char **argv)
 {
@@ -45,7 +45,7 @@ int isPentagonal(long i)
     }
     while(nums[length - 1] < i)
         length = fillArrayWithPentagonal(nums, length);
-    return search(nums, length, i);
+    return search(nums, 0, length, i);
 }
 
 long pentagonal(long i)
@@ -71,13 +71,21 @@ long triangle(long i)
     return i * (i + 1) / 2;
 }
 
-int search(long *haystack, int length, long needle)
+int search(long *haystack, int startIdx, int endIdx, long needle)
 {
-    long i;
-    for(i = *haystack; length-- > 0; i = *++haystack)
-    {
-        if(i == needle)
-            return 1;
-    }
-    return 0;
+    int middle = (startIdx + endIdx) / 2;
+    long i = haystack[middle];
+    if(i == needle)
+        return 1;
+    else if(haystack[endIdx - 1] < needle)
+        return 0;
+    else if(startIdx == endIdx - 1)
+        return 0;
+    else if(i < needle)
+        return search(haystack, middle, endIdx, needle);
+    else if(i > needle)
+        return search(haystack, startIdx, middle, needle);
+    printf("Something went wrong with search!");
+    exit(2);
+    return -1;
 }
