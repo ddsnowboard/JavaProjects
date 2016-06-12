@@ -4,30 +4,28 @@
 #define LOWEST 40755
 #define BASE_ADD 1
 #define ARRAY_LENGTH 100000
-int search(int *haystack, int length, int needle);
-int fillArrayWithPentagonal(int *arr, int startIdx);
-int pentagonal(int i);
-int isHexagonal(int i);
-int isPentagonal(int i);
-int triangle(int i);
+int search(long *haystack, int length, long needle);
+int fillArrayWithPentagonal(long *arr, int startIdx);
+long pentagonal(long i);
+int isHexagonal(long i);
+int isPentagonal(long i);
+long triangle(long i);
 
 int main(int argc, char **argv)
 {
-    int n = 1;
-    int out;
-    int newest = 0;
+    long n = 1;
+    long out;
+    long newest = 0;
     do{
         out = triangle(n++);
-        if(out == 157557877)
-            printf("out is %d, and n was %d", out, n - 1);
         if(isHexagonal(out) && isPentagonal(out))
             newest = out;
     }while(newest <= LOWEST);
-    printf("The next number is %d\n", newest);
+    printf("The next number is %ld\n", newest);
     return 0;
 }
 
-int isHexagonal(int i)
+int isHexagonal(long i)
 {
     float inv = (1 + sqrt(1 + 8 * i)) / 4;
     float inv2 = (1 - sqrt(1 + 8 * i)) / 4;
@@ -36,13 +34,13 @@ int isHexagonal(int i)
     return inv > 0 && floor(inv) == inv;
 }
 
-int isPentagonal(int i)
+int isPentagonal(long i)
 {
     static int length = 0;
-    static int *nums = NULL;
+    static long *nums = NULL;
     if(nums == NULL)
     {
-        nums = calloc(ARRAY_LENGTH, sizeof(int));
+        nums = calloc(ARRAY_LENGTH, sizeof(long));
         length = fillArrayWithPentagonal(nums, length);
     }
     while(nums[length - 1] < i)
@@ -50,12 +48,12 @@ int isPentagonal(int i)
     return search(nums, length, i);
 }
 
-int pentagonal(int i)
+long pentagonal(long i)
 {
     return i * (3 * i - 1) / 2;
 }
 
-int fillArrayWithPentagonal(int *arr, int startIdx)
+int fillArrayWithPentagonal(long *arr, int startIdx)
 {
     int currIdx = startIdx;
     if(startIdx + BASE_ADD > ARRAY_LENGTH)
@@ -68,14 +66,14 @@ int fillArrayWithPentagonal(int *arr, int startIdx)
     return currIdx;
 }
 
-int triangle(int i)
+long triangle(long i)
 {
     return i * (i + 1) / 2;
 }
 
-int search(int *haystack, int length, int needle)
+int search(long *haystack, int length, long needle)
 {
-    int i;
+    long i;
     for(i = *haystack; length-- > 0; i = *++haystack)
     {
         if(i == needle)
