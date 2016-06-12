@@ -13,7 +13,7 @@ int search(long *haystack, int startIdx, int endIdx, long needle);
 
 int main(int argc, char **argv)
 {
-    long n = 1;
+    long n = 145;
     long out;
     long newest = 0;
     do{
