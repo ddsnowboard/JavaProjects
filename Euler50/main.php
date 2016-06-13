@@ -25,7 +25,7 @@ function nthPrime($n)
         {
             if(isPrime($counter))
                 array_push($primes, $counter);
-            $counter++;
+            $counter += 2;
         }
     }
     return $primes[$n];
@@ -36,15 +36,16 @@ function nthPrime($n)
 $sequences = array();
 for($i = 7; nthPrime($i) <= MAXIMUM; $i++)
 {
+    $prime = nthPrime($i);
     for($j = 0; $j < $i; $j++)
     {
         $numbers = array();
         $k = $j;
-        while(array_sum($numbers) < nthPrime($i) && $k < $i)
+        while(array_sum($numbers) < $prime && $k < $i)
         {
             array_push($numbers, nthPrime($k++));
         }
-        if(array_sum($numbers) == nthPrime($i))
+        if(array_sum($numbers) == $prime)
             array_push($sequences, $numbers);
     }
 }
