@@ -10,6 +10,10 @@ function isPrime($n)
     {
         if($n % $i == 0)
             return false;
+        // Maybe you can do this with square roots and make up even more time.
+        // I don't know if it works that way though. I have to think about it though.
+        if($i >= .5 * $n)
+            break;
     }
     return true;
 }
@@ -20,7 +24,6 @@ function nthPrime($n)
     {
         // There is something *wrong* with you, PHP
         $counter = end($primes) + 2;
-        reset($primes);
         while(!isset($primes[$n]))
         {
             if(isPrime($counter))
@@ -34,21 +37,27 @@ function nthPrime($n)
 // We'll start at five to avoid the complication of the
 // lower primes. That seems good.
 $sequences = array();
-for($i = 7; nthPrime($i) <= MAXIMUM; $i++)
+$prime = -1;
+for($i = 7; ($prime = nthPrime($i)) <= MAXIMUM; $i++)
 {
-    $prime = nthPrime($i);
     for($j = 0; $j < $i; $j++)
     {
         $numbers = array();
         $k = $j;
-        while(array_sum($numbers) < $prime && $k < $i)
+        $currSum = 0;
+        while($currSum < $prime && $k < $i)
         {
-            array_push($numbers, nthPrime($k++));
+            $currPrime = nthPrime($k++);
+            array_push($numbers, $currPrime);
+            $currSum += $currPrime;
         }
-        if(array_sum($numbers) == $prime)
+        if($currSum == $prime)
             array_push($sequences, $numbers);
     }
 }
+
+
+
 $longest = array();
 foreach($sequences as $s)
 {
