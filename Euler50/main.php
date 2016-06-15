@@ -36,21 +36,27 @@ function nthPrime($n)
 // lower primes. That seems good.
 $sequences = array();
 $prime = -1;
+$numbers = array();
 for($i = 7; ($prime = nthPrime($i)) <= MAXIMUM; $i++)
 {
     for($j = 0; $j < $i; $j++)
     {
-        $numbers = array();
         $k = $j;
         $currSum = 0;
         while($currSum < $prime && $k < $i)
         {
             $currPrime = nthPrime($k++);
-            array_push($numbers, $currPrime);
             $currSum += $currPrime;
         }
         if($currSum == $prime)
+        {
+            for($walker = $j; $walker < $k; $walker++)
+            {
+                array_push($numbers, nthPrime($walker));
+            }
             array_push($sequences, $numbers);
+            $numbers = array();
+        }
     }
 }
 
