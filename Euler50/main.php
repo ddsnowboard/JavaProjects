@@ -2,6 +2,7 @@
 # define("MAXIMUM", 1000000);
 define("MAXIMUM", 10000);
 $primes = array(2, 3, 5);
+
 function isPrime($n)
 {
     global $primes;
@@ -16,6 +17,7 @@ function isPrime($n)
     }
     return true;
 }
+
 function nthPrime($n)
 {
     global $primes;
@@ -37,6 +39,11 @@ function nthPrime($n)
 $sequences = array();
 $prime = -1;
 $numbers = array();
+// Maybe I can use some sort of memoization to make it so that we can subtract whatever we 
+// have from the prime, look up the difference, and then just pick up the rest of the list
+// instantly from a dictionary. I imagine that we see the same number over and over near the end, 
+// but we recalculate it's sum each time. That would be difficult, and it would trade memory
+// for speed hugely, but it could work. 
 for($primeIndex = 7; ($prime = nthPrime($primeIndex)) <= MAXIMUM; $primeIndex++)
 {
     for($head = 0; $head < $primeIndex; $head++)
