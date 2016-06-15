@@ -1,5 +1,6 @@
 <?php
-define("MAXIMUM", 1000000);
+# define("MAXIMUM", 1000000);
+define("MAXIMUM", 10000);
 $primes = array(2, 3, 5);
 function isPrime($n)
 {
@@ -10,8 +11,6 @@ function isPrime($n)
     {
         if($n % $i == 0)
             return false;
-        // Maybe you can do this with square roots and make up even more time.
-        // I don't know if it works that way though. I have to think about it though.
         if($i >= .5 * $n)
             break;
     }
@@ -22,7 +21,6 @@ function nthPrime($n)
     global $primes;
     if(!isset($primes[$n]))
     {
-        // There is something *wrong* with you, PHP
         $counter = end($primes) + 2;
         while(!isset($primes[$n]))
         {
