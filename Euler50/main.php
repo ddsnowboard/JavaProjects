@@ -45,9 +45,11 @@ for($i = 7; ($prime = nthPrime($i)) <= MAXIMUM; $i++)
         $currSum = 0;
         while($currSum < $prime && $k < $i)
         {
-            $currPrime = nthPrime($k++);
+            $currPrime = $primes[$k++];
             $currSum += $currPrime;
         }
+
+
         if($currSum == $prime)
         {
             for($walker = $j; $walker < $k; $walker++)
