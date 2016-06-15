@@ -37,22 +37,22 @@ function nthPrime($n)
 $sequences = array();
 $prime = -1;
 $numbers = array();
-for($i = 7; ($prime = nthPrime($i)) <= MAXIMUM; $i++)
+for($primeIndex = 7; ($prime = nthPrime($primeIndex)) <= MAXIMUM; $primeIndex++)
 {
-    for($j = 0; $j < $i; $j++)
+    for($head = 0; $head < $primeIndex; $head++)
     {
-        $k = $j;
+        $foot = $head;
         $currSum = 0;
-        while($currSum < $prime && $k < $i)
+        while($currSum < $prime && $foot < $primeIndex)
         {
-            $currPrime = $primes[$k++];
+            $currPrime = $primes[$foot++];
             $currSum += $currPrime;
         }
 
 
         if($currSum == $prime)
         {
-            for($walker = $j; $walker < $k; $walker++)
+            for($walker = $head; $walker < $foot; $walker++)
             {
                 array_push($numbers, nthPrime($walker));
             }
