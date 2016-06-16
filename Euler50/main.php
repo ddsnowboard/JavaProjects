@@ -1,6 +1,6 @@
 <?php
 # define("MAXIMUM", 1000000);
-define("MAXIMUM", 1000);
+define("MAXIMUM", 10000);
 $primes = array(2, 3, 5);
 
 function isPrime($n)
