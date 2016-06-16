@@ -1,6 +1,5 @@
 <?php
-# define("MAXIMUM", 1000000);
-define("MAXIMUM", 10000);
+define("MAXIMUM", 1000000);
 $primes = array(2, 3, 5);
 
 class Pair
@@ -92,6 +91,7 @@ $count = count($primes);
 $highest = end($primes);
 for($head = 0; $head < $count; $head++)
 {
+    echo "Started head=$head\n";
     $sum = $primes[$head];
     for($foot = $head + 1; $foot < $count; $foot++)
     {
@@ -120,3 +120,4 @@ for($i = $longestPair->a; $i <= $longestPair->b; $i++)
 }
 
 echo join(" + ", $addends) . " = " . array_sum($addends);
+echo "\n";
