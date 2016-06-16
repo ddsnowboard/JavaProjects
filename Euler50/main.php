@@ -104,14 +104,21 @@ for($head = 0; $head < $count; $head++)
         }
     }
 }
-$longestRange = 0;
+$longestPair = new Pair(0, 0);
 $longestNumber = 0;
 foreach($memo as $key=>$value)
 {
-    if($value->b - $value->a > $longestRange)
+    if($value->b - $value->a > $longestPair->b - $longestPair->a)
     {
-        $longestRange = $value->b - $value->a;
+        $longestPair = $value;
         $longestNumber = $key;
     }
 }
 echo "The longest number is $longestNumber\n";
+$addends = array();
+for($i = $longestPair->a; $i <= $longestPair->b; $i++)
+{
+    array_push($addends, $primes[$i]);
+}
+
+echo join(" + ", $addends) . " = $longestNumber\n";
