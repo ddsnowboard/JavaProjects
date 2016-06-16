@@ -1,7 +1,18 @@
 <?php
 # define("MAXIMUM", 1000000);
-define("MAXIMUM", 10000);
+define("MAXIMUM", 100000);
 $primes = array(2, 3, 5);
+
+class Pair
+{
+    public $a;
+    public $b;
+    function __construct($a, $b)
+    {
+        $this->a = $a;
+        $this->b = $b;
+    }
+}
 
 function isPrime($n)
 {
@@ -34,47 +45,58 @@ function nthPrime($n)
     return $primes[$n];
 }
 
-// We'll start at five to avoid the complication of the
-// lower primes. That seems good.
-$sequences = array();
-$prime = -1;
-$numbers = array();
-// Maybe I can use some sort of memoization to make it so that we can subtract whatever we 
-// have from the prime, look up the difference, and then just pick up the rest of the list
-// instantly from a dictionary. I imagine that we see the same number over and over near the end, 
-// but we recalculate it's sum each time. That would be difficult, and it would trade memory
-// for speed hugely, but it could work. 
-for($primeIndex = 7; ($prime = nthPrime($primeIndex)) <= MAXIMUM; $primeIndex++)
+function bSearch($haystack, $needle)
 {
-    for($head = 0; $head < $primeIndex; $head++)
+    echo "started bsearch";
+    $out =  _bSearch($haystack, 0, count($haystack), $needle);
+    echo "finished bsearch";
+    return $out;
+}
+
+function _bSearch($haystack, $start, $end, $needle)
+{
+    // refactor this to pass around pointers because PHP is array pass by VALUE!!!
+    // DOES RAM GROW ON TREES???
+    $middleIndex = count($haystack) / 2;
+    $middle = $haystack[$middleIndex];
+    if($needle == $middle)
+        return True;
+    else if($start == $end)
+        return False;
+    else if($needle < $middle)
+        return _bSearch($haystack, $middleIndex, $end, $needle);
+    else if($needle > $middle)
+        return _bSearch($haystack, 0, $middleIndex, $needle);
+}
+
+function sumBetween($a, $b)
+{
+    global $primes;
+    // Let's say this is inclusive
+    $out = 0;
+    for($i = $a; $i <= $b; $i++)
+        $out += $primes[$i];
+    return $out;
+}
+
+$idx = count($primes) - 1;
+while(true)
+{
+    if(!(nthPrime($idx++) <= MAXIMUM))
+        break;
+}
+unset($primes[count($primes) - 1]);
+
+
+
+$memo = array();
+$count = count($primes);
+for($head = 0; $head < $count; $head++)
+{
+    for($foot = $head; $foot < $count; $foot++)
     {
-        $foot = $head;
-        $currSum = 0;
-        while($currSum < $prime && $foot < $primeIndex)
-        {
-            $currPrime = $primes[$foot++];
-            $currSum += $currPrime;
-        }
-
-
-        if($currSum == $prime)
-        {
-            for($walker = $head; $walker < $foot; $walker++)
-            {
-                array_push($numbers, nthPrime($walker));
-            }
-            array_push($sequences, $numbers);
-            $numbers = array();
-        }
+        $sum = sumBetween($head, $foot);
+        if(bSearch($primes, $sum))
+            $memo[$sum] = new Pair($head, $foot);
     }
 }
-
-
-
-$longest = array();
-foreach($sequences as $s)
-{
-    if(count($s) > count($longest))
-        $longest = $s;
-}
-echo join(" + ", $longest) . " = " . array_sum($longest) . "\n";
