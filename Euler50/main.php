@@ -1,6 +1,6 @@
 <?php
 # define("MAXIMUM", 1000000);
-define("MAXIMUM", 1000);
+define("MAXIMUM", 10000);
 $primes = array(2, 3, 5);
 
 class Pair
@@ -100,25 +100,23 @@ for($head = 0; $head < $count; $head++)
             break;
         if(bSearch($primes, $sum))
         {
-            $memo[$sum] = new Pair($head, $foot);
+            array_push($memo, new Pair($head, $foot));
         }
     }
 }
+
 $longestPair = new Pair(0, 0);
-$longestNumber = 0;
-foreach($memo as $key=>$value)
+foreach($memo as $p)
 {
-    if($value->b - $value->a > $longestPair->b - $longestPair->a)
+    if($p->b - $p->a > $longestPair->b - $longestPair->a)
     {
-        $longestPair = $value;
-        $longestNumber = $key;
+        $longestPair = $p;
     }
 }
-echo "The longest number is $longestNumber\n";
 $addends = array();
 for($i = $longestPair->a; $i <= $longestPair->b; $i++)
 {
     array_push($addends, $primes[$i]);
 }
 
-echo join(" + ", $addends) . " = $longestNumber\n";
+echo join(" + ", $addends) . " = " . array_sum($addends);
