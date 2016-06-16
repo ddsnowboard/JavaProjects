@@ -1,6 +1,6 @@
 <?php
 # define("MAXIMUM", 1000000);
-define("MAXIMUM", 100000);
+define("MAXIMUM", 1000);
 $primes = array(2, 3, 5);
 
 class Pair
@@ -45,28 +45,26 @@ function nthPrime($n)
     return $primes[$n];
 }
 
-function bSearch($haystack, $needle)
+function bSearch(&$haystack, $needle)
 {
-    echo "started bsearch";
-    $out =  _bSearch($haystack, 0, count($haystack), $needle);
-    echo "finished bsearch";
-    return $out;
+    return _bSearch($haystack, 0, count($haystack) - 1, $needle);
 }
 
-function _bSearch($haystack, $start, $end, $needle)
+function _bSearch(&$haystack, $start, $end, $needle)
 {
-    // refactor this to pass around pointers because PHP is array pass by VALUE!!!
-    // DOES RAM GROW ON TREES???
-    $middleIndex = count($haystack) / 2;
+    $start = (int) ($start);
+    $end = (int) ($end);
+    $middleIndex = (int) (($start + $end) / 2);
     $middle = $haystack[$middleIndex];
+    // echo "start is $start, end is $end, middle is $middleIndex\n";
     if($needle == $middle)
         return True;
     else if($start == $end)
         return False;
-    else if($needle < $middle)
-        return _bSearch($haystack, $middleIndex, $end, $needle);
     else if($needle > $middle)
-        return _bSearch($haystack, 0, $middleIndex, $needle);
+        return _bSearch($haystack, $middleIndex + 1, $end, $needle);
+    else if($needle < $middle)
+        return _bSearch($haystack, 0, $middleIndex - 1, $needle);
 }
 
 function sumBetween($a, $b)
@@ -91,12 +89,29 @@ unset($primes[count($primes) - 1]);
 
 $memo = array();
 $count = count($primes);
+$highest = end($primes);
 for($head = 0; $head < $count; $head++)
 {
-    for($foot = $head; $foot < $count; $foot++)
+    $sum = $primes[$head];
+    for($foot = $head + 1; $foot < $count; $foot++)
     {
-        $sum = sumBetween($head, $foot);
+        $sum += $primes[$foot]; 
+        if($sum > $highest)
+            break;
         if(bSearch($primes, $sum))
+        {
             $memo[$sum] = new Pair($head, $foot);
+        }
     }
 }
+$longestRange = 0;
+$longestNumber = 0;
+foreach($memo as $key=>$value)
+{
+    if($value->b - $value->a > $longestRange)
+    {
+        $longestRange = $value->b - $value->a;
+        $longestNumber = $key;
+    }
+}
+echo "The longest number is $longestNumber\n";
