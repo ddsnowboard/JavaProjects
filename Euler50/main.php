@@ -14,7 +14,7 @@
 
 
 
-define("MAXIMUM", 10000);
+define("MAXIMUM", 1000000);
 $primes = array(2, 3, 5);
 
 class Pair
