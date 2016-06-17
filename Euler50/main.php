@@ -14,7 +14,7 @@
 
 
 
-define("MAXIMUM", 1000000);
+define("MAXIMUM", 10000);
 $primes = array(2, 3, 5);
 
 class Pair
@@ -70,7 +70,6 @@ function _bSearch(&$haystack, $start, $end, $needle)
     $end = (int) ($end);
     $middleIndex = (int) (($start + $end) / 2);
     $middle = $haystack[$middleIndex];
-    // echo "start is $start, end is $end, middle is $middleIndex\n";
     if($needle == $middle)
         return True;
     else if($start == $end)
@@ -81,16 +80,6 @@ function _bSearch(&$haystack, $start, $end, $needle)
         return _bSearch($haystack, 0, $middleIndex - 1, $needle);
 }
 
-function sumBetween($a, $b)
-{
-    global $primes;
-    // Let's say this is inclusive
-    $out = 0;
-    for($i = $a; $i <= $b; $i++)
-        $out += $primes[$i];
-    return $out;
-}
-
 $idx = count($primes) - 1;
 while(true)
 {
@@ -98,41 +87,76 @@ while(true)
         break;
 }
 unset($primes[count($primes) - 1]);
+echo "generated primes\n";
 
-
-
-$memo = array();
-$count = count($primes);
-$highest = end($primes);
-for($head = 0; $head < $count; $head++)
+$cumSums = array();
+$cumSums[-1] = 0;
+$sum = 0;
+for($i = 0; $i < count($primes); $i++)
 {
-    echo "Started head=$head\n";
-    $sum = $primes[$head];
-    for($foot = $head + 1; $foot < $count; $foot++)
+    $sum += $primes[$i];
+    $cumSums[$i] = $sum;
+}
+
+echo "Made cumsum\n";
+function sumBetween($a, $b)
+{
+    global $cumSums;
+    // Let's say this is inclusive
+
+    // These lines for testing...
+    global $primes;
+    $out = 0;
+    for($i = $a; $i <= $b; $i++)
     {
-        $sum += $primes[$foot]; 
-        if($sum > $highest)
+        $out += $primes[$i];
+    }
+    assert($out == ($cumSums[$b] - $cumSums[$a - 1]));
+
+    $out = 0;
+    for($i = 0; $i <= $a; $i++)
+    {
+        $out += $primes[$i];
+    }
+    assert($out = $cumSums[$a]);
+
+    $out = 0;
+    for($i = 0; $i <= $b; $i++)
+    {
+        $out += $primes[$i];
+    }
+    assert($out = $cumSums[$b]);
+    // End of testing
+
+    return $cumSums[$b] - $cumSums[$a - 1];
+}
+
+$sizeOfPrimes = count($primes);
+$currLength = $sizeOfPrimes - 1;
+do
+{
+    // echo "length is $currLength\n";
+    $head = 0;
+    $foot = $head + $currLength;
+    // echo "First prime is $primes[$head] and last is $primes[$foot]\n";
+    while($foot < $sizeOfPrimes)
+    {
+        $sum = sumBetween($head, $foot);
+        // echo "sum is $sum\n";
+        if($sum > $primes[$sizeOfPrimes - 1])
             break;
         if(bSearch($primes, $sum))
         {
-            array_push($memo, new Pair($head, $foot));
+            echo "Found it; it was $sum\n";
+            exit(0);
+        }
+        else
+        {
+            $head++;
+            $foot++;
         }
     }
-}
-
-$longestPair = new Pair(0, 0);
-foreach($memo as $p)
-{
-    if($p->b - $p->a > $longestPair->b - $longestPair->a)
-    {
-        $longestPair = $p;
-    }
-}
-$addends = array();
-for($i = $longestPair->a; $i <= $longestPair->b; $i++)
-{
-    array_push($addends, $primes[$i]);
-}
-
-echo join(" + ", $addends) . " = " . array_sum($addends);
-echo "\n";
+}while(--$currLength);
+echo "Nope, didn't work.";
+# echo join(" + ", $addends) . " = " . array_sum($addends);
+# echo "\n";
