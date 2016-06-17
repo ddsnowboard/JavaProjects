@@ -1,4 +1,19 @@
 <?php
+// What you're going to do is make a big array with keys as the indices of
+// the primes and the values as the sum of those primes and all the ones
+// before them. Then, you're going to have to variables, head and foot, and 
+// start head at 0 and foot at the last prime. Then, to get the sum, 
+// you just do the cumulative sum of foot minus the cumulative sum of 
+// head, and you're good. So you start them at the opposite ends, and 
+// you check that sequence. If that it bigger than the biggest prime, you 
+// make the sequence smaller and repeat. Do the smaller ones first, so that
+// when you check if it's too big, you'll be able to finish faster. So make 
+// it smaller and smaller, and for each time, you move it from left to right
+// until the sum is prime. That will be the biggest one. 
+// QED
+
+
+
 define("MAXIMUM", 1000000);
 $primes = array(2, 3, 5);
 
