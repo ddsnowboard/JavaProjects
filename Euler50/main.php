@@ -158,5 +158,3 @@ do
     }
 }while(--$currLength);
 echo "Nope, didn't work.";
-# echo join(" + ", $addends) . " = " . array_sum($addends);
-# echo "\n";
