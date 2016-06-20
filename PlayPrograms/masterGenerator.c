@@ -85,10 +85,10 @@ char* getLine(FILE *f)
         else
             break;
     } while(nextBite[0] != '\n');
-    // Sans newline, plus null terminator
     size_t len = strlen(almostOut);
     if(len == 0)
         return "";
+    // Sans newline, plus null terminator
     char *out = (char *) calloc(1, len - 1 + 1);
     strncpy(out, almostOut, len - 1);
     free(almostOut);
