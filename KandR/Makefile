@@ -6,6 +6,8 @@ fast :
 	$(MAKE) all -j $(PROCESSORS)
 all : $(files)
 
+hashTableTest : hashTableTest.c
+	gcc hashTableTest.c hashTable.c -g -o $@.o -Wall
 ex24 :
 	gcc 1-24.c hashTable.c -g -o $@.o -Wall
 $(files) : 
