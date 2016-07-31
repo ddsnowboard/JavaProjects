@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "hashTable.h"
 
-int _hash(struct ht_Table *table, char key);
+static int _hash(struct ht_Table *table, char key);
 
 struct ht_Table *ht_create(int size)
 {
@@ -50,7 +50,7 @@ void ht_put(struct ht_Table *table, char key, int value)
     return;
 }
 
-int _hash(struct ht_Table *table, char key)
+static int _hash(struct ht_Table *table, char key)
 {
     return ((int) key) % table->length;
 }
