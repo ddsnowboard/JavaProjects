@@ -15,6 +15,8 @@
 #define NUMBER_OF_SYMBOLS 6
 
 void skipBlockComment(FILE *f);
+int search(char *haystack, int length, char needle);
+int skipString(FILE *f, char start);
 void skipLineComment(FILE *f);
 void initializeStatus(struct ht_Table *table);
 int checkSegment(FILE *f, char ending);
@@ -40,24 +42,51 @@ int checkSegment(FILE *f, char ending)
     // monotonous. 
     initializeStatus(status);
     initializeOpposites(opposites);
+    char CLOSERS[] = {')', '>', ']', '}'};
+    char OPENERS[] = {'(', '<', '[', '{'};
+    const int LISTS_LENGTH = 4;
+    char last = 'a';
+    char curr;
+    while((curr = fgetc(f)))
+    {
+        if(curr == '\'' || curr == '"')
+        {
+            if(skipString(f, curr) != 0)
+                return 1;
+        }
+        else if(search(OPENERS, LISTS_LENGTH, curr) != -1)
+        {
+            (*ht_get(status, curr))++;
+        }
+        else if(search(CLOSERS, LISTS_LENGTH, curr) != -1)
+        {
+            int *num = ht_get(status, curr);
+            if(*num == 0)
+                return 1;
+            else
+                (*num)--;
+        }
+        // I guess I have to take care of comments now?
+    }
     return 0;
 }
 
 void initializeStatus(struct ht_Table *table)
 {
-    ht_put(table, '(', 0);
     ht_put(table, '\'', 0);
     ht_put(table, '"', 0);
     ht_put(table, '{', 0);
     ht_put(table, '[', 0);
     ht_put(table, '<', 0);
+    ht_put(table, '(', 0);
 }
 
 void initializeOpposites(struct ht_Table *table)
 {
-    ht_put(table, '}', (int) '{');
-    ht_put(table, ']', (int) '[');
-    ht_put(table, '>', (int) '<');
+    ht_put(table, '{', (int) '}');
+    ht_put(table, '[', (int) ']');
+    ht_put(table, '<', (int) '>');
+    ht_put(table, '(', (int) ')');
 }
 
 void skipBlockComment(FILE *f)
@@ -77,4 +106,43 @@ void skipLineComment(FILE *f)
     while(fgetc(f) != '\n')
         ;
     return;
+}
+
+int skipString(FILE *f, char start)
+{
+    if(!(start == '\'' || start == '"'))
+    {
+        printf("You didn't give me a string, fool!\n");
+        return -1;
+    }
+    char last = start;
+    char curr;
+    while((curr = fgetc(f)))
+    {
+        if(curr == start)
+        {
+            if(last != '\\')
+                return 0;
+        }
+        else if(curr == '\n')
+        {
+            if(last != '\\')
+                return 1;
+        }
+        last = curr;
+    }
+    // If we get down here, the file ended in the middle of a string
+    return 1;
+}
+
+int search(char *haystack, int length, char needle)
+{
+    // Linear for now. 
+    int i;
+    for(i = 0; i < length; ++i)
+    {
+        if(haystack[i] == needle)
+            return i;
+    }
+    return -1;
 }
