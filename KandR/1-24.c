@@ -30,16 +30,16 @@ int main(int argc, char** argv)
         return 1;
     }
     FILE *f = fopen(argv[1], "r");
-    return checkSegment(f, EOF);
+    int output = checkSegment(f, EOF);
+    if(output != 0)
+        printf("There was an error!\n");
+    return output;
 }
 
 int checkSegment(FILE *f, char ending)
 {
     struct ht_Table *status = ht_create(NUMBER_OF_SYMBOLS);
     struct ht_Table *opposites = ht_create(NUMBER_OF_OPPOSITES);
-    // These two functions were written for a strategy that I'm no longer taking. 
-    // I need to rewrite the, but this function should be pretty easy, except a little
-    // monotonous. 
     initializeStatus(status);
     initializeOpposites(opposites);
     char CLOSERS[] = {')', '>', ']', '}'};
@@ -47,9 +47,16 @@ int checkSegment(FILE *f, char ending)
     const int LISTS_LENGTH = 4;
     char last = 'a';
     char curr;
-    while((curr = fgetc(f)))
+    while((curr = fgetc(f)) != EOF)
     {
-        if(curr == '\'' || curr == '"')
+        printf("%c", curr);
+        if(curr == '#')
+            skipLineComment(f);
+        else if(curr == '*' && last == '/')
+            skipBlockComment(f);
+        else if(curr == '/' && last == '/')
+            skipLineComment(f);
+        else if(curr == '\'' || curr == '"')
         {
             if(skipString(f, curr) != 0)
                 return 1;
@@ -58,15 +65,24 @@ int checkSegment(FILE *f, char ending)
         {
             (*ht_get(status, curr))++;
         }
+        // Struct pointer references screw up the normal algorithm. Don't tell Tim Peters or Linus Torvalds
+        else if(curr == '>' && last == '-')
+        {}
         else if(search(CLOSERS, LISTS_LENGTH, curr) != -1)
         {
-            int *num = ht_get(status, curr);
+            char correspondingOpener = (char) (*ht_get(opposites, curr));
+            int *num = ht_get(status, correspondingOpener);
             if(*num == 0)
+            {
+                printf("There is an unmatched %c!\n", curr);
                 return 1;
+            }
             else
+            {
                 (*num)--;
+            }
         }
-        // I guess I have to take care of comments now?
+        last = curr;
     }
     return 0;
 }
@@ -87,6 +103,10 @@ void initializeOpposites(struct ht_Table *table)
     ht_put(table, '[', (int) ']');
     ht_put(table, '<', (int) '>');
     ht_put(table, '(', (int) ')');
+    ht_put(table, '}', (int) '{');
+    ht_put(table, ']', (int) '[');
+    ht_put(table, '>', (int) '<');
+    ht_put(table, ')', (int) '(');
 }
 
 void skipBlockComment(FILE *f)
@@ -97,13 +117,14 @@ void skipBlockComment(FILE *f)
     {
         last = curr;
     }
-    fgetc(f);
+    skipLineComment(f);
     return;
 }
 
 void skipLineComment(FILE *f)
 {
-    while(fgetc(f) != '\n')
+    char curr;
+    while((curr = fgetc(f)) != '\n')
         ;
     return;
 }
@@ -117,8 +138,14 @@ int skipString(FILE *f, char start)
     }
     char last = start;
     char curr;
-    while((curr = fgetc(f)))
+    while((curr = fgetc(f)) != EOF)
     {
+        printf("%c", curr);
+        if(curr == '\\')
+        {
+            last = curr;
+            curr = fgetc(f);
+        }
         if(curr == start)
         {
             if(last != '\\')
@@ -127,7 +154,9 @@ int skipString(FILE *f, char start)
         else if(curr == '\n')
         {
             if(last != '\\')
+            {
                 return 1;
+            }
         }
         last = curr;
     }
@@ -146,3 +175,4 @@ int search(char *haystack, int length, char needle)
     }
     return -1;
 }
+
