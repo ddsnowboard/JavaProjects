@@ -136,29 +136,36 @@ int skipString(FILE *f, char start)
         printf("You didn't give me a string, fool!\n");
         return -1;
     }
-    char last = start;
     char curr;
+    int escaping = 0;
     while((curr = fgetc(f)) != EOF)
     {
         printf("%c", curr);
-        if(curr == '\\')
+        if(curr == '\\' && !escaping)
         {
-            last = curr;
-            curr = fgetc(f);
+            escaping = 1;
+            continue;
         }
         if(curr == start)
         {
-            if(last != '\\')
+            if(!escaping)
                 return 0;
+            else
+                escaping = 0;
         }
         else if(curr == '\n')
         {
-            if(last != '\\')
+            if(!escaping)
             {
                 return 1;
             }
+            else
+            {
+                escaping = 0;
+            }
         }
-        last = curr;
+        if(escaping)
+            escaping = 0;
     }
     // If we get down here, the file ended in the middle of a string
     return 1;
