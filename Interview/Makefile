@@ -1,4 +1,7 @@
 .PHONY: clean
+maxSubSum.o : maxSubSum.c
+	gcc -Wall -g $< -o $@
+
 treeToLinkedDList.o : treeToDLinkedList.c
 	gcc -Wall -g $< -o $@
 
