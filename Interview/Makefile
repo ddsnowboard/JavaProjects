@@ -1,4 +1,7 @@
 .PHONY: clean
+reverseLinkedList.o : reverseLinkedList.c
+	gcc -Wall -g $< -o $@
+
 maxSubSum.o : maxSubSum.c
 	gcc -Wall -g $< -o $@
 
