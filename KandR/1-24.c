@@ -24,12 +24,12 @@ void initializeOpposites(struct ht_Table *table);
 
 int main(int argc, char** argv)
 {
-    if(argc != 2)
+    FILE *f = fopen(argv[1], "r");
+    if(argc != 2 || f == NULL)
     {
         printf("Usage: %s FILE\n", argv[0]);
         return 1;
     }
-    FILE *f = fopen(argv[1], "r");
     int output = checkSegment(f, EOF);
     if(output != 0)
         printf("There was an error!\n");
