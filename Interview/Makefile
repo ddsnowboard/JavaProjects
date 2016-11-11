@@ -8,5 +8,8 @@ maxSubSum.o : maxSubSum.c
 treeToLinkedDList.o : treeToDLinkedList.c
 	gcc -Wall -g $< -o $@
 
+reverseDoublyLinkedList.o : reverseDoublyLinkedList.c
+	gcc -Wall -g $< -o $@
+
 clean : 
 	rm *.o
