@@ -1,4 +1,6 @@
 .PHONY: clean
+mergeSort.o : mergeSort.c
+	gcc -Wall -g $< -o $@
 reverseLinkedList.o : reverseLinkedList.c
 	gcc -Wall -g $< -o $@
 
@@ -10,6 +12,5 @@ treeToLinkedDList.o : treeToDLinkedList.c
 
 reverseDoublyLinkedList.o : reverseDoublyLinkedList.c
 	gcc -Wall -g $< -o $@
-
 clean : 
 	rm *.o
