@@ -5,3 +5,5 @@ authors = ["Will Koster <jameswk2@illinois.edu>"]
 
 [dependencies]
 curl = {git = "https://github.com/carllerche/curl-rust"}
+regex = "0.1"
+htmlescape = {git = "https://github.com/veddan/rust-htmlescape"}

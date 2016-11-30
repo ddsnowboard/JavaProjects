@@ -1,10 +1,15 @@
 extern crate curl;
+extern crate regex;
+extern crate htmlescape;
 
+use regex::Regex;
 use curl::easy::Easy;
 use std::env;
+use htmlescape::decode_html;
 
 fn main() {
     let mut easy = Easy::new();
+    easy.follow_location(true).unwrap();
     let arguments = env::args().collect::<Vec<String>>();
     if arguments.len() == 1 {
         easy.url("http://xkcd.com").unwrap();
@@ -22,6 +27,11 @@ fn main() {
         }).unwrap();
         transfer.perform().unwrap();
     }
-    let s: String = text.iter().map(|c| match std::char::from_digit(*c as u32, 10){ Some(c) => c, None=> ' '}).collect();
-    println!("{}", s);
+    let s: String = text.iter().map(|c| match std::char::from_u32(*c as u32){ Some('\n') => ' ', Some(c) => c, None=> ' '}).collect();
+
+    let r = Regex::new("<img src=\"//imgs\\.xkcd\\.com/comics/.*?\" title=\"(.*?)\"").unwrap();
+    for cap in r.captures_iter(&s)
+    {
+        println!("{}", decode_html(cap.at(1).unwrap()).unwrap());
+    }
 }
