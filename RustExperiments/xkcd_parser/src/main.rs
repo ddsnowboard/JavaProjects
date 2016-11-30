@@ -2,8 +2,6 @@ extern crate curl;
 
 use curl::easy::Easy;
 use std::env;
-use std::io::stdout;
-use std::io::Write;
 
 fn main() {
     let mut easy = Easy::new();
@@ -16,13 +14,14 @@ fn main() {
         easy.url(format!("http://xkcd.com/{}", comic_number).as_ref()).unwrap();
     }
     let mut text = Vec::new();
-    easy.write_function(|data| {
-        let v = &text;
-        v.extend_from_slice(data);
-        Ok(data.len())
-    }).unwrap();
-    easy.perform().unwrap();
-    for i in text {
-        println!("{}", i);
+    {
+        let mut transfer = easy.transfer();
+        transfer.write_function(|data| {
+            text.extend_from_slice(data);
+            Ok(data.len())
+        }).unwrap();
+        transfer.perform().unwrap();
     }
+    let s: String = text.iter().map(|c| match std::char::from_digit(*c as u32, 10){ Some(c) => c, None=> ' '}).collect();
+    println!("{}", s);
 }
