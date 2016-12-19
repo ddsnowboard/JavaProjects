@@ -6,7 +6,7 @@ struct Counter<T: Hash + Eq> {
 }
 
 impl<T: Hash + Eq> Counter<T> {
-    fn add(&mut self, &thing: &T) -> bool {
+    fn add(&mut self, thing: T) -> bool {
         // Returns true if the thing was already in the Counter
 
         // Set up a hashset, then we can use it to know if there is a repeated sequence
@@ -24,10 +24,10 @@ impl<T: Hash + Eq> Counter<T> {
             false
         }
     }
-    fn get(&self, &thing: &T) -> Option<&u32> {
+    fn get(&self, thing: &T) -> Option<&u32> {
         self.data.get(&thing)
     }
-    fn get_mut(&mut self, &thing: &T) -> Option<&mut u32> {
+    fn get_mut(&mut self, thing: &T) -> Option<&mut u32> {
         self.data.get_mut(&thing)
     }
 }
@@ -35,4 +35,13 @@ impl<T: Hash + Eq> Counter<T> {
 
 fn main() {
     println!("Hello, world!");
+}
+
+
+
+
+#[test]
+fn test_Counter() {
+    let c : Counter<&str> = Counter::new();
+
 }
