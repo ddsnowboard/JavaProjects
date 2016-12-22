@@ -2,72 +2,72 @@
 // We'll make a branch for each different denomination we use, and we'll add the heads to a big
 // set at the end. Then we'll count the set, and that'll be the answer.
 #![allow(non_snake_case)]
-use std::collections::HashMap;
-use std::hash::Hash;
-#[derive(PartialEq, Eq)]
-struct Counter<T: Hash + Eq> {
-    data: HashMap<T, u32>
+use std::collections::HashSet;
+
+#[derive(Hash, Eq, PartialEq)]
+struct Link<'a, T: 'a>
+{
+    value: T,
+    next: Option<&'a Link<'a, T>>,
 }
 
-impl<T: Hash + Eq> Counter<T> {
-    fn put(&mut self, thing: T) -> bool {
-        // Returns true if the thing was already in the Counter
-
-        // Set up a hashset, then we can use it to know if there is a repeated sequence
-        // Or I can use a linked list, but it goes backwards. That way we can insert new heads
-        // for each different way we can go. Hmmmm...
-
-        if self.contains_key(&thing)
-        {
-            *(self.data.get_mut(&thing).unwrap()) += 1;
-            true
+impl<'a, T: 'a> Link<'a, T> {
+    fn length(&self) -> usize {
+        match self.next {
+            Some(x) => 1 + x.length(),
+            None => 1, 
         }
-        else
-        {
-            self.data.insert(thing, 1);
-            false
-        }
-    }
-    fn get(&self, thing: &T) -> Option<&u32> {
-        self.data.get(&thing)
-    }
-    fn get_mut(&mut self, thing: &T) -> Option<&mut u32> {
-        self.data.get_mut(&thing)
-    }
-    fn contains_key(&self, thing: &T) -> bool {
-        self.data.contains_key(thing)
-    }
-    fn new() -> Counter<T> {
-        Counter{data: HashMap::new()}
     }
 }
 
 
 fn main() {
     let denominations = [1, 2, 5, 10, 20, 50, 100, 200];
-    println!("Hello, world!");
+    const START: i32 = 200;
+    println!("{}", count_ways(START, &denominations));
 }
 
 
+
+fn count_ways<'a> (amount: i32, denominations: &[i32]) -> i32 {
+
+    let mut set : HashSet<&'a Link<i32>> = HashSet::new();
+    for denomination in denominations {
+        _count_ways(amount, denominations, *denomination, &mut set, None);
+    }
+    set.len() as i32
+}
+
+fn _count_ways<'a> (amount: i32, denominations: &[i32], addedCoin: i32, list: &mut HashSet<&'a Link<'a, i32>>, prevNode: Option<&'a Link<'a, i32>>)
+{
+    if amount == 0 {
+        match prevNode {
+            Some(x) => {list.insert(x);},
+            None => {panic!("You must have called the function with 0!")},
+        }
+    }
+    else if amount < 0 {
+        return;
+    }
+    let newNode = Link<'a> {
+        value: addedCoin,
+        next: prevNode,
+    };
+    let newAmount = amount - addedCoin;
+    for denom in denominations {
+        _count_ways(newAmount, denominations, *denom, list, Some(& newNode));
+    }
+}
 
 
 #[test]
-fn test_Counter() {
-    let mut c : Counter<&str> = Counter::new();
-    assert_eq!(None, c.get(&"Apples"));
-    c.put("Apples");
-    assert_eq!(Some(&(1 as u32)), c.get(&"Apples"));
-    for _ in 0..30 {
-        c.put("Apples");
-    }
-    assert_eq!(Some(&(31 as u32)), c.get(&"Apples"));
-    {
-        let out = c.get_mut(&"Apples");
-        assert_eq!(Some(&mut (31 as u32)), out);
-        let mut out = out.unwrap();
-        assert_eq!(&(31 as u32), out);
-        *out = 100;
-        assert_eq!(100, *out);
-    }
-    assert_eq!(100, *(c.get(&"Apples").unwrap()));
+fn testLinkedList() {
+    let mut link3 = Link{value: 56, next: None};
+    let mut link2 = Link{ value: 53, next: None};
+    let mut link = Link {value: 55, next: None};
+    assert_eq!(link.length(), 1);
+    link2.next = Some(& link3);
+    link.next = Some(& link2);
+    assert_eq!(link.length(), 3);
 }
+
