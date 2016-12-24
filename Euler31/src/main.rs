@@ -26,7 +26,7 @@ fn main() {
 
 
 
-fn count_ways<'a> (amount: i32, denominations: &[i32]) -> i32 {
+fn count_ways(amount: i32, denominations: &[i32]) -> i32 {
 
     let mut set : HashSet<Link<i32>> = HashSet::new();
     for denomination in denominations {
@@ -35,8 +35,7 @@ fn count_ways<'a> (amount: i32, denominations: &[i32]) -> i32 {
     set.len() as i32
 }
 
-fn _count_ways<'a> (amount: i32, denominations: &[i32], addedCoin: i32, list: &mut HashSet<Link<'a, i32>>, prevNode: Option<Link<'a, i32>>)
-{
+fn _count_ways<'a> (amount: i32, denominations: &[i32], addedCoin: i32, list: &mut HashSet<Link<'a, i32>>, prevNode: Option<&'a Link<'a, i32>>) {
     if amount == 0 {
         match prevNode {
             Some(x) => {list.insert(x.clone());},
@@ -46,20 +45,15 @@ fn _count_ways<'a> (amount: i32, denominations: &[i32], addedCoin: i32, list: &m
     else if amount < 0 {
         return;
     }
-    let otherX = match prevNode {
-            Some(x) => Some(& x.clone()),
-            None => None};
 
-    // I don't understand lifetimes well enough to make 
-    // this work. It says that I can't put the next node into this newNode 
-    // because the next node doesn't live long enough. I don't know how to fix it. 
     let newNode = Link {
         value: addedCoin,
-        next: otherX, 
+        next: prevNode, 
     };
+
     let newAmount = amount - addedCoin;
     for denom in denominations {
-        _count_ways(newAmount, denominations, *denom, list, Some(newNode.clone()));
+        _count_ways(newAmount, denominations, *denom, list, Some(&newNode));
     }
 }
 
