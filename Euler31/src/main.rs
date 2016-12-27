@@ -46,14 +46,14 @@ fn _count_ways<'a> (amount: i32, denominations: &[i32], addedCoin: i32, list: &m
         return;
     }
 
-    let newNode = Link {
+    let newNode = &Link {
         value: addedCoin,
         next: prevNode, 
     };
 
     let newAmount = amount - addedCoin;
     for denom in denominations {
-        _count_ways(newAmount, denominations, *denom, list, Some(&newNode));
+        _count_ways(newAmount, denominations, *denom, list, Some(newNode));
     }
 }
 
