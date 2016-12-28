@@ -30,30 +30,28 @@ fn count_ways(amount: i32, denominations: &[i32]) -> i32 {
 
     let mut set : HashSet<Link<i32>> = HashSet::new();
     for denomination in denominations {
-        _count_ways(amount, denominations, *denomination, &mut set, None);
+        _count_ways(amount, denominations, *denomination, &mut set, Link {value: *denomination, next: None});
     }
     set.len() as i32
 }
 
-fn _count_ways<'a> (amount: i32, denominations: &[i32], addedCoin: i32, list: &mut HashSet<Link<'a, i32>>, prevNode: Option<&'a Link<'a, i32>>) {
+fn _count_ways<'a>(amount: i32, denominations: &[i32], addedCoin: i32, list: &mut HashSet<Link<'a, i32>>, prevNode: Link<'a, i32>) {
     if amount == 0 {
-        match prevNode {
-            Some(x) => {list.insert(x.clone());},
-            None => {panic!("You must have called the function with 0!")},
-        }
+        list.insert(prevNode.clone());
+        return;
     }
     else if amount < 0 {
         return;
     }
 
-    let newNode = &Link {
+    let newNode = Link {
         value: addedCoin,
-        next: prevNode, 
+        next: Some(&prevNode), 
     };
 
     let newAmount = amount - addedCoin;
     for denom in denominations {
-        _count_ways(newAmount, denominations, *denom, list, Some(newNode));
+        _count_ways(newAmount, denominations, *denom, list, newNode);
     }
 }
 
