@@ -11,52 +11,39 @@
 // Slowly
 
 #include <cstdio>
-#include <unordered_set>
 #include <iostream>
-#include "Node.h"
 
 #define NUMBER_OF_DENOMINATIONS 8
-#define STARTING_AMOUNT 100
+#define STARTING_AMOUNT 200
 using namespace std;
 
-int countWays(int remaining, int currDenomination, const int denominations[NUMBER_OF_DENOMINATIONS], std::unordered_set<Node*>* heads, Node* lastNode);
+void printArray(int arr[STARTING_AMOUNT + 1]);
 
 int main(int argc, char** argv)
 {
-    int DENOMINATIONS[] = {1, 2, 5, 10, 20, 50, 100, 200};
-    std::unordered_set<Node*>* set_o = new std::unordered_set<Node*>();
+    const int DENOMINATIONS[NUMBER_OF_DENOMINATIONS] = {1,2,5,10,20, 50, 100, 200};
+    int ways[STARTING_AMOUNT + 1];
+    ways[0] = 1;
+    for(int i = 1; i <= STARTING_AMOUNT; i++)
+        ways[i] = 0;
+
     for(int i = 0; i < NUMBER_OF_DENOMINATIONS; i++)
-        countWays(STARTING_AMOUNT, DENOMINATIONS[i], DENOMINATIONS, set_o, NULL);
-    printf("%ld\n", set_o->size());
-    return 0;
+    {
+        int coinAmount = DENOMINATIONS[i];
+        cout << "coinAmount is " << coinAmount << "\n";
+        for(int j = coinAmount; j <= STARTING_AMOUNT; j++)
+        {
+            if(j <= STARTING_AMOUNT && j - coinAmount >= 0)
+                ways[j] += ways[j - coinAmount];
+        }
+        printArray(ways);
+    }
+    cout << "The answer is " << ways[STARTING_AMOUNT] << "\n";
 }
 
-int countWays(int remaining, int currDenomination, const int denominations[NUMBER_OF_DENOMINATIONS], std::unordered_set<Node*>* heads, Node* lastNode)
+void printArray(int arr[STARTING_AMOUNT + 1])
 {
-    if(remaining < 0)
-    {
-        return 0;
-    }
-    else if(remaining == 0)
-    {
-        Node n;
-        n.value = currDenomination;
-        n.next = lastNode;
-        heads->insert(&n);
-        return 1;
-    }
-    else
-    {
-        // cout << "Down to " << remaining << "\n";
-        Node n;
-        n.value = currDenomination;
-        n.next = lastNode;
-        int out = 0;
-        for(int i = 0; i < NUMBER_OF_DENOMINATIONS; i++)
-        {
-            out += countWays(remaining - currDenomination, denominations[i], denominations, heads, &n);
-        }
-        return out;
-    }
-
+    for(int i = 0; i <= STARTING_AMOUNT; i++)
+        cout << arr[i] << "\n";
+    cout << "\n\n\n\n";
 }
