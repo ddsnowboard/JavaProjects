@@ -64,13 +64,13 @@ int main(int argc, char** argv)
     for(int i = 0; i < NUMBER_OF_DENOMINATIONS; i++)
     {
         int coinAmount = DENOMINATIONS[i];
-        cout << "coinAmount is " << coinAmount << "\n";
+        // cout << "coinAmount is " << coinAmount << "\n";
         for(int j = coinAmount; j <= STARTING_AMOUNT; j++)
         {
             if(j <= STARTING_AMOUNT && j - coinAmount >= 0)
                 ways[j] += ways[j - coinAmount];
         }
-        printArray(ways);
+        // printArray(ways);
     }
     cout << "The answer is " << ways[STARTING_AMOUNT] << "\n";
 }
