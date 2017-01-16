@@ -1,4 +1,6 @@
 .PHONY: clean
+Combinator.class : Combinator.java
+	javac Combinator.java
 mergeSort.o : mergeSort.c
 	gcc -Wall -g $< -o $@
 reverseLinkedList.o : reverseLinkedList.c
@@ -13,4 +15,4 @@ treeToLinkedDList.o : treeToDLinkedList.c
 reverseDoublyLinkedList.o : reverseDoublyLinkedList.c
 	gcc -Wall -g $< -o $@
 clean : 
-	rm *.o
+	rm *.o *.class
