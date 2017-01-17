@@ -3,7 +3,7 @@ public class Combinator {
     public static void main(String[] args)
     {
         recursive(6, 'a', 'b');
-        // iterative(6, 'a', 'b');
+        iterative(6, 'a', 'b');
     }
 
     // This is going to be ugly because this is the wrong way to do this. But 

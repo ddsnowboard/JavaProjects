@@ -16,8 +16,8 @@ int main(int argc, char **argv)
     // I should probably improve it.
     int INPUT[] = {1, -2, 3, 10, -4, 7, 2, -5};
     const int LENGTH = 8;
-    int *tortoise = INPUT;
-    int *hare = INPUT + 1;
+    int *tortoise = &(INPUT[0]);
+    int *hare = tortoise + 1;
     int biggestSum = sum(tortoise, hare);
     while(tortoise < INPUT + LENGTH)
     {
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
             printf("Tortoise is %ld, and hare is %ld, and sum is %d\n", tortoise - INPUT, hare - INPUT, total);
             if(total > biggestSum)
                 biggestSum = total;
-            else if(hare[1] > total && hare[1] > biggestSum)
+            else if(*(hare + 1) > total && *(hare + 1) > biggestSum)
             {
                 printf("Short-circuited! Tortoise is %ld, hare is %ld for %d, and sum is %d\n", tortoise - INPUT, hare - INPUT + 1, hare[1], sum(tortoise, hare));
                 // We're going to increment tortoise outside the loop
