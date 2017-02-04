@@ -1,4 +1,8 @@
 .PHONY: clean
+
+Palindrome.class : Palindrome.java
+	javac Palindrome.java
+
 Combinator.class : Combinator.java
 	javac Combinator.java
 mergeSort.o : mergeSort.c
