@@ -1,6 +1,6 @@
 .PHONY: clean
 
-FLAGS=-lpthread -g -O0 -fsanitize=address
+FLAGS=-lpthread -g -O0
 OBJS=server.o handler.o
 
 all : server

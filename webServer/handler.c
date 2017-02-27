@@ -7,7 +7,7 @@
 #define BUFFER_SIZE 2000
 
 void chomp(char* s) {
-    while(*s != '\n')
+    while(*s != '\n' && *s != '\0')
         s++;
     *s = '\0';
 }
