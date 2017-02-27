@@ -1,7 +1,18 @@
 .PHONY: clean
 
-server : server.c
-	gcc $< -Wall -g -O0 -lpthread -o $@
+FLAGS=-lpthread -g -O0 -fsanitize=address
+OBJS=server.o handler.o
+
+all : server
+
+server : $(OBJS)
+	gcc $^ $(FLAGS) -o $@
+
+server.o : server.c
+	gcc $< -c $(FLAGS) -o $@
+
+handler.o : handler.c
+	gcc $< -c $(FLAGS) -o $@
 
 clean :
-	$(RM) server
+	$(RM) $(OBJS) server

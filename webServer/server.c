@@ -11,18 +11,32 @@
 #include <errno.h>
 
 #include <pthread.h>
+#include "handler.h"
 
-#define BUF_SIZE 20000
+#define DEFAULT_PORT 8888
 
+struct socketAcceptorInfo {
+    int fd;
+    enum serverStatus *chan;
+};
+
+void* acceptSockets(void* inVal);
 void* echoSocket(void* arg);
 void handleBindError();
 void handleReadError();
 
 int main(int argc, char** argv) {
+    int portNo;
+    if(argc == 2)
+        portNo = atoi(argv[1]);
+    else
+        portNo = DEFAULT_PORT;
+
+
     int sockFD = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in source;
     source.sin_family = AF_INET;
-    source.sin_port = htons(8888);
+    source.sin_port = htons(portNo);
     source.sin_addr.s_addr = INADDR_ANY;
     int bindResult = bind(sockFD, (struct sockaddr *) &source, sizeof(source));
     if(bindResult < 0)
@@ -31,37 +45,40 @@ int main(int argc, char** argv) {
     fd_set readFds;
     FD_SET(sockFD, &readFds);
     listen(sockFD, 5);
-    pthread_t burnerThread;
-    for(;;) {
-        long clientFD = (long) accept(sockFD, NULL, NULL);
-        pthread_create(&burnerThread, NULL, echoSocket, (void*) clientFD);
+    enum serverStatus channel = CONTINUE;
+    pthread_t acceptorThread;
+    struct socketAcceptorInfo acceptorInformation;
+    acceptorInformation.fd = sockFD;
+    acceptorInformation.chan = &channel;
+    if(pthread_create(&acceptorThread, NULL, acceptSockets, (void*) &acceptorInformation) != 0) {
+        printf("There was a problem creating the listener thread");
+        exit(1);
     }
+
+    while(channel != STOP) {
+    }
+    printf("Got here\n");
     shutdown(sockFD, SHUT_RDWR);
     close(sockFD);
+
+    pthread_exit(NULL);
     return 0;
 }
 
-void* echoSocket(void* arg) {
-    int sock = (int) ((long) arg);
-    printf("Received connection %d\n", sock);
-    char recvBuffer[BUF_SIZE];
-    ssize_t bytesRead = 0;;
-    do {
-        bytesRead = read(sock, recvBuffer, BUF_SIZE);
-        if(bytesRead < 0)
-        {
-            handleReadError();
-            break;
-        }
-        else
-        {
-            write(sock, recvBuffer, bytesRead);
-        }
-    } while(bytesRead != 0);
-    close(sock);
-    printf("Lost connection %d\n", sock);
-    return NULL;
+void* acceptSockets(void* inVal) {
+    struct socketAcceptorInfo info = *(struct socketAcceptorInfo*) inVal;
+    int sockFD = info.fd;
+    enum serverStatus *channel = info.chan;
+    while(*channel != STOP) {
+        int clientFD = accept(sockFD, NULL, NULL);
+        struct inputStruct *input = malloc(sizeof(struct inputStruct));
+        input->fd = clientFD;
+        input->errorHolder = channel;
+        pthread_t _threadId;
+        pthread_create(&_threadId, NULL, handle, (void*) input);
+    }
 }
+
 void handleReadError() {
     printf("Error with read: ");
     switch(errno) {
