@@ -1,9 +1,12 @@
+#include <ctype.h>
 #include "handler.h"
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TRUE 1
+#define FALSE 0
 #define BUFFER_SIZE 2000
 
 void chomp(char* s) {
@@ -24,6 +27,19 @@ void *handle(void* input) {
             *info.errorHolder = STOP;
             break;
         }
+        else {
+
+        }
     }
     close(fd);
+}
+
+int isNumber(char* input) {
+    if(*input == '\0')
+        return TRUE;
+
+    if(isdigit(*input))
+        return isNumber(++input);
+    else
+        return FALSE;
 }
