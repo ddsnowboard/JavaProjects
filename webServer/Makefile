@@ -5,6 +5,9 @@ OBJS=server.o handler.o stack.o
 
 all : server
 
+stackTest : stackTest.c stack.o
+	gcc $^ $(FLAGS) -o $@
+
 server : $(OBJS)
 	gcc $^ $(FLAGS) -o $@
 
@@ -18,4 +21,4 @@ stack.o : stack.c
 	gcc $< -c $(FLAGS) -o $@
 
 clean :
-	$(RM) $(OBJS) server
+	$(RM) $(OBJS) server stackTest
