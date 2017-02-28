@@ -5,9 +5,9 @@ struct stack {
     int current;
     char* arr;
 };
-void push(struct stack *s, char c);
-char pop(struct stack *s);
-int isEmpty(struct stack *s);
+void stack_push(struct stack *s, char c);
+char stack_pop(struct stack *s);
+int stack_empty(struct stack *s);
 struct stack* stack_create();
 void stack_free(struct stack* s);
 #endif

@@ -2,7 +2,7 @@
 #include "stack.h"
 #define DEFAULT_SIZE 10
 
-void push(struct stack *s, char c) {
+void stack_push(struct stack *s, char c) {
     if(s->current >= s->capacity) {
         char* newArr = malloc(s->capacity * 2 * sizeof(char));
         int i;
@@ -15,11 +15,11 @@ void push(struct stack *s, char c) {
     s->arr[s->current++] = c;
 }
 
-char pop(struct stack *s) {
-    return s->arr[s->current--];
+char stack_pop(struct stack *s) {
+    return s->arr[--s->current];
 }
 
-int isEmpty(struct stack *s) {
+int stack_empty(struct stack *s) {
     return s->current == 0;
 }
 
