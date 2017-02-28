@@ -6,7 +6,7 @@ OBJS=server.o handler.o stack.o
 all : server
 
 stackTest : stackTest.c stack.o
-	gcc $^ $(FLAGS) -o $@
+	gcc $^ $(FLAGS) -fsanitize=address -o $@
 
 server : $(OBJS)
 	gcc $^ $(FLAGS) -o $@
