@@ -4,6 +4,6 @@ struct inputStruct {
     // This is something that the function can set so that 
     // the caller will shut down based on the right input from the 
     // client
-    enum serverStatus *errorHolder;
+    enum serverStatus *channel;
 };
 void *handle(void* input);

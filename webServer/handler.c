@@ -21,10 +21,10 @@ void *handle(void* input) {
     int fd = info.fd;
     ssize_t bytesRead;
     char buf[BUFFER_SIZE];
-    while(*info.errorHolder != STOP && (bytesRead = read(fd, buf, BUFFER_SIZE)) != 0) {
+    while(*info.channel != STOP && (bytesRead = read(fd, buf, BUFFER_SIZE)) != 0) {
         chomp(buf);
         if(strcmp(buf, "quit") == 0) {
-            *info.errorHolder = STOP;
+            *info.channel = STOP;
             break;
         }
         else {

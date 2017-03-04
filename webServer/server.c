@@ -56,8 +56,9 @@ int main(int argc, char** argv) {
     }
 
     while(channel != STOP) {
+        // block
     }
-    printf("Got here\n");
+
     shutdown(sockFD, SHUT_RDWR);
     close(sockFD);
 
@@ -73,7 +74,7 @@ void* acceptSockets(void* inVal) {
         int clientFD = accept(sockFD, NULL, NULL);
         struct inputStruct *input = malloc(sizeof(struct inputStruct));
         input->fd = clientFD;
-        input->errorHolder = channel;
+        input->channel = channel;
         pthread_t _threadId;
         pthread_create(&_threadId, NULL, handle, (void*) input);
     }
