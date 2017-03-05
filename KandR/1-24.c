@@ -1,4 +1,4 @@
-// 1-24: Write a program to check a C program for rudimentary syntax errors like unbalanced paarentheses, brackets, and braces. 
+// 1-24: Write a program to check a C program for rudimentary syntax errors like unbalanced parentheses, brackets, and braces. 
 // Don't forget about quotes, both single and double, excape sequences, and comments.
 
 // Here's my plan. I'm going to make a function that checks a unit for syntax errors, and all that will really do is check it for
