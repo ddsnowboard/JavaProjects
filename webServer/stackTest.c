@@ -1,5 +1,7 @@
+#include <assert.h>
 #include <stdio.h>
 #include "stack.h"
+#define AMOUNT_TO_PUSH 100000000
 
 int main(int argc, char** argv) {
     struct stack* s = stack_create();
@@ -8,20 +10,31 @@ int main(int argc, char** argv) {
     stack_push(s, 'p');
     stack_push(s, 'l');
     stack_push(s, 'e');
-    while(!stack_empty(s)) 
-        printf("%c", stack_pop(s));
-    printf("\n");
+    printf("Testing ordering...\n");
+    assert(stack_pop(s) == 'e');
+    assert(stack_pop(s) == 'l');
+    assert(stack_pop(s) == 'p');
+    assert(stack_pop(s) == 'p');
+    assert(stack_pop(s) == 'a');
+
+    printf("Worked\n");
     stack_free(s);
+
+
+    printf("testing realloc...\n");
     s = stack_create();
     int i;
-    for(i = 0; i < 1000; i++)
+    for(i = 0; i < AMOUNT_TO_PUSH; i++)
     {
         stack_push(s, 'a');
     }
     int counter = 0;
     while(!stack_empty(s)) {
-        printf("Popped off a %c, at count %d\n", stack_pop(s), counter++);
+        stack_pop(s);
+        counter++;
     }
+    assert(counter == AMOUNT_TO_PUSH);
+    printf("Worked\n");
     stack_free(s);
     return 0;
 }

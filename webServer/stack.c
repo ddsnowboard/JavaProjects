@@ -4,13 +4,14 @@
 
 void stack_push(struct stack *s, char c) {
     if(s->current >= s->capacity) {
-        char* newArr = malloc(s->capacity * 2 * sizeof(char));
+        int newCap = s->capacity * 2;
+        char* newArr = malloc(newCap * sizeof(char));
         int i;
         for(i = 0; i < s->capacity; i++)
             newArr[i] = s->arr[i];
         free(s->arr);
         s->arr = newArr;
-        s->capacity *= 2;
+        s->capacity = newCap;
     }
     s->arr[s->current++] = c;
 }
