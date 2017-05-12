@@ -55,7 +55,7 @@ void printArray(int arr[STARTING_AMOUNT + 1]);
 
 int main(int argc, char** argv)
 {
-    const int DENOMINATIONS[NUMBER_OF_DENOMINATIONS] = {1,2,5,10,20, 50, 100, 200};
+    const int DENOMINATIONS[NUMBER_OF_DENOMINATIONS] = {1, 2, 5, 10, 20, 50, 100, 200};
     int ways[STARTING_AMOUNT + 1];
     ways[0] = 1;
     for(int i = 1; i <= STARTING_AMOUNT; i++)

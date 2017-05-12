@@ -4,4 +4,4 @@ all : main.c
 clean : 
 	$(RM) run
 old : mainOld.c
-	gcc -Wall -g mainOld.c -o run -lm 
+	gcc -Wall -g mainOld.c -fsanitize=address -o run -lm 

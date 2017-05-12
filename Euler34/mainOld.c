@@ -23,6 +23,7 @@ int main(int argc, char** argv)
         }
         if(tot == i)
             out += i;
+        free(nums);
     }
     printf("The total is %d", out);
     return 0;
