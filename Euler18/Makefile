@@ -1,7 +1,10 @@
+FILES = main.cs pyramid.cs
+OUTFILES = $(subst cs,exe,$(FILES))
+
 .PHONY: clean
 
-main.exe : main.cs
-	mcs main.cs
+all : $(FILES)
+	mcs $(FILES)
 
 clean :
-	rm main.exe
+	$(RM) $(OUTFILES)
