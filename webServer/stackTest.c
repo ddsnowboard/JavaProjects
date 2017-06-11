@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         stack_push(s, 'a');
     }
     int counter = 0;
-    while(!stack_empty(s)) {
+    while(!stack_isEmpty(s)) {
         stack_pop(s);
         counter++;
     }

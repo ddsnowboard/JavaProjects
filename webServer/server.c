@@ -34,10 +34,12 @@ int main(int argc, char** argv) {
 
 
     int sockFD = socket(AF_INET, SOCK_STREAM, 0);
+    // I don't understand any of this stuff
     struct sockaddr_in source;
     source.sin_family = AF_INET;
     source.sin_port = htons(portNo);
     source.sin_addr.s_addr = INADDR_ANY;
+
     int bindResult = bind(sockFD, (struct sockaddr *) &source, sizeof(source));
     if(bindResult < 0)
         handleBindError();
@@ -46,11 +48,14 @@ int main(int argc, char** argv) {
     FD_SET(sockFD, &readFds);
     listen(sockFD, 5);
     enum serverStatus channel = CONTINUE;
-    pthread_t acceptorThread;
+
+    // We don't really care about what the thread does, 
+    // so we don't have to hang on to it.
+    pthread_t _acceptorThread;
     struct socketAcceptorInfo acceptorInformation;
     acceptorInformation.fd = sockFD;
     acceptorInformation.chan = &channel;
-    if(pthread_create(&acceptorThread, NULL, acceptSockets, (void*) &acceptorInformation) != 0) {
+    if(pthread_create(&_acceptorThread, NULL, acceptSockets, (void*) &acceptorInformation) != 0) {
         printf("There was a problem creating the listener thread");
         exit(1);
     }

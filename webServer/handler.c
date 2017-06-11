@@ -28,7 +28,7 @@ void *handle(void* input) {
             break;
         }
         else {
-
+            printf("%s\n", buf);
         }
     }
     close(fd);

@@ -7,7 +7,7 @@ struct stack {
 };
 void stack_push(struct stack *s, char c);
 char stack_pop(struct stack *s);
-int stack_empty(struct stack *s);
+int stack_isEmpty(struct stack *s);
 struct stack* stack_create();
 void stack_free(struct stack* s);
 #endif

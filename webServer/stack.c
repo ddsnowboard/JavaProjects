@@ -20,7 +20,7 @@ char stack_pop(struct stack *s) {
     return s->arr[--s->current];
 }
 
-int stack_empty(struct stack *s) {
+int stack_isEmpty(struct stack *s) {
     return s->current == 0;
 }
 
