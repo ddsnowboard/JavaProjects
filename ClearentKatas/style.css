@@ -1,0 +1,23 @@
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background-color: #50A7AE;
+        margin-bottom: 20px;
+    }
+    #companyName {
+        font-size: 2em;
+        padding-left: 10px;
+        padding-top: 10px;
+    }
+
+    #pageName {
+        padding-left: 10px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+@media only screen 
+and (max-width : 767px) 
+{
+}
