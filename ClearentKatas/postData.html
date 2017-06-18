@@ -1,8 +1,9 @@
 <html>
     <head>
-        <title>Clearent Merchant Viewer</title>
+        <title>Clearent Merchant Creator</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link type="text/css" rel="stylesheet" href="style.css" />
+        <script src="main.js"></script>
     </head>
     <body>
         <header>
@@ -13,37 +14,27 @@
             <span class="merchantAttribute">
                 Name: 
             </span>
-            <span class="merchantValue">
-                Bubba Gump's Shrimp
-            </span>
+            <input class="merchantValue" />
         </div>
         <div class="merchantDatum" id="address" > 
             <span class="merchantAttribute">
                 Address: 
             </span>
-            <span class="merchantValue">
-                7283 W Bayou St. <br />
-                New Orleans, LA, 70112
-            </span>
+            <textarea class="merchantValue" ></textarea>
         </div>
         <div class="merchantDatum" id="phone" > 
             <span class="merchantAttribute">
                 Phone:
             </span>
-            <span class="merchantValue">
-                (318) 827-5309
-            </span>
+            <input class="merchantValue" />
         </div>
         <div class="merchantDatum" id="billingAddress" > 
             <span class="merchantAttribute">
                 Billing Address: 
             </span>
-            <span class="merchantValue">
-                7283b W Bayou St. <br />
-                New Orleans, LA, 70112
-            </span>
+            <textarea class="merchantValue" ></textarea>
         </div>
-        <button id="reload" onclick="onReloadClicked()">Reload from Server</button>
-        <script src="main.js"></script>
+        <button id="send" onclick="onSendClicked()">Submit</button>
+        <div id="status"></div>
     </body>
 </html>
