@@ -6,28 +6,44 @@
     </head>
     <body>
         <header>
-            <div id="companyName"> Clearent</div>
+            <div id="companyName">Clearent, LLC.</div>
             <div id="pageName">Merchant Description</div>
         </header>
-        <div class="merchantName"></div>
-
         <div class="merchantDatum" id="address" > 
-            <div class="merchantAttribute">
+            <span class="merchantAttribute">
                 Name: 
-            </div>
-            <div class="merchantValue">
+            </span>
+            <span class="merchantValue">
                 Bubba Gump's Shrimp
-            </div>
+            </span>
         </div>
         <div class="merchantDatum" id="address" > 
-            <div class="merchantAttribute">
+            <span class="merchantAttribute">
                 Address: 
-            </div>
-            <div class="merchantValue">
+            </span>
+            <span class="merchantValue">
                 7283 W Bayou St. <br />
                 New Orleans, LA, 70112
-            </div>
+            </span>
         </div>
+        <div class="merchantDatum" id="phoneNumber" > 
+            <span class="merchantAttribute">
+                Phone:
+            </span>
+            <span class="merchantValue">
+                (318) 827-5309
+            </span>
+        </div>
+        <div class="merchantDatum" id="billingAddress" > 
+            <span class="merchantAttribute">
+                Billing Address: 
+            </span>
+            <span class="merchantValue">
+                7283b W Bayou St. <br />
+                New Orleans, LA, 70112
+            </span>
+        </div>
+        <button id="reload" onclick="onReloadClicked()">Reload from Server</button>
         <script src="main.js"></script>
     </body>
 </html>
