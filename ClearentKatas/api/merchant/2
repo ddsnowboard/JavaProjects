@@ -1,0 +1,15 @@
+{"merchantId":2,
+        "name":"Second Business",
+        "dba":"The Restaurant",
+        "mcc":"5814",
+        "averageTicket":20.2000,
+        "annualVolume":2000000.2000,
+        "address":
+        {"addressId":2,
+            "merchantId":2,
+            "street1":"456 Elm St",
+            "street2":"Suite 99",
+            "city":"U City",
+            "state":"MO",
+            "zip":"63130"}
+    }

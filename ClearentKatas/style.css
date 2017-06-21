@@ -46,3 +46,10 @@ input.merchantValue {
     margin-top: 5px;
 }
 
+div.merchantDatum {
+    width: 100%;
+}
+
+#status { 
+    margin: 15px;
+}

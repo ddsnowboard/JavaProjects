@@ -1,0 +1,15 @@
+{"merchantId":1,
+        "name":"First Business",
+        "dba":"The Bar",
+        "mcc":"5813",
+        "averageTicket":10.1000,
+        "annualVolume":1000000.1000,
+        "address":
+        {"addressId":1,
+            "merchantId":1,
+            "street1":"123 Main St",
+            "street2":"Suite 56",
+            "city":"Clayton",
+            "state":"MO",
+            "zip":"63105"}
+    }
