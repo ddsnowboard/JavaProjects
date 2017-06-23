@@ -21,7 +21,7 @@ function readAddress() {
 
 function onReloadClicked() {
     const ID = 1;
-    const GET_API_ENDPOINT = "api/merchant/1";
+    const GET_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/1";
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
@@ -47,7 +47,7 @@ function onReloadClicked() {
 
 function onSendClicked() {
     const NUMBER_ABOVE_WHICH_ARE_ERRORS = 400;
-    const POST_API_ENDPOINT = "iCantPostData.php";
+    const POST_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/1";
     var inputs = document.getElementsByClassName("merchantValue");
     const values = {};
     values["address"] = readAddress();
