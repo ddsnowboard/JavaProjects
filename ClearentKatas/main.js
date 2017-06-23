@@ -47,7 +47,7 @@ function onReloadClicked() {
 
 function onSendClicked() {
     const NUMBER_ABOVE_WHICH_ARE_ERRORS = 400;
-    const POST_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/1";
+    const POST_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/";
     var inputs = document.getElementsByClassName("merchantValue");
     const values = {};
     values["address"] = readAddress();
