@@ -8,6 +8,10 @@ header {
     margin-bottom: 20px;
 }
 
+header > div:last-child:first-child {
+    padding-bottom: 8px;
+}
+
 #companyName {
     font-size: 2em;
     padding-left: 10px;
@@ -21,7 +25,7 @@ header {
 }
 
 .merchantDatum {
-    max-width: 350px;
+    max-width: 450px;
     margin: 10px;
     padding: 10px;
     border: 1px solid lightgrey;
@@ -52,4 +56,27 @@ div.merchantDatum {
 
 #status { 
     margin: 15px;
+}
+
+table {
+    width: 100%;
+    max-width: 600px;
+    border-collapse: collapse;
+}
+
+tr {
+    border-top: 1px solid grey;
+    border-bottom: 1px solid grey;
+}
+
+tbody > tr:hover {
+    background-color: lightgrey;
+    cursor: pointer;
+}
+
+td {
+    border-left: 1px solid grey;
+    border-right: 1px solid grey;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
