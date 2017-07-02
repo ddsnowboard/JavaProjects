@@ -5,7 +5,49 @@ body {
 
 header {
     background-color: #50A7AE;
-    margin-bottom: 20px;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+#hamburger {
+    margin-left: 15px;
+    margin-top: 10px;
+    transition: transform .5s;
+}
+
+#hamburger.vertical {
+    transform: rotate(90deg);
+    transition: transform .5s;
+}
+
+#sidebar {
+    position: absolute;
+    left: -250px;
+    width: 250px;
+    min-width: 250px;
+    transition: left .5s;
+    background-color: white;
+    height: 100%;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+}
+
+#sidebar.expanded {
+    transition: left .5s;
+    left: 0;
+}
+
+#sidebar > .companyName {
+    margin-left: 10px;
+}
+
+
+header > * {
+    display: inline-block;
+}
+
+header > div {
+    vertical-align: text-bottom;
 }
 
 header > div:last-child:first-child {

@@ -5,6 +5,11 @@ const GET_API_ENDPOINT = "http://localhost:8000/api/merchant/";
 const POST_API_ENDPOINT = GET_API_ENDPOINT;
 const NUMBER_ABOVE_WHICH_ARE_ERRORS = 400;
 
+function getCurrentMerchantId() {
+    //                                                       Cut off the "?"
+    return new URLSearchParams(document.location.search.substring(1)).get("mid")
+}
+
 function fillAddress(el, obj) {
     el.querySelectorAll(".merchantDatum").forEach(function(el) {
         let value = el.getElementsByClassName("merchantValue")[0];
@@ -78,6 +83,8 @@ function getMerchant(id, callback) {
 }
 
 function loadMerchant(mid) {
+    if(mid === null)
+        return;
     var callback = function(merchant) {
         document.querySelectorAll("body > .merchantDatum").forEach(function(el) {
             let value = el.getElementsByClassName("merchantValue")[0];
@@ -92,29 +99,27 @@ function loadMerchant(mid) {
 }
 
 function onLoad() {
-    if(window.location.search !== "") {
-        //                                                       Cut off the "?"
-        loadMerchant(new URLSearchParams(document.location.search.substring(1)).get("mid"));
-        return;
+    var currentMerchantId = getCurrentMerchantId();
+    if(currentMerchantId != null) {
+        loadMerchant(currentMerchantId);
+    }
+    else {
+        document.querySelectorAll("input").forEach(function(el) {
+            el.value = "";
+        });
     }
 
     var callback = function(merchants) {
-        const columns = document.querySelectorAll("thead td");
-        let tbody = document.getElementById("tableBody");
+        let sidebar = document.getElementById("sidebar");
         // Sometimes caching does strange stuff
-        tbody.innerHTML = "";
+        sidebar.innerHTML = "";
         for(let i = 0; i < merchants.length; i++) {
             let merchant = merchants[i];
             // Fun fact: If Firefox thinks you've made an HTML mistake, it will add
             // stuff to the DOM to fix it.
-            let htmlBuilder = ""
-                htmlBuilder += `<tr onclick="goToMerchant(${merchant.merchantId});">`;
-            columns.forEach(function(el) {
-                htmlBuilder += `<td>${merchant[el.dataset.indexedBy]}</td>`;
-            });
-            htmlBuilder += "</tr>";
-            tbody.innerHTML += htmlBuilder;
+            sidebar.innerHTML += `<div class="companyName" onclick="goToMerchant(${merchant.merchantId});">${merchant.dba}</div>`;
         }
+        sidebar.innerHTML += `<button onclick="createMerchant();">New Merchant</button>`;
     };
     getAllMerchants(callback);
 }
@@ -125,7 +130,7 @@ function onSendClicked() {
     values["address"] = readAddress();
     for(let i = 0; i < inputs.length; i++) {
         let el = inputs[i];
-        if(el.id === "address")
+        if(el.parentNode.id === "address" || el.parentNode.parentNode.id === "address")
             continue;
         let name = el.parentElement.id;
         values[name] = el.value;
@@ -133,25 +138,85 @@ function onSendClicked() {
 
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
-        if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-            document.getElementById("status").innerHTML = "You sent the data!";
-        }
-        else if(xhr.readyState === XMLHttpRequest.DONE && xhr.status >= NUMBER_ABOVE_WHICH_ARE_ERRORS) {
-            document.getElementById("status").innerHTML = "Something bad happened; status code " + xhr.status;
-        } 
+        console.log(`Ready state is ${xhr.readyState} and status is ${xhr.status}`);
     }
-    xhr.open("POST", POST_API_ENDPOINT);
+
+    let httpVerb;
+    if(getCurrentMerchantId() === null) {
+        httpVerb = "POST"
+    }
+    else {
+        httpVerb = "PUT";
+        values["merchantId"] = getCurrentMerchantId();
+    }
+    xhr.open(httpVerb, POST_API_ENDPOINT);
     xhr.setRequestHeader("Content-type", "application/json");
     xhr.send(JSON.stringify(values));
 }
 
 function goToMerchant(merchantId) {
-    window.location = `getData.html?mid=${merchantId}`;
+    history.pushState(null, "Merchant " + merchantId, `getData.html?mid=${merchantId}`);
+    setViewMode();
+    loadMerchant(merchantId);
+    toggleDrawer();
+}
+
+function setEditingMode() {
+    document.querySelectorAll(".merchantValue").forEach(function(el) {
+        if(el.parentNode.dataset.indexedBy === "address")
+            return;
+        let newElement = document.createElement("input");
+        newElement.classList.add("merchantValue");
+        el.replaceWith(newElement);
+    });
+    loadMerchant(getCurrentMerchantId());
+
+    var button = document.querySelector("#submit");
+    button.innerHTML = "Send";
+    button.onclick = onSendClicked;
+}
+
+function setViewMode() {
+    document.querySelectorAll(".merchantValue").forEach(function(el) {
+        if(el.parentNode.dataset.indexedBy === "address")
+            return;
+        let newElement = document.createElement("span");
+        newElement.classList.add("merchantValue");
+        el.replaceWith(newElement);
+    });
+    loadMerchant(getCurrentMerchantId());
+
+    var button = document.querySelector("#submit");
+    button.innerHTML = "Edit";
+    button.onclick = onEditClicked;
 }
 
 function onEditClicked() {
-    var merchantId = new URLSearchParams(window.location.search.substring(1)).get("mid");
-    window.location = `postData.html?mid=${merchantId}`;
+    setEditingMode();
+}
+
+function toggleDrawer() {
+    const VERTICAL = "vertical";
+    const EXPANDED = "expanded";
+    var hamburger =  document.getElementById("hamburger");
+    var sidebar = document.getElementById("sidebar");
+    if(hamburger.classList.contains(VERTICAL)) {
+        // close drawer
+        hamburger.classList.remove(VERTICAL);
+        sidebar.classList.remove(EXPANDED);
+    }
+    else {
+        // open drawer
+        hamburger.classList.add(VERTICAL);
+        sidebar.classList.add(EXPANDED);
+    }
+}
+
+function createMerchant() {
+    history.pushState(null, "New Merchant", "getData.html");
+    setEditingMode();
+    toggleDrawer();
 }
 
 window.onload = onLoad;
+window.onpopstate = onLoad;

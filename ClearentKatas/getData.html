@@ -7,9 +7,12 @@
     </head>
     <body>
         <header>
+            <img src="assets/hamburger.svg" id="hamburger" onclick="toggleDrawer();"></img>
             <div id="companyName">Clearent, LLC.</div>
             <div id="pageName">Merchant Description</div>
         </header>
+        <div id="sidebar">
+        </div>
         <div class="merchantDatum" id="name" data-indexed-by="name" > 
             <span class="merchantAttribute">
                 Name: 
@@ -87,6 +90,6 @@
                 </div>
             </span>
         </div>
-        <button onclick="onEditClicked()">Edit</button>
+        <button id="submit" onclick="onEditClicked()">Edit</button>
     </body>
 </html>
