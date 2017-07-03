@@ -144,7 +144,7 @@ function onSendClicked() {
     let endpoint;
     if(getCurrentMerchantId() === null) {
         httpVerb = "POST"
-        endpoint = POST_API_ENDPOINT;
+            endpoint = POST_API_ENDPOINT;
     }
     else {
         httpVerb = "PUT";
