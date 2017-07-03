@@ -39,6 +39,17 @@ header {
 
 #sidebar > .companyName {
     margin-left: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px solid darkgrey;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.companyName > .deleteButton {
+    display: inline-block;
+    float: right;
+    cursor: pointer;
 }
 
 

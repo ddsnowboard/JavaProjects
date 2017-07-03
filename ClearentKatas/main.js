@@ -1,7 +1,7 @@
 "use strict";
 
-// const GET_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/";
-const GET_API_ENDPOINT = "http://localhost:8000/api/merchant/";
+const GET_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/";
+// const GET_API_ENDPOINT = "http://localhost:8000/api/merchant/";
 const POST_API_ENDPOINT = GET_API_ENDPOINT;
 const NUMBER_ABOVE_WHICH_ARE_ERRORS = 400;
 
@@ -115,9 +115,7 @@ function onLoad() {
         sidebar.innerHTML = "";
         for(let i = 0; i < merchants.length; i++) {
             let merchant = merchants[i];
-            // Fun fact: If Firefox thinks you've made an HTML mistake, it will add
-            // stuff to the DOM to fix it.
-            sidebar.innerHTML += `<div class="companyName" onclick="goToMerchant(${merchant.merchantId});">${merchant.dba}</div>`;
+            sidebar.innerHTML += `<div class="companyName" onclick="goToMerchant(${merchant.merchantId});">${merchant.dba}<span class="deleteButton" onclick="deleteMerchant(${merchant.merchantId})">[delete]</span></div>`;
         }
         sidebar.innerHTML += `<button onclick="createMerchant();">New Merchant</button>`;
     };
@@ -220,6 +218,18 @@ function createMerchant() {
     history.pushState(null, "New Merchant", "getData.html");
     setEditingMode();
     toggleDrawer();
+}
+
+function deleteMerchant(merchantId) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            history.replaceState(null, "Back to start", "getData.html");
+            onLoad();
+        }
+    };
+    xhr.open("DELETE", POST_API_ENDPOINT + merchantId.toString());
+    xhr.send();
 }
 
 window.onload = onLoad;
