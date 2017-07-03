@@ -142,14 +142,17 @@ function onSendClicked() {
     }
 
     let httpVerb;
+    let endpoint;
     if(getCurrentMerchantId() === null) {
         httpVerb = "POST"
+	    endpoint = POST_API_ENDPOINT;
     }
     else {
         httpVerb = "PUT";
+	    endpoint = POST_API_ENDPOINT + getCurrentMerchantId().toString();
         values["merchantId"] = getCurrentMerchantId();
     }
-    xhr.open(httpVerb, POST_API_ENDPOINT);
+    xhr.open(httpVerb, endpoint);
     xhr.setRequestHeader("Content-type", "application/json");
     xhr.send(JSON.stringify(values));
 }
