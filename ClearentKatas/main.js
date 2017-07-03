@@ -104,8 +104,15 @@ function onLoad() {
         loadMerchant(currentMerchantId);
     }
     else {
+        // Clear out fields
+        // Sometimes they have stuff in them and they shouldn't.
         document.querySelectorAll("input").forEach(function(el) {
             el.value = "";
+        });
+
+        document.querySelectorAll(".merchantAttribute").forEach(function(el) {
+            if(el.parentNode.id != "address")
+                el.innerHTML = "";
         });
     }
 
