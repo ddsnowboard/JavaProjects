@@ -135,6 +135,7 @@ function onSendClicked() {
         let name = el.parentElement.id;
         values[name] = el.value;
     }
+    setViewMode();
 
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -145,11 +146,11 @@ function onSendClicked() {
     let endpoint;
     if(getCurrentMerchantId() === null) {
         httpVerb = "POST"
-	    endpoint = POST_API_ENDPOINT;
+        endpoint = POST_API_ENDPOINT;
     }
     else {
         httpVerb = "PUT";
-	    endpoint = POST_API_ENDPOINT + getCurrentMerchantId().toString();
+        endpoint = POST_API_ENDPOINT + getCurrentMerchantId().toString();
         values["merchantId"] = getCurrentMerchantId();
     }
     xhr.open(httpVerb, endpoint);
