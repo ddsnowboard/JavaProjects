@@ -1,2 +1,7 @@
+Main theory was to find out what libraries have been replaced by new standard library stuff. XHR's are mostly replaced, that was just for fun. 
+
 - Created functions that largely replicate what `fetch()` or jQuery ajax would do. 
 - Notice the ES5 (ES6?) format strings (cf L126)
+- history API (L168). This is basically the API that lets you make the back button work while still using a single-page app.
+- An example of standards getting better and obviating the need for libraries is the classList functions (~L214). You used to need to do your own string splitting or use jQuery to do this, but now it can do it all for you with almost the exact same API.
+- Also used some cool CSS transitions. CSS is better than I thought. 
