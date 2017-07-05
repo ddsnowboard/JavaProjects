@@ -1,0 +1,2 @@
+- Created functions that largely replicate what `fetch()` or jQuery ajax would do. 
+- Notice the ES5 (ES6?) format strings (cf L126)

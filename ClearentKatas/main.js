@@ -116,6 +116,7 @@ function onLoad() {
         });
     }
 
+    // Fill in sidebar
     var callback = function(merchants) {
         let sidebar = document.getElementById("sidebar");
         // Sometimes caching does strange stuff
