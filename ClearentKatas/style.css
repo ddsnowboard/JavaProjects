@@ -99,6 +99,10 @@ button {
     margin-left: 10px;
 }
 
+.hidden {
+    display: none;
+}
+
 input.merchantValue {
     margin-top: 5px;
 }
