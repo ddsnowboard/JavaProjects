@@ -6,14 +6,16 @@ const POST_API_ENDPOINT = GET_API_ENDPOINT;
 const NUMBER_ABOVE_WHICH_ARE_ERRORS = 400;
 
 function getCurrentMerchantId() {
-    //                                                       Cut off the "?"
+    // This is not as good of an API as some other new ES6 stuff. 
+    // It's probably not a very good example to put at the top...
+    // Also the substring is to remove the ? from the query string
     return new URLSearchParams(document.location.search.substring(1)).get("mid")
 }
 
 function fillAddress(el, obj) {
     el.querySelectorAll(".merchantDatum").forEach(function(el) {
         let value = el.getElementsByClassName("merchantValue")[0];
-        // One of these will work
+        // One of these will work; it's either an input or a div
         value.innerHTML = value.value = obj[el.dataset.indexedBy];
     });
 }
@@ -23,7 +25,7 @@ function readAddress() {
     var retval = {};
     for(var idx = 0; idx < elements.length; idx++) {
         let el = elements[idx];
-        retval[el.id] = el.getElementsByClassName("merchantValue")[0].value;
+        retval[el.dataset.indexedBy] = el.getElementsByClassName("merchantValue")[0].value;
     }
     return retval;
 }
@@ -146,13 +148,19 @@ function onSendClicked() {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         console.log(`Ready state is ${xhr.readyState} and status is ${xhr.status}`);
+        if(xhr.readyState === xhr.DONE)
+            onLoad();
     }
 
     let httpVerb;
     let endpoint;
     if(getCurrentMerchantId() === null) {
-        httpVerb = "POST"
-            endpoint = POST_API_ENDPOINT;
+        httpVerb = "POST";
+        endpoint = POST_API_ENDPOINT;
+        delete values.address.merchantId;
+        delete values.address.addressId;
+        delete values.addressId;
+        delete values.merchantId;
     }
     else {
         httpVerb = "PUT";
