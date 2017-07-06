@@ -1,7 +1,7 @@
 "use strict";
 
-const GET_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/";
-// const GET_API_ENDPOINT = "http://localhost:8000/api/merchant/";
+// const GET_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/";
+const GET_API_ENDPOINT = "http://localhost:8000/api/merchant/";
 const POST_API_ENDPOINT = GET_API_ENDPOINT;
 const NUMBER_ABOVE_WHICH_ARE_ERRORS = 400;
 
@@ -181,9 +181,12 @@ function setEditingMode() {
     });
     loadMerchant(getCurrentMerchantId());
 
-    var button = document.querySelector("#submit");
-    button.innerHTML = "Send";
-    button.onclick = onSendClicked;
+    var submit = document.querySelector("#submit");
+    submit.innerHTML = "Send";
+    submit.onclick = onSendClicked;
+
+    var cancel = document.querySelector("#cancel");
+    cancel.classList.remove("hidden");
 }
 
 function setViewMode() {
@@ -199,6 +202,9 @@ function setViewMode() {
     var button = document.querySelector("#submit");
     button.innerHTML = "Edit";
     button.onclick = onEditClicked;
+
+    var cancel = document.querySelector("#cancel");
+    cancel.classList.add("hidden");
 }
 
 function onEditClicked() {
@@ -238,6 +244,10 @@ function deleteMerchant(merchantId) {
     };
     xhr.open("DELETE", POST_API_ENDPOINT + merchantId.toString());
     xhr.send();
+}
+
+function onCancelClicked() {
+    setViewMode();
 }
 
 window.onload = onLoad;
