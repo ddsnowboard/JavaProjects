@@ -110,7 +110,7 @@ function onLoad() {
             el.value = "";
         });
 
-        document.querySelectorAll(".merchantAttribute").forEach(function(el) {
+        document.querySelectorAll(".merchantValue").forEach(function(el) {
             if(el.parentNode.id != "address")
                 el.innerHTML = "";
         });
