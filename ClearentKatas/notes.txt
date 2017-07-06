@@ -4,4 +4,5 @@ Main theory was to find out what libraries have been replaced by new standard li
 - Notice the ES5 (ES6?) format strings (cf L126)
 - history API (L168). This is basically the API that lets you make the back button work while still using a single-page app.
 - An example of standards getting better and obviating the need for libraries is the classList functions (~L214). You used to need to do your own string splitting or use jQuery to do this, but now it can do it all for you with almost the exact same API.
+- I stole ideas from angular and used the data- attributes to specify what info should go in what spot. There's really good javascript support for it though.
 - Also used some cool CSS transitions. CSS is better than I thought. 
