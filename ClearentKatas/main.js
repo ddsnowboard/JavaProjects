@@ -1,7 +1,7 @@
 "use strict";
 
-// const GET_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/";
-const GET_API_ENDPOINT = "http://localhost:8000/api/merchant/";
+const GET_API_ENDPOINT = "http://cladevwrk03:4321/api/merchant/";
+// const GET_API_ENDPOINT = "http://localhost:8000/api/merchant/";
 const POST_API_ENDPOINT = GET_API_ENDPOINT;
 const NUMBER_ABOVE_WHICH_ARE_ERRORS = 400;
 
