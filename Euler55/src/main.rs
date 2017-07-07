@@ -26,7 +26,7 @@ fn reverse_number(mut n: u64) -> u64 {
         digits.push_front(n % 10);
         n /= 10;
     }
-    let mut out = 0;
+    let mut out: u32 = 0;
     loop {
         let next = digits.pop_back();
         match next {
