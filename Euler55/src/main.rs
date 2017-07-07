@@ -1,8 +1,8 @@
 use std::collections::VecDeque;
-use std::u64;
 
 fn main() {
-    println!("{}", is_lychrel(40));
+    let amount = (1..10000).fold(0, |acc, n| if is_lychrel(n) { acc + 1 } else { acc });
+    println!("Amount is {}", amount);
 }
 
 fn is_lychrel(mut n: u64) -> bool {
@@ -11,13 +11,14 @@ fn is_lychrel(mut n: u64) -> bool {
     let mut current_number = n;
     while counter > 0 {
         let reverse = reverse_number(n);
-        if n == reverse {
-            return true;
-        }
+        println!("Adding {} and {}", n, reverse);
         n += reverse;
         counter -= 1;
+        if n == reverse_number(n) {
+            return false;
+        }
     }
-    false
+    true
 }
 
 fn reverse_number(mut n: u64) -> u64 {
@@ -26,7 +27,7 @@ fn reverse_number(mut n: u64) -> u64 {
         digits.push_front(n % 10);
         n /= 10;
     }
-    let mut out: u32 = 0;
+    let mut out: u64 = 0;
     loop {
         let next = digits.pop_back();
         match next {
@@ -45,9 +46,10 @@ fn reverse_number(mut n: u64) -> u64 {
 
 #[test]
 fn test_is_lychrel() {
-    assert!(is_lychrel(47));
-    assert!(is_lychrel(349));
-    assert!(!is_lychrel(196));
+    assert!(!is_lychrel(47));
+    assert!(!is_lychrel(349));
+    assert!(is_lychrel(196));
+    assert!(is_lychrel(4994));
 }
 
 #[test]
