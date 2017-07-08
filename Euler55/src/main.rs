@@ -1,30 +1,27 @@
 use std::collections::VecDeque;
-extern crate num;
-use num::bigint::BigUint;
-use num::FromPrimitive;
 
 fn main() {
     let amount = (1..10000).fold(0, |acc, n| if is_lychrel(n) { acc + 1 } else { acc });
     println!("Amount is {}", amount);
 }
 
-fn is_lychrel(mut n: u32) -> bool {
-    const MAX_ITERATIONS: u8 = 50;
+fn is_lychrel(mut n: u64) -> bool {
+    const MAX_ITERATIONS: u64 = 50;
     let mut counter = MAX_ITERATIONS;
-    let mut current_number = BigUint::from_u32(n).unwrap();
+    let mut current_number = n;
     while counter > 0 {
-        let reverse = reverse_number(current_number);
-        println!("Adding {} and {}", current_number, reverse);
-        current_number = current_number + reverse;
+        let reverse = reverse_number(n);
+        println!("Adding {} and {}", n, reverse);
+        n += reverse;
         counter -= 1;
-        if current_number == reverse_number(current_number) {
+        if n == reverse_number(n) {
             return false;
         }
     }
     true
 }
 
-fn reverse_number(mut n: BigUint) -> BigUint {
+fn reverse_number(mut n: u64) -> u64 {
     let mut digits = VecDeque::new();
     while n > 0 {
         digits.push_front(n % 10);
