@@ -3,13 +3,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#define MAX_WORD_LEN 500
 #define MAX_WORD_COUNT 1000
+// Found through experimentation
+#define LONGEST_WORD_IN_DICTIONARY 26
+#define MAX_WORD_LEN LONGEST_WORD_IN_DICTIONARY
 #define WORDLIST "/usr/share/dict/words"
 #define FILENAME "cipher.txt"
 #define KEY_LENGTH 3
 #define ERROR 1
 #define OK 0
+#define WORDS_TO_TEST 20
 
 char** wordsplit(char* inString, int* numWordsOut);
 int letterCount(FILE*);
@@ -18,6 +21,8 @@ int iterateKey(char key[]);
 void stringify(char* destString, char sourceChars[], int n);
 int fgetpair(FILE* f);
 void freeWordlist(char** wordlist, int length);
+int testWords(char** wordList, int listLength);
+int sumCodes(char* s);
 
 int main(int argc, char** argv)
 {
@@ -30,18 +35,25 @@ int main(int argc, char** argv)
         *walker++ = currentNumber;
     fclose(in);
 
-    char key[KEY_LENGTH] = {'a', 'a', 'a'};
+    // char key[KEY_LENGTH] = {'a', 'a', 'a'};
+    char key[KEY_LENGTH] = {'g', 'o', 'd'};
     char* out = calloc(length + 1, sizeof(char));
 
     do {
         decrypt(key, letters, out, length);
+        printf("%s\n", out);
+        printf("sum is %d\n", sumCodes(out));
         int numWords;
         char** words = wordsplit(out, &numWords);
-        for(int i = 0; i < numWords; i++) 
-            printf("%s", words[i]);
+        // If there is nothing there, we don't have to check, 
+        // but we still have to free
+        if(words != NULL) 
+            printf("There were %d words found with key %c%c%c\n", testWords(words, numWords), key[0], key[1], key[2]);
+
         freeWordlist(words, numWords);
     }
-    while(iterateKey(key) == OK);
+    while(0);
+    // while(iterateKey(key) == OK);
 
     free(out);
     free(letters);
@@ -140,7 +152,15 @@ char** wordsplit(char* inString, int* numWordsOut) {
                 continue;
         }
         else {
-            buffer[idx++] = curr;
+            if(idx < MAX_WORD_LEN)
+                buffer[idx++] = curr;
+            else {
+                // This is certainly not right
+                for(int i = 0; i < countOfStrings; i++)
+                    free(strings[i]);
+                *numWordsOut = 0;
+                return NULL;
+            }
         }
     }
     char** out = malloc(sizeof(char*) * countOfStrings);
@@ -154,4 +174,41 @@ void freeWordlist(char** wordlist, int length) {
     for(int i = 0; i < length; i++)
         free(wordlist[i]);
     free(wordlist);
+}
+
+void chomp(char* s) {
+    while(*s) {
+        if(*s == ' ' || *s == '\n') {
+            *s = '\0';
+            return;
+        }
+        s++;
+    }
+}
+
+int testWords(char** wordList, int listLength) {
+    FILE* wordsFile = fopen(WORDLIST, "r");
+    int foundWords = 0;
+    char currentDictionaryWord[LONGEST_WORD_IN_DICTIONARY];
+    memset(currentDictionaryWord, 0, LONGEST_WORD_IN_DICTIONARY);
+    for(int i = 0; i < WORDS_TO_TEST && i < listLength; i++) {
+        char* currentWord = wordList[i];
+        rewind(wordsFile);
+        while(fgets(currentDictionaryWord, LONGEST_WORD_IN_DICTIONARY, wordsFile) != NULL) {
+            chomp(currentDictionaryWord);
+            if(strcmp(currentWord, currentDictionaryWord) == 0) {
+                foundWords++;
+                break;
+            }
+        }
+    }
+    fclose(wordsFile);
+    return foundWords;
+}
+
+int sumCodes(char* s) {
+    int out = 0;
+    while(*s)
+        out += *s++;
+    return out;
 }
