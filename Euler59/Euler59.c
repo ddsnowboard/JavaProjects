@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#define MAX_WORD_LEN 100
+#define MAX_WORD_LEN 500
 #define MAX_WORD_COUNT 1000
 #define WORDLIST "/usr/share/dict/words"
 #define FILENAME "cipher.txt"
@@ -11,11 +11,13 @@
 #define ERROR 1
 #define OK 0
 
+char** wordsplit(char* inString, int* numWordsOut);
 int letterCount(FILE*);
 void decrypt(char key[], int code[], char out[], int n);
 int iterateKey(char key[]);
 void stringify(char* destString, char sourceChars[], int n);
 int fgetpair(FILE* f);
+void freeWordlist(char** wordlist, int length);
 
 int main(int argc, char** argv)
 {
@@ -30,11 +32,17 @@ int main(int argc, char** argv)
 
     char key[KEY_LENGTH] = {'a', 'a', 'a'};
     char* out = calloc(length + 1, sizeof(char));
+
     do {
         decrypt(key, letters, out, length);
-        // printf("%s\n\n", out);
+        int numWords;
+        char** words = wordsplit(out, &numWords);
+        for(int i = 0; i < numWords; i++) 
+            printf("%s", words[i]);
+        freeWordlist(words, numWords);
     }
     while(iterateKey(key) == OK);
+
     free(out);
     free(letters);
     return 0;
@@ -111,13 +119,14 @@ void decrypt(char key[], int code[], char out[], int n) {
     }
 }
 
-char** wordsplit(char* inString) {
+char** wordsplit(char* inString, int* numWordsOut) {
     char buffer[MAX_WORD_LEN];
     char* strings[MAX_WORD_COUNT];
     int countOfStrings = 0;
     int idx = 0;
-    while(*inString != '\0') {
-        if(*inString == ' ') {
+    while(1) {
+        char curr = *(inString++);
+        if(curr == ' ' || curr == '\0') {
             if(idx != 0) {
                 buffer[idx] = '\0';
                 char* newString = malloc(idx + 1);
@@ -125,14 +134,24 @@ char** wordsplit(char* inString) {
                 strings[countOfStrings++] = newString;
             }
             idx = 0;
-            continue;
+            if(curr == '\0')
+                break;
+            else
+                continue;
         }
         else {
-            buffer[idx++] = *inString;
+            buffer[idx++] = curr;
         }
     }
-    char** out = malloc(countOfStrings);
+    char** out = malloc(sizeof(char*) * countOfStrings);
     for(int i = 0; i < countOfStrings; i++)
         out[i] = strings[i];
+    *numWordsOut = countOfStrings;
     return out;
+}
+
+void freeWordlist(char** wordlist, int length) {
+    for(int i = 0; i < length; i++)
+        free(wordlist[i]);
+    free(wordlist);
 }
