@@ -6,7 +6,7 @@ use std::convert::From;
 use std::io::BufReader;
 
 const KEY_LENGTH: usize = 3;
-const LONGEST_WORDS_IN_DICTIONARY: usize = 28;
+const LONGEST_WORDS_IN_DICTIONARY: usize = 26;
 fn main() {
     let mut contents = String::new();
     const FILENAME: &'static str = "cipher.txt";
@@ -19,19 +19,22 @@ fn main() {
     let dict = Dictionary::new();
 
     let mut max = 0;
-    let mut max_key = String::from("");
+    let mut max_key: Vec<char> = vec![];
     for key in KeyIterator::new(KEY_LENGTH) {
         let decrypted = decrypt(&ascii_values, &key);
         let words: Vec<&str> = decrypted.split_whitespace().collect();
-        if words[0].len() <= LONGEST_WORDS_IN_DICTIONARY {
+        if (&words).into_iter().all(|x| x.len() <= LONGEST_WORDS_IN_DICTIONARY) {
             let count = dict.union(&words);
             if count > max {
                 max = count;
-                max_key = String::from(format!("{:?}", key));
+                max_key = key.clone();
             }
         }
     }
-    println!("Most was {} with {}", max, max_key);
+    println!("Most was {} with {}", max, (&max_key).into_iter().collect::<String>());
+    let real_message = decrypt(&ascii_values, &max_key);
+    println!("Message is \n{}", real_message);
+    println!("Sum is {}", real_message.as_bytes().into_iter().sum::<u8>());
 }
 
 fn to_vec_of_ints(string: &str) -> Vec<u32> {
