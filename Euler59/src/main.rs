@@ -31,10 +31,11 @@ fn main() {
             }
         }
     }
-    println!("Most was {} with {}", max, (&max_key).into_iter().collect::<String>());
+    let key_as_string: String = max_key.iter().cloned().collect();
+    println!("Most was {} with {}", max, key_as_string);
     let real_message = decrypt(&ascii_values, &max_key);
     println!("Message is \n{}", real_message);
-    println!("Sum is {}", real_message.as_bytes().into_iter().sum::<u8>());
+    println!("Sum is {}", real_message.as_bytes().into_iter().map(|x| *x as u32).sum::<u32>());
 }
 
 fn to_vec_of_ints(string: &str) -> Vec<u32> {
@@ -93,7 +94,7 @@ impl Dictionary {
     }
 
     fn union(&self, other_words: &[&str]) -> u32 {
-        const WORDS_TO_CHECK: usize = 5;
+        const WORDS_TO_CHECK: usize = 20;
         let mut counter = 0;
         for other_words in other_words.into_iter().take(WORDS_TO_CHECK) {
             let word = other_words.trim().to_lowercase();
