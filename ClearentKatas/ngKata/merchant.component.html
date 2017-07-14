@@ -1,0 +1,31 @@
+<datum-component ([value])="merchant.name" [name]="'Name'"> 
+</datum-component>
+<datum-component ([value])="merchant.dba" [name]="'DBA'"> 
+</datum-component>
+<datum-component ([value])="merchant.mcc" [name]="'MCC'"> 
+</datum-component>
+<datum-component ([value])="merchant.averageTicket" [name]="'Average Ticket'"> 
+</datum-component>
+<datum-component ([value])="merchant.annualVolume" [name]="'Annual Volume'"> 
+</datum-component>
+
+<div class="merchantDatum" id="address" data-indexed-by="address" > 
+    <span class="merchantAttribute">
+        Address: 
+    </span>
+    <span class="merchantValue">
+        <datum-component ([value])="merchant.street1" [name]="'Address Line 1'"> 
+        </datum-component>
+        <datum-component ([value])="merchant.street2" [name]="'Address Line 2'"> 
+        </datum-component>
+        <datum-component ([value])="merchant.city" [name]="'City'"> 
+        </datum-component>
+        <datum-component ([value])="merchant.state" [name]="'State'"> 
+        </datum-component>
+        <datum-component ([value])="merchant.zip" [name]="'Zip'"> 
+        </datum-component>
+    </span>
+</div>
+<button id="edit" [class.hidden]="editing" (click)="onEditClicked()">Edit</button>
+<button id="submit" [class.hidden]="!editing" (click)="onSendClicked()">Send</button>
+<button [class.hidden]="!editing" id="cancel" (click)="onCancelClicked()">Cancel</button>

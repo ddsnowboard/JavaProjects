@@ -1,0 +1,10 @@
+<div class="merchantDatum"> 
+    <span class="merchantAttribute">
+        {{datumName}}
+    </span>
+    <span *ngIf="!editing"  class="merchantValue">
+        {{datumValue}}
+    </span>
+
+    <input *ngIf="editing" class="merchantDatum" [(ngModel)]="datumValue" />
+</div>

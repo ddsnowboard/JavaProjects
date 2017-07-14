@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <title>Clearent Merchant Viewer</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link type="text/css" rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <header>
+            <img src="assets/hamburger.svg" id="hamburger" (click)="toggleDrawer()"></img>
+            <div id="companyName">Clearent, LLC.</div>
+            <div id="pageName">Merchant Description</div>
+        </header>
+        <sidebar-component [merchants]="merchants">
+        </sidebar-component>
+        <merchant-component [merchant]="selectedMerchant">
+        </merchant-component>
+    </body>
+</html>
