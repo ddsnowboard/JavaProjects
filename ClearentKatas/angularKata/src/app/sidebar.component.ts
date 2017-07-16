@@ -1,5 +1,6 @@
 import { Component, Input, Output } from '@angular/core';
 import { AppComponent, Merchant, Address } from './app.component';
+import { MerchantService } from './webservice';
 
 const BLANK_MERCHANT: Merchant = {
   merchantId: 0,
@@ -20,7 +21,8 @@ const BLANK_MERCHANT: Merchant = {
 
 @Component({
   selector: "sidebar-component",
-  templateUrl: "./sidebar.component.html"
+  templateUrl: "./sidebar.component.html",
+  providers: [MerchantService]
 })
 export class SidebarComponent {
   @Input() merchants: Merchant[];
@@ -43,5 +45,10 @@ export class SidebarComponent {
 
   clearMerchant() {
     this.selectedMerchant = BLANK_MERCHANT;
+  }
+
+  deleteMerchant(merchant: Merchant) {
+    // TODO: Ring the webservice?
+    this.clearMerchant();
   }
 }

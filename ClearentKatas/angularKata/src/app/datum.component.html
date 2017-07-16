@@ -3,7 +3,7 @@
         {{ name }}:
     </span>
     <span *ngIf="!editing"  class="merchantValue">
-        {{ value }}
+        {{ renderValue() }}
     </span>
 
     <input *ngIf="editing" class="merchantDatum" [(ngModel)]="datumValue" />

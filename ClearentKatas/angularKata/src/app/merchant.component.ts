@@ -1,9 +1,11 @@
 import { Component, Input, Output } from '@angular/core';
 import { AppComponent, Merchant, Address } from './app.component';
+import { MerchantService } from "./webservice";
 
 @Component({
   selector: "merchant-component",
-  templateUrl: "./merchant.component.html"
+  templateUrl: "./merchant.component.html",
+  providers: [MerchantService]
 })
 export class MerchantComponent {
   @Input() merchant: Merchant;
@@ -18,7 +20,7 @@ export class MerchantComponent {
   }
 
   onSendClicked() {
-    // Talk to web service? In due time
+    // TODO: Talk to web service? In due time
     this.editing = false;
   }
 }
