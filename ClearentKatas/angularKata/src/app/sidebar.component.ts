@@ -52,3 +52,7 @@ export class SidebarComponent {
     this.clearMerchant();
   }
 }
+*****
+  // So what I'm going to do is make an ngInit() or whatever method on this
+  // and tell it to load the merchants from the database. Then I'm going to add
+  // databse calls at the TODOs and I should (*should*) be good. We'll see...
