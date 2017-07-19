@@ -11,6 +11,8 @@ export class MerchantComponent {
   @Input() merchant: Merchant;
   editing: boolean = false;
 
+  constructor(private merchantService: MerchantService) {}
+
   onEditClicked() {
     this.editing = true;
   }
@@ -20,7 +22,7 @@ export class MerchantComponent {
   }
 
   onSendClicked() {
-    // TODO: Talk to web service? In due time
     this.editing = false;
+    this.merchantService.sendMerchant(this.merchant);
   }
 }

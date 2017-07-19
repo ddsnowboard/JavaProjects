@@ -2,9 +2,11 @@ import { Injectable } from '@angular/core';
 import { Headers, Http, XHRBackend } from '@angular/http';
 import { Merchant } from './app.component';
 import { Observable } from 'rxjs';
+import 'rxjs/add/operator/map';
 
 
-const API_URL = "clearent.lan:4000/api/";
+const API_URL = "http://cladevwrk03:4321/api/merchant/";
+// const API_URL = "http://localhost:8000/api/merchant";
 
 @Injectable()
 export class MerchantService {
@@ -12,7 +14,7 @@ export class MerchantService {
 
   getMerchants(): Observable<Merchant[]> {
     return this.http.get(API_URL).
-    map(res => res.json());
+      map(res => res.json());
   }
 
   sendMerchant(merchant: Merchant) {

@@ -1,4 +1,4 @@
-import { Component, Input, Output } from '@angular/core';
+import { Component, Input, Output, OnInit } from '@angular/core';
 import { AppComponent, Merchant, Address } from './app.component';
 import { MerchantService } from './webservice';
 
@@ -10,27 +10,41 @@ const BLANK_MERCHANT: Merchant = {
   averageTicket: 0,
   annualVolume: 0,
   address:
-  {addressId: 0,
-    merchantId: 0,
-    street1: "",
-    street2: "",
-    city: "",
-    state: "",
-    zip: ""}
+    {addressId: 0,
+      merchantId: 0,
+      street1: "",
+      street2: "",
+      city: "",
+      state: "",
+      zip: ""}
 };
 
 @Component({
   selector: "sidebar-component",
   templateUrl: "./sidebar.component.html",
-  providers: [MerchantService]
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   @Input() merchants: Merchant[];
   expanded: boolean = false;
   selectedMerchant: Merchant = BLANK_MERCHANT;
 
+  constructor(private merchantService: MerchantService) {}
+
   toggleDrawer() {
     this.expanded = !this.expanded;
+  }
+
+  ngOnInit() {
+
+    let that = this;
+    this.merchantService.getMerchants().subscribe(function(m: Merchant[]) {
+      console.log(m);
+      that.merchants.length = 0;
+      for(let i = 0; i < m.length; i++) {
+        that.merchants.push(m[i]);
+      }
+    });
+
   }
 
   setMerchant(merchant: Merchant) {
@@ -48,11 +62,8 @@ export class SidebarComponent {
   }
 
   deleteMerchant(merchant: Merchant) {
-    // TODO: Ring the webservice?
     this.clearMerchant();
+    this.merchantService.deleteMerchant(merchant);
+    this.ngOnInit();
   }
 }
-*****
-  // So what I'm going to do is make an ngInit() or whatever method on this
-  // and tell it to load the merchants from the database. Then I'm going to add
-  // databse calls at the TODOs and I should (*should*) be good. We'll see...

@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
+import { MerchantService } from './webservice';
 
+/*
 const MERCHANTS: Merchant[] = [
   {
     merchantId:1,
@@ -34,6 +36,9 @@ const MERCHANTS: Merchant[] = [
       zip: "63130"}
   }
 ];
+*/
+
+const MERCHANTS: Merchant[] = [];
 
 
 export class Address {
@@ -58,6 +63,7 @@ export class Merchant {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
+  providers: [MerchantService]
 })
 export class AppComponent {
   merchants: Merchant[] = MERCHANTS;
