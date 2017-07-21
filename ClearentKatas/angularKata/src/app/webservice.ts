@@ -18,6 +18,7 @@ export class MerchantService {
   }
 
   sendMerchant(merchant: Merchant) {
+    // You have to subscribe to these for them to do anything, you nerd. 
     if(merchant.merchantId == 0)
       this.http.post(API_URL, JSON.stringify(merchant));
     else
