@@ -20,9 +20,9 @@ export class MerchantService {
   sendMerchant(merchant: Merchant) {
     // You have to subscribe to these for them to do anything, you nerd. 
     if(merchant.merchantId == 0)
-      this.http.post(API_URL, JSON.stringify(merchant));
+    this.http.post(API_URL, JSON.stringify(merchant)).subscribe(function(m) {});
     else
-      this.http.put(API_URL + merchant.merchantId, JSON.stringify(merchant));
+    this.http.put(API_URL + merchant.merchantId, JSON.stringify(merchant)).subscribe(function(m) {});
   }
 
   deleteMerchant(merchant: Merchant) {
