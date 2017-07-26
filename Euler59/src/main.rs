@@ -1,3 +1,6 @@
+extern crate rayon;
+
+use rayon::prelude::*;
 use std::fs::File;
 use std::io::prelude::*;
 use std::char;
@@ -20,17 +23,17 @@ fn main() {
 
     let mut max = 0;
     let mut max_key: Vec<char> = vec![];
-    for key in KeyIterator::new(KEY_LENGTH) {
+    KeyIterator::new(KEY_LENGTH).into_par_iter().foreach(| ref key | {
         let decrypted = decrypt(&ascii_values, &key);
         let words: Vec<&str> = decrypted.split_whitespace().collect();
-        if (&words).into_iter().all(|x| x.len() <= LONGEST_WORDS_IN_DICTIONARY) {
+        if (&words).par_iter().all(|x| x.len() <= LONGEST_WORDS_IN_DICTIONARY) {
             let count = dict.union(&words);
             if count > max {
                 max = count;
                 max_key = key.clone();
             }
         }
-    }
+    });
     let key_as_string: String = max_key.iter().cloned().collect();
     println!("Most was {} with {}", max, key_as_string);
     let real_message = decrypt(&ascii_values, &max_key);
