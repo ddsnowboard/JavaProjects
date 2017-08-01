@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Headers, Http, XHRBackend } from '@angular/http';
+import { Headers, Http, RequestOptions } from '@angular/http';
 import { Merchant } from './app.component';
 import { Observable } from 'rxjs';
 import 'rxjs/add/operator/map';
 
 
-// const API_URL = "http://cladevwrk03:4321/api/merchant/";
-const API_URL = "http://localhost:8000/api/merchant";
+const API_URL = "http://cladevwrk03:4321/api/merchant/";
+// const API_URL = "http://localhost:8000/api/merchant";
 
 @Injectable()
 export class MerchantService {
@@ -18,10 +18,12 @@ export class MerchantService {
   }
 
   sendMerchant(merchant: Merchant) {
+    let headers = new Headers();
+    headers.append("Content-type", "application/json");
     if(merchant.merchantId == 0)
-      this.http.post(API_URL, JSON.stringify(merchant)).subscribe(function(m) {});
+      this.http.post(API_URL, merchant, new RequestOptions(headers)).subscribe(function(m) {});
     else
-      this.http.put(API_URL + merchant.merchantId, JSON.stringify(merchant)).subscribe(function(m) {});
+      this.http.put(API_URL + merchant.merchantId, merchant, new RequestOptions(headers)).subscribe(function(m) {});
   }
 
   deleteMerchant(merchant: Merchant) {

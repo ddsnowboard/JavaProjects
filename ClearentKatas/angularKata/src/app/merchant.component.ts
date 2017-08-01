@@ -23,6 +23,7 @@ export class MerchantComponent {
 
   onSendClicked() {
     this.editing = false;
+    console.log(this.merchant);
     this.merchantService.sendMerchant(this.merchant);
   }
 }

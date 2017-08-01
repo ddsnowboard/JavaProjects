@@ -1,4 +1,4 @@
-import { Component, Input, Output } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { AppComponent, Merchant, Address } from './app.component';
 import { NgModel } from '@angular/forms';
 
@@ -8,6 +8,7 @@ import { NgModel } from '@angular/forms';
 })
 export class DatumComponent {
   @Input() value;
+  @Output() valueChange = new EventEmitter();
   @Input() name: string;
   @Input() editing: boolean;
 
@@ -16,6 +17,11 @@ export class DatumComponent {
       return "";
     else
       return this.value;
+  }
+
+  changed(newValue) {
+  this.value = newValue;
+  this.valueChange.emit(this.value);
   }
 }
 

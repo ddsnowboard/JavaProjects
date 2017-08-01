@@ -62,6 +62,7 @@ export class SidebarComponent implements OnInit {
   clearMerchant() {
     this.expanded = false;
     this.selectedMerchant = BLANK_MERCHANT;
+    this.editor.editing = true;
   }
 
   deleteMerchant(merchant: Merchant) {
