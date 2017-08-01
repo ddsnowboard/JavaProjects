@@ -4,8 +4,8 @@
         <div id="companyName">Clearent, LLC.</div>
         <div id="pageName">Merchant Description</div>
     </header>
-    <sidebar-component id="sidebar" [class.expanded]="sidebar.expanded" #sidebar [merchants]="merchants">
+    <sidebar-component id="sidebar" [class.expanded]="sidebar.expanded" #sidebar [merchants]="merchants" [editor]="merchant">
     </sidebar-component>
-    <merchant-component [merchant]="sidebar.selectedMerchant">
-    </merchant-component> 
+    <merchant-component #merchant [merchant]="sidebar.selectedMerchant">
+    </merchant-component>
 </body>

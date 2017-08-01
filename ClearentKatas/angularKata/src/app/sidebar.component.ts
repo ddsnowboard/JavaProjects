@@ -1,6 +1,7 @@
 import { Component, Input, Output, OnInit } from '@angular/core';
 import { AppComponent, Merchant, Address } from './app.component';
 import { MerchantService } from './webservice';
+import { MerchantComponent } from './merchant.component';
 
 const BLANK_MERCHANT: Merchant = {
   merchantId: 0,
@@ -25,6 +26,7 @@ const BLANK_MERCHANT: Merchant = {
 })
 export class SidebarComponent implements OnInit {
   @Input() merchants: Merchant[];
+  @Input() editor: MerchantComponent;
   expanded: boolean = false;
   selectedMerchant: Merchant = BLANK_MERCHANT;
 
@@ -58,6 +60,7 @@ export class SidebarComponent implements OnInit {
   }
 
   clearMerchant() {
+    this.expanded = false;
     this.selectedMerchant = BLANK_MERCHANT;
   }
 
