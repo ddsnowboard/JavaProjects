@@ -2,3 +2,6 @@
 name = "euler_59"
 version = "0.1.0"
 authors = ["Will Koster <jameswk2@illinois.edu>"]
+
+[dependencies]
+rayon = "0.8.2"

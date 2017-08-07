@@ -1,3 +1,6 @@
+extern crate rayon;
+
+use rayon::prelude::*;
 use std::fs::File;
 use std::io::prelude::*;
 use std::char;
@@ -18,24 +21,33 @@ fn main() {
 
     let dict = Dictionary::new();
 
-    let mut max = 0;
-    let mut max_key: Vec<char> = vec![];
-    for key in KeyIterator::new(KEY_LENGTH) {
+    let keys: Vec<Vec<char>> = KeyIterator::new(KEY_LENGTH).collect();
+    if let Some(Some((biggest_key, biggest_count))) = keys.par_iter().map(| key | {
         let decrypted = decrypt(&ascii_values, &key);
         let words: Vec<&str> = decrypted.split_whitespace().collect();
         if (&words).into_iter().all(|x| x.len() <= LONGEST_WORDS_IN_DICTIONARY) {
             let count = dict.union(&words);
-            if count > max {
-                max = count;
-                max_key = key.clone();
-            }
+            Some((key.clone(), count))
         }
+        else {
+            None
+        }
+    }).max_by_key(| ref pair | {
+        match **pair {
+            Some((_, c)) => c,
+            None => 0,
+        }
+    })
+    {
+        let key_as_string: String = biggest_key.iter().cloned().collect();
+        println!("Most was {} with {}", biggest_count, key_as_string);
+        let real_message = decrypt(&ascii_values, &biggest_key);
+        println!("Message is \n{}", real_message);
+        println!("Sum is {}", real_message.as_bytes().into_iter().map(|x| *x as u32).sum::<u32>());
     }
-    let key_as_string: String = max_key.iter().cloned().collect();
-    println!("Most was {} with {}", max, key_as_string);
-    let real_message = decrypt(&ascii_values, &max_key);
-    println!("Message is \n{}", real_message);
-    println!("Sum is {}", real_message.as_bytes().into_iter().map(|x| *x as u32).sum::<u32>());
+    else {
+        println!("We didn't find anything");
+    }
 }
 
 fn to_vec_of_ints(string: &str) -> Vec<u32> {
