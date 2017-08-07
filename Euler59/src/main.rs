@@ -23,7 +23,7 @@ fn main() {
 
     let mut max = 0;
     let mut max_key: Vec<char> = vec![];
-    KeyIterator::new(KEY_LENGTH).into_par_iter().foreach(| ref key | {
+    for key in KeyIterator::new(KEY_LENGTH) {
         let decrypted = decrypt(&ascii_values, &key);
         let words: Vec<&str> = decrypted.split_whitespace().collect();
         if (&words).par_iter().all(|x| x.len() <= LONGEST_WORDS_IN_DICTIONARY) {
@@ -33,7 +33,7 @@ fn main() {
                 max_key = key.clone();
             }
         }
-    });
+    };
     let key_as_string: String = max_key.iter().cloned().collect();
     println!("Most was {} with {}", max, key_as_string);
     let real_message = decrypt(&ascii_values, &max_key);
