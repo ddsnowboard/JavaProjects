@@ -7,7 +7,7 @@
         "address":
         {"addressId":1,
             "merchantId":1,
-            "street1":"123 Main St",
+            "street1":"nelly.net",
             "street2":"Suite 56",
             "city":"Clayton",
             "state":"MO",

@@ -1,0 +1,139 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #50A7AE;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+#hamburger {
+    margin-left: 15px;
+    margin-top: 10px;
+    transition: transform .5s;
+}
+
+#hamburger.vertical {
+    transform: rotate(90deg);
+    transition: transform .5s;
+}
+
+#sidebar {
+    position: absolute;
+    left: -250px;
+    width: 250px;
+    min-width: 250px;
+    transition: left .5s;
+    background-color: white;
+    height: 100%;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+}
+
+#sidebar.expanded {
+    transition: left .5s;
+    left: 0;
+}
+
+#sidebar > .companyName {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px solid darkgrey;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.companyName > .deleteButton {
+    display: inline-block;
+    float: right;
+    cursor: pointer;
+}
+
+
+header > * {
+    display: inline-block;
+}
+
+header > div {
+    vertical-align: text-bottom;
+}
+
+header > div:last-child:first-child {
+    padding-bottom: 8px;
+}
+
+#companyName {
+    font-size: 2em;
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+#pageName {
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.merchantDatum {
+    max-width: 450px;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+}
+
+.merchantValue {
+    display: inline-block;
+    vertical-align: top;
+}
+
+input.merchantValue, textarea.merchantValue {
+    display: block;
+    width: 100%;
+}
+
+button {
+    margin-left: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+input.merchantValue {
+    margin-top: 5px;
+}
+
+div.merchantDatum {
+    width: 100%;
+}
+
+#status { 
+    margin: 15px;
+}
+
+table {
+    width: 100%;
+    max-width: 600px;
+    border-collapse: collapse;
+}
+
+tr {
+    border-top: 1px solid grey;
+    border-bottom: 1px solid grey;
+}
+
+tbody > tr:hover {
+    background-color: lightgrey;
+    cursor: pointer;
+}
+
+td {
+    border-left: 1px solid grey;
+    border-right: 1px solid grey;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}

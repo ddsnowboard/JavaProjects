@@ -1,0 +1,5 @@
+<div *ngFor="let merchant of merchants" class="companyName" (click)="setMerchant(merchant)">
+    {{merchant.dba}}
+    <span class="deleteButton" (click)="deleteMerchant(merchant)">[delete]</span>
+</div>
+<button (click)="clearMerchant()">New Merchant</button>
