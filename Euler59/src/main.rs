@@ -57,7 +57,7 @@ fn to_vec_of_ints(string: &str) -> Vec<u32> {
 }
 
 fn decrypt(characters: &[u32], key: &[char]) -> String {
-    let cycler = key.into_iter().map(|x| u32::from(*x)).collect::<Vec<u32>>().into_iter().cycle();
+    let cycler = key.into_iter().map(|x| u32::from(*x)).cycle();
     characters.into_iter().zip(cycler)
         .map(|(c, k)| *c ^ k)
         .map(|x| std::char::from_u32(x).unwrap())
@@ -94,6 +94,7 @@ impl Iterator for KeyIterator {
 }
 
 struct Dictionary {
+    // Why doesn't this use a hashmap?
     words: Vec<String>
 }
 
@@ -105,17 +106,23 @@ impl Dictionary {
         Dictionary { words: reader.lines().map(|x| x.unwrap()).collect() } 
     }
 
+    fn contains(&self, word: &str) -> bool {
+        let word = other_word.trim().to_lowercase();
+        for line in &self.words {
+            let line = String::from(line.trim());
+            if line == word {
+                return true;
+            }
+        }
+        false
+    }
+
     fn union(&self, other_words: &[&str]) -> u32 {
         const WORDS_TO_CHECK: usize = 20;
         let mut counter = 0;
-        for other_words in other_words.into_iter().take(WORDS_TO_CHECK) {
-            let word = other_words.trim().to_lowercase();
-            for line in &self.words {
-                let line = String::from(line.trim());
-                if line == word {
-                    counter += 1;
-                    break;
-                }
+        for other_word in other_word.into_iter().take(WORDS_TO_CHECK) {
+            if(self.contains(other_word)) {
+                counter += 1;
             }
         }
         counter
