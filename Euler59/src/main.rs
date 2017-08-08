@@ -94,8 +94,7 @@ impl Iterator for KeyIterator {
 }
 
 struct Dictionary {
-    // Why doesn't this use a hashmap?
-    words: Vec<String>
+    words: HashMap<String, bool>;
 }
 
 impl Dictionary {
@@ -103,18 +102,12 @@ impl Dictionary {
         const FILE_PATH: &'static str = "/usr/share/dict/words";
         let file = File::open(FILE_PATH).unwrap();
         let reader = BufReader::new(&file);
-        Dictionary { words: reader.lines().map(|x| x.unwrap()).collect() } 
+        Dictionary { words: reader.lines().map(|x| (String::from(x.unwrap()), true)).collect() } 
     }
 
     fn contains(&self, word: &str) -> bool {
         let word = other_word.trim().to_lowercase();
-        for line in &self.words {
-            let line = String::from(line.trim());
-            if line == word {
-                return true;
-            }
-        }
-        false
+        self.words.contains(word)
     }
 
     fn union(&self, other_words: &[&str]) -> u32 {
