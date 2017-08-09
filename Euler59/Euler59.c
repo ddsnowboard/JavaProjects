@@ -35,25 +35,37 @@ int main(int argc, char** argv)
         *walker++ = currentNumber;
     fclose(in);
 
-    // char key[KEY_LENGTH] = {'a', 'a', 'a'};
-    char key[KEY_LENGTH] = {'g', 'o', 'd'};
+    char key[KEY_LENGTH] = {'a', 'a', 'a'};
     char* out = calloc(length + 1, sizeof(char));
+
+    char bestKey[KEY_LENGTH] = {'\0', '\0', '\0'};
+    int mostWords = 0;
 
     do {
         decrypt(key, letters, out, length);
-        printf("%s\n", out);
-        printf("sum is %d\n", sumCodes(out));
         int numWords;
         char** words = wordsplit(out, &numWords);
         // If there is nothing there, we don't have to check, 
         // but we still have to free
-        if(words != NULL) 
-            printf("There were %d words found with key %c%c%c\n", testWords(words, numWords), key[0], key[1], key[2]);
-
+        if(words != NULL) {
+            int wordsFound = testWords(words, numWords);
+            if(wordsFound > mostWords) {
+                mostWords = wordsFound;
+                memcpy(bestKey, key, sizeof(key));
+            }
+            printf("There were %d words found with key %c%c%c\n", wordsFound , key[0], key[1], key[2]);
+        }
         freeWordlist(words, numWords);
     }
-    while(0);
-    // while(iterateKey(key) == OK);
+    while(iterateKey(key) == OK);
+
+    if(bestKey[0] == '\0') {
+        printf("We couldn't find anything!\n");
+    } else {
+        decrypt(bestKey, letters, out, length);
+        printf("%s\n", out);
+        printf("The sum is %d\n", sumCodes(out));
+    }
 
     free(out);
     free(letters);
@@ -101,7 +113,7 @@ int iterateKey(char key[]) {
             return OK;
         }
     }
-    printf("You ran out of keys!");
+    printf("You ran out of keys!\n");
     return ERROR;
 }
 
@@ -187,6 +199,8 @@ void chomp(char* s) {
 }
 
 int testWords(char** wordList, int listLength) {
+    // Refactor this to use a hashset
+    *********
     FILE* wordsFile = fopen(WORDLIST, "r");
     int foundWords = 0;
     char currentDictionaryWord[LONGEST_WORD_IN_DICTIONARY];
