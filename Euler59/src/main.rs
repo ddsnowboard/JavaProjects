@@ -26,7 +26,7 @@ fn main() {
     let keys: Vec<Vec<char>> = KeyIterator::new(KEY_LENGTH).collect();
 
     let max_pair = keys.par_iter()
-        .map(|key: Vec<char>| {
+        .map(| key | {
             let decrypted = decrypt(&ascii_values, &key);
             let words: Vec<&str> = decrypted.split_whitespace().collect();
             if words.iter().all(|x| x.len() <= LONGEST_WORDS_IN_DICTIONARY) {
@@ -36,26 +36,27 @@ fn main() {
                 None
             }
         })
-        .max_by_key(|&pair| match pair {
-            Some((_, c)) => c,
-            None => 0,
-        });
+    .max_by_key(| pair | 
+                match *pair {
+                    Some((_, c)) => c,
+                    None => 0,
+                });
 
     // The outer Option is from max_by_key(), the inner one is from the lambda I gave map()
     if let Some(Some((biggest_key, biggest_count))) = max_pair {
         // Does this need iter or into_iter? Why do I need cloned()?
-        let key_as_string: String = biggest_key.cloned().iter().collect();
+        let key_as_string: String = biggest_key.iter().map(|&c| c).collect();
         println!("Most was {} with {}", biggest_count, key_as_string);
         let real_message = decrypt(&ascii_values, &biggest_key);
         println!("Message is \n{}", real_message);
         println!(
             "Sum is {}",
             real_message
-                .as_bytes()
-                .iter()
-                .map(|x| *x as u32)
-                .sum::<u32>()
-        );
+            .as_bytes()
+            .iter()
+            .map(|x| *x as u32)
+            .sum::<u32>()
+            );
     } else {
         println!("We didn't find anything");
     }
@@ -70,7 +71,7 @@ fn to_vec_of_ints(string: &str) -> Vec<u32> {
 }
 
 fn decrypt(characters: &[u32], key: &[char]) -> String {
-    let cycler = key.iter().map(|&x| u32::from(x)).cycle();
+    let cycler = key.iter().map(|&x| u32::from(x)).collect::<Vec<_>>().into_iter().cycle();
     characters
         .iter()
         .zip(cycler)
@@ -138,6 +139,6 @@ impl Dictionary {
                 true => 1,
                 false => 0,
             })
-            .sum()
+        .sum()
     }
 }
