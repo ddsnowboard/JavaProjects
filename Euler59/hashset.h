@@ -21,4 +21,6 @@ void hs_insert(struct HashSet set, char* s);
 int contains(struct HashSet set, char* s);
 
 void hs_free(struct HashSet hs);
+
+void hs_remove(struct HashSet hs, char* s);
 #endif

@@ -1,7 +1,8 @@
 #include <stdlib.h>
-#include "hashset.h"
 #include <string.h>
 #include <math.h>
+
+#include "hashset.h"
 
 int _hash(char* s) {
     int idx = 0;
@@ -51,7 +52,7 @@ int contains(struct HashSet set, char* s) {
     return FALSE;
 }
 
-void _freeChain(struct Link* l) {
+static void _freeChain(struct Link* l) {
     if(l == NULL)
         return;
     _freeChain(l->next);
@@ -67,3 +68,18 @@ void hs_free(struct HashSet hs) {
     free(hs.table);
 }
 
+void hs_remove(struct HashSet hs, char* s) {
+    int hashCode = _hash(s) / set.size;
+    struct Link** walker = &set.table[hashCode];
+    while(*walker != NULL) {
+        struct Link curr = **walker;
+        if(strcmp(curr.key, s) == 0) {
+            struct Link* newNext = curr.next;
+            (**walker).next = NULL;
+            _freeChain(*walker);
+            *walker = newNext;
+            return;
+        }
+        walker = walker->next;
+    }
+}
