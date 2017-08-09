@@ -1,8 +1,8 @@
 .PHONY: debug fast clean
 
-debug : Euler59.c
-	gcc -Wall -std=c99 -Wall -o main -g Euler59.c -lm -ggdb
-fast : Euler59.c
-	gcc -Wall -std=c99 -Wall -O3 -o main -g Euler59.c -lm -ggdb
+debug : Euler59.c hashset.o
+	gcc -Wall -o main -g $^
+fast : Euler59.c hashset.o
+	gcc -Wall -O3 -o main -g $^
 clean : 
-	$(RM) main 
+	$(RM) main *.o
