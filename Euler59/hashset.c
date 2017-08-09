@@ -9,7 +9,7 @@ int _hash(char* s) {
     int length = strlen(s);
     int out = 0;
     char curr;
-    while((curr = s[idx++])) 
+    while((curr = s[idx++]))
         out += (int) curr * pow(31, length - 1 - idx);
     return out;
 }
@@ -69,8 +69,8 @@ void hs_free(struct HashSet hs) {
 }
 
 void hs_remove(struct HashSet hs, char* s) {
-    int hashCode = _hash(s) / set.size;
-    struct Link** walker = &set.table[hashCode];
+    int hashCode = _hash(s) / hs.size;
+    struct Link** walker = &hs.table[hashCode];
     while(*walker != NULL) {
         struct Link curr = **walker;
         if(strcmp(curr.key, s) == 0) {
@@ -80,6 +80,6 @@ void hs_remove(struct HashSet hs, char* s) {
             *walker = newNext;
             return;
         }
-        walker = walker->next;
+        walker = &(*walker)->next;
     }
 }
