@@ -32,6 +32,7 @@ void hs_insert(struct HashSet set, char* s) {
         walker = &(**walker).next;
     }
     struct Link* newLink = malloc(sizeof(struct Link));
+    // Use strdup() here
     char* newKey = malloc(sizeof(char) * strlen(s) + 1);
     strcpy(newKey, s);
     newLink->key = newKey;
