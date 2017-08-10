@@ -23,7 +23,7 @@ struct HashSet hs_create(int n) {
 }
 
 void hs_insert(struct HashSet set, char* s) {
-    int hashCode = _hash(s) / set.size;
+    int hashCode = _hash(s) % set.size;
     struct Link** walker = &set.table[hashCode];
     while(*walker != NULL) {
         struct Link curr = **walker;
@@ -41,8 +41,8 @@ void hs_insert(struct HashSet set, char* s) {
     *walker = newLink;
 }
 
-int contains(struct HashSet set, char* s) {
-    int hashCode = _hash(s) / set.size;
+int hs_contains(struct HashSet set, char* s) {
+    int hashCode = _hash(s) % set.size;
     struct Link* walker = set.table[hashCode];
     while(walker != NULL) {
         struct Link curr = *walker;
@@ -70,7 +70,7 @@ void hs_free(struct HashSet hs) {
 }
 
 void hs_remove(struct HashSet hs, char* s) {
-    int hashCode = _hash(s) / hs.size;
+    int hashCode = _hash(s) % hs.size;
     struct Link** walker = &hs.table[hashCode];
     while(*walker != NULL) {
         struct Link curr = **walker;

@@ -5,7 +5,10 @@ debug : Euler59.c hashset.o
 fast : Euler59.c hashset.o
 	gcc -Wall -O3 -o main -g $^
 
+tester : hashset.o tester.c
+	gcc -Wall -g -o $@ $^ -lm
+
 hashset.o : hashset.c hashset.h
-	gcc -c -Wall -std=c99 $< -lm
+	gcc -g -c -Wall -std=c99 $< -lm
 clean : 
-	$(RM) main *.o
+	$(RM) main *.o tester
