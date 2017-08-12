@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include "hashset.h"
+
 #define MAX_WORD_COUNT 1000
 // Found through experimentation
 #define LONGEST_WORD_IN_DICTIONARY 26
@@ -13,6 +16,7 @@
 #define ERROR 1
 #define OK 0
 #define WORDS_TO_TEST 20
+#define HASHSET_SIZE 250
 
 char** wordsplit(char* inString, int* numWordsOut);
 int letterCount(FILE*);
@@ -23,6 +27,9 @@ int fgetpair(FILE* f);
 void freeWordlist(char** wordlist, int length);
 int testWords(char** wordList, int listLength);
 int sumCodes(char* s);
+struct HashSet* getDictionary();
+
+static struct HashSet* words = NULL;
 
 int main(int argc, char** argv)
 {
@@ -199,24 +206,14 @@ void chomp(char* s) {
 }
 
 int testWords(char** wordList, int listLength) {
-    // Refactor this to use a hashset
-    *********
-    FILE* wordsFile = fopen(WORDLIST, "r");
+    struct HashSet* words = getDictionary();
     int foundWords = 0;
-    char currentDictionaryWord[LONGEST_WORD_IN_DICTIONARY];
-    memset(currentDictionaryWord, 0, LONGEST_WORD_IN_DICTIONARY);
     for(int i = 0; i < WORDS_TO_TEST && i < listLength; i++) {
         char* currentWord = wordList[i];
-        rewind(wordsFile);
-        while(fgets(currentDictionaryWord, LONGEST_WORD_IN_DICTIONARY, wordsFile) != NULL) {
-            chomp(currentDictionaryWord);
-            if(strcmp(currentWord, currentDictionaryWord) == 0) {
-                foundWords++;
-                break;
-            }
+        if(hs_contains(words, currentWord)) {
+            foundWords++;
         }
     }
-    fclose(wordsFile);
     return foundWords;
 }
 
@@ -225,4 +222,18 @@ int sumCodes(char* s) {
     while(*s)
         out += *s++;
     return out;
+}
+
+struct HashSet* getDictionary() {
+    if(words == NULL) {
+        FILE* wordsFile = fopen(WORDLIST, "r");
+        words = hs_create(HASHSET_SIZE);
+        char currentDictionaryWord[LONGEST_WORD_IN_DICTIONARY];
+        while(fgets(currentDictionaryWord, LONGEST_WORD_IN_DICTIONARY, wordsFile) != NULL) {
+            chomp(currentDictionaryWord);
+            hs_insert(words, currentDictionaryWord);
+        }
+        fclose(wordsFile);
+    }
+    return words;
 }
