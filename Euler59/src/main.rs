@@ -12,6 +12,7 @@ use std::io::BufReader;
 
 const KEY_LENGTH: usize = 3;
 const LONGEST_WORDS_IN_DICTIONARY: usize = 26;
+
 fn main() {
     let mut contents = String::new();
     const FILENAME: &'static str = "cipher.txt";
@@ -44,7 +45,6 @@ fn main() {
 
     // The outer Option is from max_by_key(), the inner one is from the lambda I gave map()
     if let Some(Some((biggest_key, biggest_count))) = max_pair {
-        // Does this need iter or into_iter? Why do I need cloned()?
         let key_as_string: String = biggest_key.iter().map(|&c| c).collect();
         println!("Most was {} with {}", biggest_count, key_as_string);
         let real_message = decrypt(&ascii_values, &biggest_key);
@@ -71,7 +71,7 @@ fn to_vec_of_ints(string: &str) -> Vec<u32> {
 }
 
 fn decrypt(characters: &[u32], key: &[char]) -> String {
-    let cycler = key.iter().map(|&x| u32::from(x)).collect::<Vec<_>>().into_iter().cycle();
+    let cycler = key.into_iter().map(|&x| u32::from(x)).collect::<Vec<_>>().into_iter().cycle();
     characters
         .iter()
         .zip(cycler)
@@ -80,13 +80,15 @@ fn decrypt(characters: &[u32], key: &[char]) -> String {
         .collect()
 }
 
-struct KeyIterator {
+struct KeyIterator<'a> {
     current_password: Vec<char>,
     password_length: usize,
 }
 
-impl KeyIterator {
-    fn new(i: usize) -> KeyIterator {
+impl<'a> KeyIterator<'a> {
+    // I don't really understand these. But I can avoid a hot clone() call if I do. So I better do
+    // it.
+    fn new(i: usize) -> KeyIterator<'a> {
         KeyIterator {
             current_password: vec!['a'; i],
             password_length: i,
@@ -94,11 +96,11 @@ impl KeyIterator {
     }
 }
 
-impl Iterator for KeyIterator {
-    type Item = Vec<char>;
+impl<'a> Iterator for KeyIterator<'a> {
+    type Item = &'a [char];
 
     // Why doesn't this return a slice or a borrow?
-    fn next(&mut self) -> Option<Vec<char>> {
+    fn next(&'a mut self) -> Option<&'a [char]> {
         for idx in (0..self.password_length).rev() {
             if self.current_password[idx] == 'z' {
                 self.current_password[idx] = 'a';
@@ -106,7 +108,7 @@ impl Iterator for KeyIterator {
             } else {
                 self.current_password[idx] =
                     std::char::from_u32(u32::from(self.current_password[idx]) + 1).unwrap();
-                return Some(self.current_password.clone());
+                return Some(&self.current_password);
             }
         }
         None
