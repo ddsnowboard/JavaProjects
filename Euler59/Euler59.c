@@ -16,7 +16,7 @@
 #define ERROR 1
 #define OK 0
 #define WORDS_TO_TEST 20
-#define HASHSET_SIZE 250
+#define HASHSET_SIZE 5000
 
 char** wordsplit(char* inString, int* numWordsOut);
 int letterCount(FILE*);
@@ -76,6 +76,7 @@ int main(int argc, char** argv)
 
     free(out);
     free(letters);
+    hs_free(words);
     return 0;
 }
 
@@ -99,7 +100,6 @@ int letterCount(FILE *f)
 }
 
 int iterateKey(char key[]) {
-    // Assert key is valid
     for(int i = 0; i < KEY_LENGTH; i++) {
         if(key[i] > 'z' || key[i] < 'a') {
             char st[KEY_LENGTH + 1];
@@ -174,7 +174,6 @@ char** wordsplit(char* inString, int* numWordsOut) {
             if(idx < MAX_WORD_LEN)
                 buffer[idx++] = curr;
             else {
-                // This is certainly not right
                 for(int i = 0; i < countOfStrings; i++)
                     free(strings[i]);
                 *numWordsOut = 0;
