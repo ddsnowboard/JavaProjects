@@ -71,7 +71,7 @@ fn to_vec_of_ints(string: &str) -> Vec<u32> {
 }
 
 fn decrypt(characters: &[u32], key: &[char]) -> String {
-    let cycler = key.into_iter().map(|&x| u32::from(x)).collect::<Vec<_>>().into_iter().cycle();
+    let cycler = key.iter().map(|&x| u32::from(x)).collect::<Vec<_>>().into_iter().cycle();
     characters
         .iter()
         .zip(cycler)
@@ -80,15 +80,13 @@ fn decrypt(characters: &[u32], key: &[char]) -> String {
         .collect()
 }
 
-struct KeyIterator<'a> {
+struct KeyIterator {
     current_password: Vec<char>,
     password_length: usize,
 }
 
-impl<'a> KeyIterator<'a> {
-    // I don't really understand these. But I can avoid a hot clone() call if I do. So I better do
-    // it.
-    fn new(i: usize) -> KeyIterator<'a> {
+impl KeyIterator {
+    fn new(i: usize) -> KeyIterator {
         KeyIterator {
             current_password: vec!['a'; i],
             password_length: i,
@@ -96,11 +94,11 @@ impl<'a> KeyIterator<'a> {
     }
 }
 
-impl<'a> Iterator for KeyIterator<'a> {
-    type Item = &'a [char];
+impl Iterator for KeyIterator {
+    type Item = Vec<char>;
 
     // Why doesn't this return a slice or a borrow?
-    fn next(&'a mut self) -> Option<&'a [char]> {
+    fn next(&mut self) -> Option<Vec<char>> {
         for idx in (0..self.password_length).rev() {
             if self.current_password[idx] == 'z' {
                 self.current_password[idx] = 'a';
@@ -108,7 +106,7 @@ impl<'a> Iterator for KeyIterator<'a> {
             } else {
                 self.current_password[idx] =
                     std::char::from_u32(u32::from(self.current_password[idx]) + 1).unwrap();
-                return Some(&self.current_password);
+                return Some(self.current_password.clone());
             }
         }
         None
