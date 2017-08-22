@@ -31,8 +31,7 @@ int isPermutation(int a, int b)
     // shadowA and shadowB should become a number 
     // where each digit corresponds to how many of
     // a certain number are in a and b. So if shadowA is 12345, 
-    // there would be 5 ones, 4 twos, 3 threes, etc. I don't know how
-    // I came up with this, but it worked on the first try. 10/10
+    // there would be 5 ones, 4 twos, 3 threes, etc.  
     double shadowA = 0, shadowB = 0;
     int power = 1;
     do
