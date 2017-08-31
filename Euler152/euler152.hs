@@ -1,7 +1,7 @@
 import Numeric
 import Data.Char
 
-top = 25
+top = 18
 
 bottom = 2
 
@@ -22,23 +22,19 @@ bitstrings minLen maxLen =  [x | x <- (takeWhile (\x -> bitLength x <= maxLen) [
 
 combinations = map combination (bitstrings bottom top)
 
--- If I use this instead of what I have, we can bail out early
--- from summing and maybe go faster...?
-gtHalf :: [Float] -> Bool
-gtHalf x = gtHalf' x 0
-
-gtHalf' (x:xs) s | s > 0.5 = False
-  | s <= 0.5 = gtHalf' xs (s + x)
-
-gtHalf' [] s = s == 0.5
-
-sums :: [Float]
-sums = map sum combinations
-
-delta = 0.000001
 half = 0.5
-nearHalf :: Float -> Bool
-nearHalf x = (abs (x - half)) < delta
+
+listSumsEq :: Num a => a -> [a] -> Bool
+listSumsEq n x = listSumsEq' n x 0
+
+listSumsEq' s n (x:xs) | s > n = False
+  | s <= n = listSumsEq' (s + x) n xs 
+
+listSumsEq' s n [] = s == n
+
+equalHalf :: Int
+equalHalf = length (filter (listSumsEq 0.5) combinations)
+
 
 main = do 
-    print [x | x <- sums, nearHalf x]
+    print equalHalf
