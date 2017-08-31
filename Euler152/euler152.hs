@@ -1,38 +1,24 @@
 import Numeric
 import Data.Char
 
-top = 20
+top = 30
 
 bottom = 2
 
-inverseSquares = [1.0 / (fromIntegral x)^2 :: Float | x <- [bottom..top]]
+invSquare :: Int -> Double
+invSquare n = 1.0 / (fromIntegral n)^2
 
-toBinString n = (showIntAtBase 2 intToDigit n "")
+sumInvSquares :: Double -> Int
+sumInvSquares goal = sumInvSquares' goal bottom top 0 0
 
-isSet (i, '1') = i
-isSet (i, '0') = 0
-
-combination n = map isSet [x | x <- zip inverseSquares (toBinString n)]
-
-bitLength :: Int -> Integer
-bitLength n = (floor(((log(fromIntegral n) :: Float) / (log(2.0) :: Float)) + 1)) :: Integer
-
-bitstrings :: Integer -> Integer -> [Int]
-bitstrings minLen maxLen =  [x | x <- (takeWhile (\x -> bitLength x <= maxLen) [0..]), (bitLength x) >= minLen]
-
-combinations = map combination (bitstrings bottom top)
-
-listSumsEq :: (Num a, Ord a) => a -> [a] -> Bool
-listSumsEq n xs = listSumsEq' n 0 xs
-
-listSumsEq' s n (x:xs) | s > n = False
-  | s <= n = listSumsEq' (s + x) n xs 
-
-listSumsEq' s n [] = s == n
-
-equalHalf :: Int
-equalHalf = length (filter (listSumsEq 0.5) combinations)
+sumInvSquares' :: Double -> Int -> Int -> Double -> Int -> Int
+-- sumInvSquares' 0.5 4 6 (0.5 - 1/25) 0 = 1
+sumInvSquares' goal curr end sum count 
+  | curr > end = count
+  | sum + (invSquare curr) < goal = (sumInvSquares' goal (curr + 1) end (sum + (invSquare curr)) count) + (sumInvSquares' goal (curr + 1) end sum count)
+  | sum + (invSquare curr) == goal = 1 + (sumInvSquares' goal (curr + 1) end (sum + (invSquare curr)) count) + (sumInvSquares' goal (curr + 1) end sum count)
+  | sum + (invSquare curr) > goal = (sumInvSquares' goal (curr + 1) end sum count)
 
 
-main = do 
-    print equalHalf
+run = sumInvSquares 0.5
+main = print run
