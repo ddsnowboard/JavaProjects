@@ -1,7 +1,7 @@
 import Numeric
 import Data.Char
 
-top = 18
+top = 20
 
 bottom = 2
 
@@ -22,10 +22,8 @@ bitstrings minLen maxLen =  [x | x <- (takeWhile (\x -> bitLength x <= maxLen) [
 
 combinations = map combination (bitstrings bottom top)
 
-half = 0.5
-
-listSumsEq :: Num a => a -> [a] -> Bool
-listSumsEq n x = listSumsEq' n x 0
+listSumsEq :: (Num a, Ord a) => a -> [a] -> Bool
+listSumsEq n xs = listSumsEq' n 0 xs
 
 listSumsEq' s n (x:xs) | s > n = False
   | s <= n = listSumsEq' (s + x) n xs 
