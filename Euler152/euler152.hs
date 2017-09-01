@@ -16,7 +16,7 @@ sumInvSquares' :: Double -> Int -> Int -> Double -> Int -> Int
 sumInvSquares' goal curr end sum count 
   | curr > end = count
   | sum + (invSquare curr) < goal = (sumInvSquares' goal (curr + 1) end (sum + (invSquare curr)) count) + (sumInvSquares' goal (curr + 1) end sum count)
-  | sum + (invSquare curr) == goal = 1 + (sumInvSquares' goal (curr + 1) end (sum + (invSquare curr)) count) + (sumInvSquares' goal (curr + 1) end sum count)
+  | sum + (invSquare curr) == goal = 1 + (sumInvSquares' goal (curr + 1) end sum count)
   | sum + (invSquare curr) > goal = (sumInvSquares' goal (curr + 1) end sum count)
 
 
