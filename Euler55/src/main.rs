@@ -8,10 +8,8 @@ fn main() {
 fn is_lychrel(mut n: u64) -> bool {
     const MAX_ITERATIONS: u64 = 50;
     let mut counter = MAX_ITERATIONS;
-    let mut current_number = n;
     while counter > 0 {
         let reverse = reverse_number(n);
-        println!("Adding {} and {}", n, reverse);
         n += reverse;
         counter -= 1;
         if n == reverse_number(n) {
