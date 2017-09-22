@@ -43,5 +43,5 @@ def herosPath(i):
 
 print("herosPath({}) = {}".format(0, herosPath(0)))
 print("herosPath({}) = {}".format(2, herosPath(2)))
-print("herosPath({}) = {}".format(2+32+64, herosPath(2+32+64)))
-print("herosPath({}) = {}".format(2+32+16, herosPath(2+32+16)))
+print("herosPath({}) = {}".format(2 + 32 + 64, herosPath(2 + 32 + 64)))
+print("herosPath({}) = {}".format(2 + 32 + 16, herosPath(2 + 32 + 16)))
