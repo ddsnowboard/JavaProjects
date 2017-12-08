@@ -10,7 +10,7 @@ mod linked_list {
 
     struct Node<T> {
         value: T, 
-        next: List<T>
+        next: Box<Link<T>>
     }
 
     impl<T> List<T> {
@@ -18,12 +18,27 @@ mod linked_list {
             List {head: Link::Empty}
         }
 
-        pub fn push(&mut self, val: T) {
-
+        pub fn push_front(&mut self, val: T) {
+            let oldHead = Box::new(self.head);
+            let newNode = Node { value: val, next: oldHead };
+            let newHead: Link<T> = Link::More(Box::new(newNode));
+            self.head = newHead;
         }
         
-        pub fn pop(self) -> Self {
+        pub fn pop_back(&mut self) -> Option<T> {
+            match self.head {
+                Link::Empty => None,
+                Link::More(node) => List::remove_back(&mut *node)
+            }
+        }
 
+        fn remove_back(node: &mut Node<T>) -> Option<T> {
+            None
+            /*
+            match *node.next {
+                Empty =>
+            }
+            */
         }
     }
 
