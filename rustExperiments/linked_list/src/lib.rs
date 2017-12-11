@@ -1,6 +1,6 @@
 mod linked_list {
     pub struct List<T> {
-        head: Link<T>
+        head: Box<Link<T>>
     }
 
     enum Link<T> {
@@ -15,20 +15,21 @@ mod linked_list {
 
     impl<T> List<T> {
         pub fn new() -> Self {
-            List {head: Link::Empty}
+            List {head: Box::new(Link::Empty)}
         }
 
-        pub fn push_front(&mut self, val: T) {
-            let oldHead = Box::new(self.head);
+        pub fn push_front(mut self, val: T) -> Self {
+            let oldHead = self.head;
             let newNode = Node { value: val, next: oldHead };
-            let newHead: Link<T> = Link::More(Box::new(newNode));
+            let newHead = Box::new(Link::More(Box::new(newNode)));
             self.head = newHead;
+            self
         }
         
         pub fn pop_back(&mut self) -> Option<T> {
-            match self.head {
+            match *self.head {
                 Link::Empty => None,
-                Link::More(node) => List::remove_back(&mut *node)
+                Link::More(ref mut node) => List::remove_back(&mut *node)
             }
         }
 
@@ -45,6 +46,6 @@ mod linked_list {
     #[test]
     fn it_works() {
         let l = List::new();
-        assert!(l.head == Link::Empty);
+        assert!(*l.head == Link::Empty);
     }
 }
