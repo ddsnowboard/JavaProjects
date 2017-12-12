@@ -18,31 +18,31 @@ mod linked_list {
         pub fn push_front(&mut self, val: T) {
             use std::mem;
             let newNode = Box::new(Node {
-                    value: val,
-                    next: self.head.take()
-                    });
+                value: val,
+                next: self.head.take()
+            });
             self.head = Some(newNode);
         }
-        
+
         pub fn pop_back(&mut self) -> Option<T> {
             use std::mem;
             self.head.take().map(|node| {
-                    let node = *node;
-                    self.head = node.next;
-                    node.value
-                    })
+                let node = *node;
+                self.head = node.next;
+                node.value
+            })
         }
 
         pub fn peek(&self) -> Option<&T> {
             self.head.as_ref().map(|node| {
-                    &node.value
-                    })
+                &node.value
+            })
         }
 
         pub fn peek_mut(&mut self) -> Option<&mut T> {
             self.head.as_mut().map(|node| {
-                    &mut node.value
-                    })
+                &mut node.value
+            })
         }
     }
 
