@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #define MAX 1000000
-#define NUM_THREADS 8
+#define NUM_THREADS 16
 
 
 void *collatz(void *info);
