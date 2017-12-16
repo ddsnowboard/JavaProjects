@@ -19,4 +19,4 @@ treeToLinkedDList.o : treeToDLinkedList.c
 reverseDoublyLinkedList.o : reverseDoublyLinkedList.c
 	gcc -Wall -g $< -o $@
 clean : 
-	rm *.o *.class
+	$(RM) *.o *.class
