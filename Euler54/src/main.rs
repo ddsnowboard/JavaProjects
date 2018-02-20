@@ -143,6 +143,8 @@ impl Hand {
     }
 
     fn has_n_of_a_kind(&self, n: u32) -> Option<&Card> {
+        // Refactor this to return the highest one all the time so you can have has_high_card =
+        // has_n_of_a_kind(1)
         let hash = self.make_counts();
         for (key, value) in hash.iter() {
             if *value == n {
@@ -216,33 +218,34 @@ impl Card {
 fn player1_wins(p1: &Hand, p2: &Hand) -> bool {
     let pick_winner = |p1_card: Option<&Card>, p2_card: Option<&Card> | {
         match (p1_card, p2_card) {
-            (Some(_), None) => return true,
-            (None, Some(_)) => return false,
-            (Some(c), Some(p)) => return c.value > p.value, 
-            (None, None) => return p1.cards[4].value > p2.cards[4].value
+            (Some(_), None) => true,
+            (None, Some(_)) => false,
+            (Some(c), Some(p)) => if c.value == p.value { p1.cards[4].value > p2.cards[4].value } else { c.value > p.value }, 
+            (None, None) => p1.cards[4].value > p2.cards[4].value
         }
     };
 
     if p1.has_royal_flush().is_some() || p2.has_royal_flush().is_some() {
-        return p1.has_royal_flush().is_some();
+        p1.has_royal_flush().is_some()
     } else if p1.has_straight_flush().is_some() || p2.has_straight_flush().is_some() {
-        return pick_winner(p1.has_straight_flush(), p2.has_straight_flush());
+        pick_winner(p1.has_straight_flush(), p2.has_straight_flush())
     } else if p1.has_4_of_a_kind().is_some() || p2.has_4_of_a_kind().is_some() {
-        return pick_winner(p1.has_4_of_a_kind(), p2.has_4_of_a_kind());
+        pick_winner(p1.has_4_of_a_kind(), p2.has_4_of_a_kind())
     } else if p1.has_full_house().is_some() || p2.has_full_house().is_some() {
-        return pick_winner(p1.has_full_house().map(|t| t.1), p2.has_full_house().map(|t| t.1));
+        pick_winner(p1.has_full_house().map(|t| t.1), p2.has_full_house().map(|t| t.1))
     } else if p1.has_flush().is_some() || p2.has_flush().is_some() {
-        return pick_winner(p1.has_flush(), p2.has_flush());
+        pick_winner(p1.has_flush(), p2.has_flush())
     } else if p1.has_straight().is_some() || p2.has_straight().is_some() {
-        return pick_winner(p1.has_straight(), p2.has_straight());
+        pick_winner(p1.has_straight(), p2.has_straight())
     } else if p1.has_3_of_a_kind().is_some() || p2.has_3_of_a_kind().is_some() {
-        return pick_winner(p1.has_3_of_a_kind(), p2.has_3_of_a_kind());
+        pick_winner(p1.has_3_of_a_kind(), p2.has_3_of_a_kind())
     } else if p1.has_two_pair().is_some() || p2.has_two_pair().is_some() {
-        return pick_winner(p1.has_two_pair().map(|t| t.1), p2.has_two_pair().map(|t| t.1));
+        pick_winner(p1.has_two_pair().map(|t| t.1), p2.has_two_pair().map(|t| t.1))
     } else if p1.has_pair().is_some() || p2.has_pair().is_some() {
-        return pick_winner(p1.has_pair(), p2.has_pair());
+        pick_winner(p1.has_pair(), p2.has_pair())
+    } else {
+        pick_winner(None, None)
     }
-    pick_winner(None, None)
 }
 
 fn main() {
@@ -253,7 +256,10 @@ fn main() {
         if let Ok(line) = line {
             let (h1, h2) = parse_line_of_hands(&line);
             if player1_wins(&h1, &h2) {
+                println!("Player 1 won one");
                 win_count += 1;
+            } else {
+                println!("Player 1 lost one");
             }
         }
     }
@@ -319,7 +325,11 @@ fn test_pair_finding() {
 fn test_full_house_finding() {
     let (h1, _) = parse_line_of_hands("2H 3H 2D 3D 2S 5D 5D 5D 5D 6S");
     if let Some((c1, c2)) = h1.has_full_house() {
-        // Assert c1 != c2, one has value 2, and one has value 3 
+        if c1 == c2 {
+            panic!("has_full_house() returned the same card twice");
+        }
+        assert!(c1.value == Value::Two || c2.value == Value::Two);
+        assert!(c1.value == Value::Three || c2.value == Value::Three);
     } else {
         panic!();
     }
