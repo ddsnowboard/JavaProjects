@@ -4,7 +4,7 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 
-#[derive(PartialEq, Clone, Copy, Hash)]
+#[derive(PartialEq, Clone, Copy, Hash, Debug)]
 enum Suit { Diamonds, Clubs, Spades, Hearts }
 
 fn suit_from_string(s: &str) -> Suit {
@@ -17,7 +17,7 @@ fn suit_from_string(s: &str) -> Suit {
     }
 }
 
-#[derive(PartialEq, Clone, Copy, Ord, PartialOrd, Eq, Hash)]
+#[derive(PartialEq, Clone, Copy, Ord, PartialOrd, Eq, Hash, Debug)]
 enum Value {
     Two = 2,
     Three,
@@ -53,7 +53,7 @@ fn value_from_string(s: &str) -> Value {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 struct Card {
     suit: Suit,
     value: Value
@@ -251,27 +251,76 @@ fn main() {
     let mut win_count = 0;
     for line in reader.lines() {
         if let Ok(line) = line {
-            let mut cards = line.split_whitespace();
-            let mut p1_cards = vec![];
-            for _ in 0..5 {
-                if let Some(c) = cards.next() {
-                    p1_cards.push(c);
-                }
-            }
-            let mut p2_cards = vec![];
-            for _ in 0..5 {
-                if let Some(c) = cards.next() {
-                    p2_cards.push(c);
-                }
-            }
-            let p1_cards = p1_cards.into_iter().map(|s| Card::new(s)).collect();
-            let p2_cards = p2_cards.into_iter().map(|s| Card::new(s)).collect();
-            let h1 = Hand::new(p1_cards);
-            let h2 = Hand::new(p2_cards);
+            let (h1, h2) = parse_line_of_hands(&line);
             if player1_wins(&h1, &h2) {
                 win_count += 1;
             }
         }
     }
     println!("p1 won {} times", win_count);
+}
+
+
+fn parse_line_of_hands(s: &str) -> (Hand, Hand) {
+    let mut cards = s.split_whitespace();
+    let mut p1_cards = vec![];
+    for _ in 0..5 {
+        if let Some(c) = cards.next() {
+            p1_cards.push(c);
+        }
+    }
+    let mut p2_cards = vec![];
+    for _ in 0..5 {
+        if let Some(c) = cards.next() {
+            p2_cards.push(c);
+        }
+    }
+    let p1_cards = p1_cards.into_iter().map(|s| Card::new(s)).collect();
+    let p2_cards = p2_cards.into_iter().map(|s| Card::new(s)).collect();
+    let h1 = Hand::new(p1_cards);
+    let h2 = Hand::new(p2_cards);
+    (h1, h2)
+}
+
+#[test]
+fn test_parsing() {
+    let c = Card::new("5H");
+    assert_eq!(c.value, Value::Five);
+    assert_eq!(c.suit, Suit::Hearts);
+
+
+    let c = Card::new("TD");
+    assert_eq!(c.value, Value::Ten);
+    assert_eq!(c.suit, Suit::Diamonds);
+}
+
+#[test]
+fn test_hand_sorting() {
+    let cards = vec!["5H", "4H", "2H", "6H", "3H"].into_iter().map(|s| Card::new(s)).collect();
+    let hand = Hand::new(cards);
+    let cards = [Card::new("2H"), Card::new("3H"), Card::new("4H"), Card::new("5H"), Card::new("6H")];
+    assert_eq!(hand.cards, cards);
+}
+
+#[test]
+fn test_pair_finding() {
+    let (h1, _) = parse_line_of_hands("2H 3H 4H 2D 5S 5D 5D 5D 5D 6S");
+    if let Some(c) = h1.has_pair() {
+        assert_eq!(c.value, Value::Two);
+    } else {
+        panic!();
+    }
+
+    let (h1, _) = parse_line_of_hands("2H 2S 4H 2D 5S 5D 5D 5D 5D 6S");
+    assert_eq!(h1.has_pair(), None);
+}
+
+#[test]
+fn test_full_house_finding() {
+    let (h1, _) = parse_line_of_hands("2H 3H 2D 3D 2S 5D 5D 5D 5D 6S");
+    if let Some((c1, c2)) = h1.has_full_house() {
+        // Assert c1 != c2, one has value 2, and one has value 3 
+    } else {
+        panic!();
+    }
 }
