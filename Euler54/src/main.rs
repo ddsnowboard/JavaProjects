@@ -145,10 +145,14 @@ impl Hand {
     fn has_n_of_a_kind(&self, n: u32) -> Option<&Card> {
         // Refactor this to return the highest one all the time so you can have has_high_card =
         // has_n_of_a_kind(1)
-        let hash = self.make_counts();
-        for (key, value) in hash.iter() {
-            if *value == n {
-                return self.contains(key);
+        let counts = self.make_counts();
+        let mut counts: Vec<_> = counts.into_iter().filter(|x| x.1 == n).collect();
+        counts.sort();
+        let counts = counts;
+
+        for &(key, value) in counts.iter().rev() {
+            if value == n {
+                return self.contains(&key);
             }
         }
         None
@@ -336,5 +340,23 @@ fn test_full_house_finding() {
         assert!(c1.value == Value::Three || c2.value == Value::Three);
     } else {
         panic!();
+    }
+}
+
+#[test] 
+fn test_high_card() {
+    let (h1, _) = parse_line_of_hands("2H QH QD KD KS 5D 5D 5D 5D 6S");
+    if let Some(c1) = h1.has_high_card() {
+        assert_eq!(c1.value, Value::Two);
+    } else {
+        panic!("High card doesn't work");
+    }
+}
+
+#[test] 
+fn test_pair_returns_highest() {
+    let (h1, _) = parse_line_of_hands("2H QH QD KD KS 5D 5D 5D 5D 6S");
+    if let Some(c1) = h1.has_pair() {
+        assert_eq!(c1.value, Value::King);
     }
 }
