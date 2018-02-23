@@ -19,6 +19,7 @@ fn suit_from_string(s: &str) -> Suit {
 
 #[derive(PartialEq, Clone, Copy, Ord, PartialOrd, Eq, Hash, Debug)]
 enum Value {
+    Zero = 0,
     Two = 2,
     Three,
     Four, 
@@ -158,6 +159,7 @@ impl Hand {
         None
     }
 
+    // This is guaranteed to return the big pair second and the small one first
     fn has_two_pair(&self) -> Option<(&Card, &Card)> {
         let hash = self.make_counts();
         let mut found_first = false;
@@ -167,7 +169,11 @@ impl Hand {
                 if found_first {
                     let first_card = first.unwrap();
                     let second_card = self.contains(key).unwrap();
-                    return Some((first_card, second_card));
+                    if first_card.value > second_card.value {
+                        return Some((second_card, first_card));
+                    } else {
+                        return Some((first_card, second_card));
+                    }
                 } else {
                     found_first = true;
                     first = self.contains(key);
@@ -224,11 +230,15 @@ impl Card {
 }
 
 fn player1_wins(p1: &Hand, p2: &Hand) -> bool {
-    let pick_winner = |p1_card: Option<&Card>, p2_card: Option<&Card> | {
+    let pick_high_card = || {
+        p1.has_high_card().map(|c| c.value).unwrap_or(Value::Zero) > p2.has_high_card().map(|c| c.value).unwrap_or(Value::Zero)
+    };
+
+    let pick_winner = | p1_card: Option<&Card>, p2_card: Option<&Card> | {
         match (p1_card, p2_card) {
             (Some(_), None) => true,
             (None, Some(_)) => false,
-            (Some(c), Some(p)) => if c.value == p.value { p1.cards[4].value > p2.cards[4].value } else { c.value > p.value }, 
+            (Some(c), Some(p)) => if c.value == p.value { pick_high_card() } else { c.value > p.value }, 
             (None, None) => p1.cards[4].value > p2.cards[4].value
         }
     };
@@ -248,7 +258,13 @@ fn player1_wins(p1: &Hand, p2: &Hand) -> bool {
     } else if p1.has_3_of_a_kind().is_some() || p2.has_3_of_a_kind().is_some() {
         pick_winner(p1.has_3_of_a_kind(), p2.has_3_of_a_kind())
     } else if p1.has_two_pair().is_some() || p2.has_two_pair().is_some() {
-        pick_winner(p1.has_two_pair().map(|t| t.1), p2.has_two_pair().map(|t| t.1))
+        match (p1.has_two_pair(), p2.has_two_pair()) {
+            (Some(_, p1Big), Some(_, p2Big)) if p2Big.value > p1Big.value => true, 
+            (Some(_, p1Big), Some(_, p2Big)) if p2Big.value < p1Big.value => false, 
+            (Some(p1Small, _), Some(p2Small, _)) if p1Small.value > p2Small.value => true, 
+            (Some(p1Small, _), Some(p2Small, _)) if p1Small.value < p2Small.value => false, 
+            _ => pick_winner(None, None)
+        }
     } else if p1.has_pair().is_some() || p2.has_pair().is_some() {
         pick_winner(p1.has_pair(), p2.has_pair())
     } else {
@@ -359,4 +375,34 @@ fn test_pair_returns_highest() {
     if let Some(c1) = h1.has_pair() {
         assert_eq!(c1.value, Value::King);
     }
+}
+
+#[test]
+fn test_higher_pair_wins() {
+    let (h1, h2) = parse_line_of_hands("5H 5C 6S 7S KD 2C 3S 8S 8D TD");
+    assert!(!player1_wins(&h1, &h2));
+}
+
+#[test] 
+fn test_high_card_only() {
+    let (h1, h2) = parse_line_of_hands("5D 8C 9S JS AC 2C 5C 7D 8S QH");
+    assert!(player1_wins(&h1, &h2));
+}
+
+#[test] 
+fn test_order_of_hands() {
+    let (h1, h2) = parse_line_of_hands("2D 9C AS AH AC 3D 6D 7D TD QD");
+    assert!(!player1_wins(&h1, &h2));
+}
+
+#[test] 
+fn test_high_card_wins_with_equal_pair() {
+    let (h1, h2) = parse_line_of_hands("4D 6S 9H QH QC 3D 6D 7H QD QS");
+    assert!(player1_wins(&h1, &h2));
+}
+
+#[test] 
+fn test_order_of_hands_with_full_house() {
+    let (h1, h2) = parse_line_of_hands("2H 2D 4C 4D 4S 3C 3D 3S 9S 9D");
+    assert!(player1_wins(&h1, &h2));
 }
