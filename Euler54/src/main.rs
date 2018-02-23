@@ -186,6 +186,10 @@ impl Hand {
         self.has_n_of_a_kind(2)
     }
 
+    fn has_high_card(&self) -> Option<&Card> {
+        self.has_n_of_a_kind(1)
+    }
+
     fn contains(&self, value: &Value) -> Option<&Card> {
         for card in self.cards.iter() {
             if card.value == *value {
