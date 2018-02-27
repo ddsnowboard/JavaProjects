@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
+use std::fmt;
 
 
 #[derive(PartialEq, Clone, Copy, Hash, Debug)]
@@ -14,6 +15,17 @@ fn suit_from_string(s: &str) -> Suit {
         "H" => Suit::Hearts,
         "S" => Suit::Spades,
         _ => panic!()
+    }
+}
+
+impl fmt::Display for Suit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Suit::Hearts => write!(f, "Hearts"),
+            Suit::Diamonds => write!(f, "Diamonds"),
+            Suit::Spades => write!(f, "Spades"),
+            Suit::Clubs => write!(f, "Clubs"),
+        }
     }
 }
 
@@ -33,6 +45,12 @@ enum Value {
     Queen, 
     King, 
     Ace 
+}
+
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", *self as u32)
+    }
 }
 
 fn value_from_string(s: &str) -> Value {
@@ -60,6 +78,12 @@ struct Card {
     value: Value
 }
 
+impl fmt::Display for Card {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} of {}", self.value, self.suit)
+    }
+}
+
 #[derive(PartialEq, Clone, Copy)]
 struct Hand {
     cards: [Card; 5]
@@ -68,7 +92,7 @@ struct Hand {
 impl Hand {
     fn new(mut cards: Vec<Card>) -> Hand {
         cards.sort_by_key(|el| el.value);
-        let mut new_cards = [Card {value: Value::Ace, suit: Suit::Spades }; 5];
+        let mut new_cards = [Card { value: Value::Ace, suit: Suit::Spades }; 5];
         for (idx, card) in cards.into_iter().enumerate() {
             new_cards[idx] = card;
         }
@@ -162,22 +186,21 @@ impl Hand {
     // This is guaranteed to return the big pair second and the small one first
     fn has_two_pair(&self) -> Option<(&Card, &Card)> {
         let hash = self.make_counts();
-        let mut found_first = false;
-        let mut first = None;
+        let mut first: Option<&Card> = None;
         for (key, value) in hash.iter() {
             if *value == 2 {
-                if found_first {
-                    let first_card = first.unwrap();
-                    let second_card = self.contains(key).unwrap();
-                    if first_card.value > second_card.value {
-                        return Some((second_card, first_card));
-                    } else {
-                        return Some((first_card, second_card));
+                match first {
+                    Some(first_card) => {
+                        let second_card = self.contains(key).unwrap();
+                        if first_card.value > second_card.value {
+                            return Some((second_card, first_card));
+                        } else {
+                            return Some((first_card, second_card));
+                        }
+                    }, 
+                    None => {
+                        first = self.contains(key);
                     }
-                } else {
-                    found_first = true;
-                    first = self.contains(key);
-                    continue;
                 }
             }
         }
@@ -209,8 +232,9 @@ impl Hand {
         None
     }
 
+    // This is guaranteed to give the card with 3 first and with 2 second
     fn has_full_house(&self) -> Option<(&Card, &Card)> {
-        if let (Some(c1), Some(c2)) = (self.has_pair(), self.has_3_of_a_kind()) {
+        if let (Some(c1), Some(c2)) = (self.has_3_of_a_kind(), self.has_pair()) {
             Some((c1, c2))
         } else {
             None
@@ -250,7 +274,8 @@ fn player1_wins(p1: &Hand, p2: &Hand) -> bool {
     } else if p1.has_4_of_a_kind().is_some() || p2.has_4_of_a_kind().is_some() {
         pick_winner(p1.has_4_of_a_kind(), p2.has_4_of_a_kind())
     } else if p1.has_full_house().is_some() || p2.has_full_house().is_some() {
-        pick_winner(p1.has_full_house().map(|t| t.1), p2.has_full_house().map(|t| t.1))
+        // This is because the zeroth slot holds the three cards, which breaks ties
+        pick_winner(p1.has_full_house().map(|t| t.0), p2.has_full_house().map(|t| t.0))
     } else if p1.has_flush().is_some() || p2.has_flush().is_some() {
         pick_winner(p1.has_flush(), p2.has_flush())
     } else if p1.has_straight().is_some() || p2.has_straight().is_some() {
@@ -259,10 +284,10 @@ fn player1_wins(p1: &Hand, p2: &Hand) -> bool {
         pick_winner(p1.has_3_of_a_kind(), p2.has_3_of_a_kind())
     } else if p1.has_two_pair().is_some() || p2.has_two_pair().is_some() {
         match (p1.has_two_pair(), p2.has_two_pair()) {
-            (Some(_, p1Big), Some(_, p2Big)) if p2Big.value > p1Big.value => true, 
-            (Some(_, p1Big), Some(_, p2Big)) if p2Big.value < p1Big.value => false, 
-            (Some(p1Small, _), Some(p2Small, _)) if p1Small.value > p2Small.value => true, 
-            (Some(p1Small, _), Some(p2Small, _)) if p1Small.value < p2Small.value => false, 
+            (Some((_, p1_big)), Some((_, p2_big))) if p2_big.value > p1_big.value => true, 
+            (Some((_, p1_big)), Some((_, p2_big))) if p2_big.value < p1_big.value => false, 
+            (Some((p1_small, _)), Some((p2_small, _))) if p1_small.value > p2_small.value => true, 
+            (Some((p1_small, _)), Some((p2_small, _))) if p1_small.value < p2_small.value => false, 
             _ => pick_winner(None, None)
         }
     } else if p1.has_pair().is_some() || p2.has_pair().is_some() {
@@ -392,6 +417,17 @@ fn test_high_card_only() {
 #[test] 
 fn test_order_of_hands() {
     let (h1, h2) = parse_line_of_hands("2D 9C AS AH AC 3D 6D 7D TD QD");
+    if let Some(c) = h1.has_3_of_a_kind() {
+        assert!(c.value == Value::Ace);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_flush() {
+        assert!(c.suit == Suit::Diamonds);
+    } else {
+        panic!();
+    }
     assert!(!player1_wins(&h1, &h2));
 }
 
@@ -404,5 +440,55 @@ fn test_high_card_wins_with_equal_pair() {
 #[test] 
 fn test_order_of_hands_with_full_house() {
     let (h1, h2) = parse_line_of_hands("2H 2D 4C 4D 4S 3C 3D 3S 9S 9D");
+    if let Some((c1, c2)) = h1.has_full_house() {
+        assert!(c1.value == Value::Four);
+        assert!(c2.value == Value::Two);
+    } else {
+        panic!();
+    }
+
+    if let Some((c1, c2)) = h2.has_full_house() {
+        assert!(c1.value == Value::Three);
+        assert!(c2.value == Value::Nine);
+    } else {
+        panic!();
+    }
     assert!(player1_wins(&h1, &h2));
+    assert!(!player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_order_of_flushes() {
+    let (h1, h2) = parse_line_of_hands("2H 3H 4H 5H 7H 6D 7D 9D TD QD");
+    if let Some(c) = h1.has_flush() {
+        assert!(c.suit == Suit::Hearts);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_flush() {
+        assert!(c.suit == Suit::Diamonds);
+    } else {
+        panic!();
+    }
+    assert!(!player1_wins(&h1, &h2));
+}
+
+#[test] 
+fn test_convoluted_flush() {
+    let (h1, h2) = parse_line_of_hands("2H 3H 4H 5H TH 6D 7D 8D 9D TD");
+    if let Some(c) = h1.has_flush() {
+        assert!(c.suit == Suit::Hearts);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_flush() {
+        assert!(c.suit == Suit::Diamonds);
+    } else {
+        panic!();
+    }
+
+    assert!(!player1_wins(&h1, &h2));
+    assert!(player1_wins(&h2, &h1));
 }
