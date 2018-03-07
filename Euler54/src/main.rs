@@ -305,11 +305,8 @@ fn main() {
         if let Ok(line) = line {
             let (h1, h2) = parse_line_of_hands(&line);
             if player1_wins(&h1, &h2) {
-                println!("Player 1 won one");
                 win_count += 1;
-            } else {
-                println!("Player 1 lost one");
-            }
+            }  
         }
     }
     println!("p1 won {} times", win_count);
@@ -485,6 +482,78 @@ fn test_convoluted_flush() {
 
     if let Some(c) = h2.has_flush() {
         assert!(c.suit == Suit::Diamonds);
+    } else {
+        panic!();
+    }
+
+    assert!(!player1_wins(&h1, &h2));
+    assert!(player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_boring_high_card() {
+    let (h1, h2) = parse_line_of_hands("8C TS KC 9H 4S 7D 2S 5D 3S AC");
+    if let Some(c) = h1.has_high_card() {
+        assert!(c.suit == Suit::Clubs);
+        assert!(c.value == Value::King);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_high_card() {
+        assert!(c.suit == Suit::Clubs);
+        assert!(c.value == Value::Ace);
+    } else {
+        panic!();
+    }
+
+    assert!(!player1_wins(&h1, &h2));
+    assert!(player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_order_of_pairs() {
+    let (h1, h2) = parse_line_of_hands("KC 8D QD 6D KH 5C 7H 9D 3D 9C");
+    if let Some(c) = h1.has_pair() {
+        assert!(c.value == Value::King);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_pair() {
+        assert!(c.value == Value::Nine);
+    } else {
+        panic!();
+    }
+
+    assert!(player1_wins(&h1, &h2));
+    assert!(!player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_order_of_hands_flush_to_higher_pair() {
+    let (h1, h2) = parse_line_of_hands("2D 4H 5D QD QC 6H 6H 9H QH 8H");
+    if let Some(c) = h1.has_high_card() {
+        assert!(c.value == Value::Five);
+        assert!(c.suit == Suit::Diamonds);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h1.has_pair() {
+        assert!(c.value == Value::Queen);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_pair() {
+        assert!(c.value == Value::Six);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_flush() {
+        assert!(c.suit == Suit::Hearts);
     } else {
         panic!();
     }
