@@ -263,7 +263,7 @@ fn player1_wins(p1: &Hand, p2: &Hand) -> bool {
             (Some(_), None) => true,
             (None, Some(_)) => false,
             (Some(c), Some(p)) => if c.value == p.value { pick_high_card() } else { c.value > p.value }, 
-            (None, None) => p1.cards[4].value > p2.cards[4].value
+            (None, None) => pick_high_card()
         }
     };
 
@@ -283,11 +283,14 @@ fn player1_wins(p1: &Hand, p2: &Hand) -> bool {
     } else if p1.has_3_of_a_kind().is_some() || p2.has_3_of_a_kind().is_some() {
         pick_winner(p1.has_3_of_a_kind(), p2.has_3_of_a_kind())
     } else if p1.has_two_pair().is_some() || p2.has_two_pair().is_some() {
-        match (p1.has_two_pair(), p2.has_two_pair()) {
-            (Some((_, p1_big)), Some((_, p2_big))) if p2_big.value > p1_big.value => true, 
-            (Some((_, p1_big)), Some((_, p2_big))) if p2_big.value < p1_big.value => false, 
-            (Some((p1_small, _)), Some((p2_small, _))) if p1_small.value > p2_small.value => true, 
+        let pairs = (p1.has_two_pair(), p2.has_two_pair());
+        match pairs {
+            (Some((_, p1_big)), Some((_, p2_big))) if p1_big.value > p2_big.value => true, 
+            (Some((_, p1_big)), Some((_, p2_big))) if p1_big.value < p2_big.value => false, 
+            (Some((p1_small, _)), Some((p2_small, _))) if p1_small.value > p2_small.value => true , 
             (Some((p1_small, _)), Some((p2_small, _))) if p1_small.value < p2_small.value => false, 
+            (Some(_), None)  => true, 
+            (None, Some(_)) => false, 
             _ => pick_winner(None, None)
         }
     } else if p1.has_pair().is_some() || p2.has_pair().is_some() {
@@ -554,6 +557,66 @@ fn test_order_of_hands_flush_to_higher_pair() {
 
     if let Some(c) = h2.has_flush() {
         assert!(c.suit == Suit::Hearts);
+    } else {
+        panic!();
+    }
+
+    assert!(!player1_wins(&h1, &h2));
+    assert!(player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_high_card_after_pair() {
+    let (h1, h2) = parse_line_of_hands("2D 4H 5D QD QC 6H 3D 9H QH QS");
+    if let Some(c) = h1.has_high_card() {
+        assert!(c.value == Value::Five);
+        assert!(c.suit == Suit::Diamonds);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h1.has_pair() {
+        assert!(c.value == Value::Queen);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_pair() {
+        assert!(c.value == Value::Queen);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_high_card() {
+        assert!(c.value == Value::Nine);
+        assert!(c.suit == Suit::Hearts);
+    } else {
+        panic!();
+    }
+
+    assert!(!player1_wins(&h1, &h2));
+    assert!(player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_two_pair() {
+    let (h1, h2) = parse_line_of_hands("2D 4H 5D QD QC 6H 6D 9H QH QS");
+    if let Some(c) = h1.has_high_card() {
+        assert!(c.value == Value::Five);
+        assert!(c.suit == Suit::Diamonds);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h1.has_pair() {
+        assert!(c.value == Value::Queen);
+    } else {
+        panic!();
+    }
+
+    if let Some((small, big)) = h2.has_two_pair() {
+        assert!(big.value == Value::Queen);
+        assert!(small.value == Value::Six);
     } else {
         panic!();
     }
