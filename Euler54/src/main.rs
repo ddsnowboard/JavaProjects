@@ -624,3 +624,24 @@ fn test_two_pair() {
     assert!(!player1_wins(&h1, &h2));
     assert!(player1_wins(&h2, &h1));
 }
+
+#[test] 
+fn test_two_pair_against_nothing() {
+    let (h1, h2) = parse_line_of_hands("2D 4H 5D TD 3C 6H 6D 9H QH QS");
+    if let Some(c) = h1.has_high_card() {
+        assert!(c.value == Value::Ten);
+        assert!(c.suit == Suit::Diamonds);
+    } else {
+        panic!();
+    }
+
+    if let Some((small, big)) = h2.has_two_pair() {
+        assert!(big.value == Value::Queen);
+        assert!(small.value == Value::Six);
+    } else {
+        panic!();
+    }
+
+    assert!(!player1_wins(&h1, &h2));
+    assert!(player1_wins(&h2, &h1));
+}
