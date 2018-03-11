@@ -149,15 +149,6 @@ impl Hand {
         self.has_straight()
     }
 
-    fn find_highest(&self, suit: &Suit) -> Option<&Card> {
-        for card in self.cards.iter().rev() {
-            if card.suit == *suit {
-                return Some(card);
-            }
-        }
-        None
-    }
-
     fn make_counts(&self) -> HashMap<Value, u32> {
         let mut hash = HashMap::new();
         for card in self.cards.iter() {
@@ -644,4 +635,103 @@ fn test_two_pair_against_nothing() {
 
     assert!(!player1_wins(&h1, &h2));
     assert!(player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_pair_of_aces_against_nothing() {
+    let (h1, h2) = parse_line_of_hands("5C AD 5D AC 9C 7C 5H 8D TD KS");
+    if let Some(c) = h1.has_pair() {
+        assert!(c.value == Value::Ace);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_high_card() {
+        assert!(c.value == Value::King);
+        assert!(c.suit == Suit::Spades);
+    } else {
+        panic!();
+    }
+
+    assert!(player1_wins(&h1, &h2));
+    assert!(!player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_nothing_hands() {
+    let (h1, h2) = parse_line_of_hands("3H 7H 6S KC JS QH TD JC 2D 8S");
+    if let Some(c) = h1.has_high_card() {
+        assert!(c.value == Value::King);
+        assert!(c.suit == Suit::Clubs);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_high_card() {
+        assert!(c.value == Value::Queen);
+        assert!(c.suit == Suit::Hearts);
+    } else {
+        panic!();
+    }
+
+    assert!(player1_wins(&h1, &h2));
+    assert!(!player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_two_pairs() {
+    let (h1, h2) = parse_line_of_hands("TH 8H 5C QS TC 9H 4D JC KS JS");
+    if let Some(c) = h1.has_pair() {
+        assert!(c.value == Value::Ten);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_pair() {
+        assert!(c.value == Value::Jack);
+    } else {
+        panic!();
+    }
+
+    assert!(!player1_wins(&h1, &h2));
+    assert!(player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_pair_over_high_card() {
+    let (h1, h2) = parse_line_of_hands("7C 5H KC QH JD AS KH 4C AD 4S");
+    if let Some(c) = h1.has_high_card() {
+        assert!(c.value == Value::King);
+        assert!(c.suit == Suit::Clubs);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_pair() {
+        assert!(c.value == Value::Ace);
+    } else {
+        panic!();
+    }
+
+    assert!(!player1_wins(&h1, &h2));
+    assert!(player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_order_of_pairs_with_higher_card() {
+    let (h1, h2) = parse_line_of_hands("5H KS 9C 7D 9H 8D 3S 5D 5C AH");
+    if let Some(c) = h1.has_pair() {
+        assert!(c.value == Value::Nine);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_pair() {
+        assert!(c.value == Value::Five);
+    } else {
+        panic!();
+    }
+
+    assert!(player1_wins(&h1, &h2));
+    assert!(!player1_wins(&h2, &h1));
 }
