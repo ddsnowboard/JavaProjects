@@ -53,6 +53,36 @@ impl fmt::Display for Value {
     }
 }
 
+impl Value {
+    fn next(&self) -> Self {
+        match *self {
+            Value::Ace => Value::Two, 
+            Value::Zero => panic!("You tried to increment Zero!"),
+            x => Self::from_u32((x as u32) + 1)
+        }
+    }
+
+    fn from_u32(i: u32) -> Self {
+        match i {
+            0 => Value::Zero,
+            2 => Value::Two,
+            3 => Value::Three,
+            4 => Value::Four,
+            5 => Value::Five,
+            6 => Value::Six,
+            7 => Value::Seven,
+            8 => Value::Eight,
+            9 => Value::Nine,
+            10 => Value::Ten,
+            11 => Value::Jack,
+            12 => Value::Queen,
+            13 => Value::King,
+            14 => Value::Ace,
+            _ => panic!("You gave a bad value!")
+        }
+    }
+}
+
 fn value_from_string(s: &str) -> Value {
     match s {
         "2" => Value::Two,
@@ -132,8 +162,14 @@ impl Hand {
     }
 
     fn has_straight(&self) -> Option<&Card> {
-        // If they are sorted and they cover a range of 4, they are in order
-        if self.cards[4].value as u32 - self.cards[0].value as u32 == 4 {
+        let paradigm_straight: [i32; 5] = [1,2,3,4,5];
+
+        let values = self.cards.iter().map(|x| x.value as i32);
+        let mut deltas = paradigm_straight.iter().zip(values)
+            .map(|(a, b)| b - a);
+        let is_straight = deltas.all(|x| x == self.cards[0].value as i32 - paradigm_straight[0]);
+
+        if is_straight {
             Some(&self.cards[4])
         } else {
             None
@@ -141,7 +177,6 @@ impl Hand {
     }
 
     fn has_straight_flush(&self) -> Option<&Card> {
-        // We know that the cards array is sorted, so we can do some stuff with that information
         if !self.have_same_suit() {
             return None;
         }
@@ -300,7 +335,7 @@ fn main() {
             let (h1, h2) = parse_line_of_hands(&line);
             if player1_wins(&h1, &h2) {
                 win_count += 1;
-            }  
+            }
         }
     }
     println!("p1 won {} times", win_count);
@@ -722,6 +757,57 @@ fn test_order_of_pairs_with_higher_card() {
     let (h1, h2) = parse_line_of_hands("5H KS 9C 7D 9H 8D 3S 5D 5C AH");
     if let Some(c) = h1.has_pair() {
         assert!(c.value == Value::Nine);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_pair() {
+        assert!(c.value == Value::Five);
+    } else {
+        panic!();
+    }
+
+    assert!(player1_wins(&h1, &h2));
+    assert!(!player1_wins(&h2, &h1));
+}
+
+#[test] 
+fn test_equal_pairs_high_card_wins() {
+    let (h1, h2) = parse_line_of_hands("6D 7C 5D 5H 3S 5C JC 2H 5S 3D");
+    if let Some(c) = h1.has_pair() {
+        assert!(c.value == Value::Five);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h1.has_high_card() {
+        assert!(c.value == Value::Seven);
+        assert!(c.suit == Suit::Clubs);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_pair() {
+        assert!(c.value == Value::Five);
+    } else {
+        panic!();
+    }
+
+    if let Some(c) = h2.has_high_card() {
+        assert!(c.value == Value::Jack);
+        assert!(c.suit == Suit::Clubs);
+    } else {
+        panic!();
+    }
+
+    assert!(!player1_wins(&h1, &h2));
+    assert!(player1_wins(&h2, &h1));
+}
+#[test] 
+fn test_order_of_pairs_looks_like_straight() {
+    let (h1, h2) = parse_line_of_hands("JH 7C 9H 7H TC 5H 3D 6D 5D 4D");
+    if let Some(c) = h1.has_pair() {
+        assert!(c.value == Value::Seven);
     } else {
         panic!();
     }
