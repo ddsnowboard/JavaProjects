@@ -16,7 +16,7 @@ struct Node* arrToDLinkedList(int* arr, int len);
 int main(int argc, char** argv)
 {
     int VALUES[] = {1, 2, 3, 4, 5, 6, 4, 2, 35, 16, 12, 4, 55};
-    struct Node* head = arrToDLinkedList(VALUES, 13);
+    struct Node* head = arrToDLinkedList(VALUES, sizeof(VALUES) / sizeof(VALUES[0]));
     printDLinkedList(head);
     struct Node* newHead = reverseDLinkedList(head);
     printDLinkedList(newHead);

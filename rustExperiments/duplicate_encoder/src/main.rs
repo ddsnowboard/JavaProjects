@@ -3,8 +3,9 @@ fn duplicate_encode(word:&str)->String {
 }
 
 fn count_letters(word:&str, letter:char) -> u32 {
-    word.chars().fold(0,
-                      |sum, c| if c.to_lowercase().next().unwrap() == letter.to_lowercase().next().unwrap() { sum + 1 } else { sum })
+    // to_lowercase() returns an iterator because of Unicode or some shenanigans
+    word.chars()
+        .fold(0, |sum, c| if c.to_lowercase().next().unwrap() == letter.to_lowercase().next().unwrap() { sum + 1 } else { sum })
 }
 
 #[test]

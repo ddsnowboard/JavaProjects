@@ -127,7 +127,7 @@ impl Dictionary {
 
     fn contains(&self, word: &str) -> bool {
         let word = word.trim().to_lowercase();
-        self.words.contains(&String::from(word))
+        self.words.contains(&word)
     }
 
     fn union(&self, other_words: &[&str]) -> u32 {

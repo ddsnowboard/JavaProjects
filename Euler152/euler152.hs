@@ -1,23 +1,24 @@
 import Numeric
 import Data.Char
 
-top = 80
+top = 30
 
 bottom = 2
 
-inverseSquares = [1 `div` x^2 | x <- [bottom..top]]
+invSquare :: Int -> Double
+invSquare n = 1.0 / (fromIntegral n)^2
 
-inInverseSquares x = x `elem` inverseSquares
+sumInvSquares :: Double -> Int
+sumInvSquares goal = sumInvSquares' goal bottom top 0 0
 
-toBinString n = (showIntAtBase 2 intToDigit n "")
+sumInvSquares' :: Double -> Int -> Int -> Double -> Int -> Int
+-- sumInvSquares' 0.5 4 6 (0.5 - 1/25) 0 = 1
+sumInvSquares' goal curr end sum count 
+  | curr > end = count
+  | sum + (invSquare curr) < goal = (sumInvSquares' goal (curr + 1) end (sum + (invSquare curr)) count) + (sumInvSquares' goal (curr + 1) end sum count)
+  | sum + (invSquare curr) == goal = 1 + (sumInvSquares' goal (curr + 1) end sum count)
+  | sum + (invSquare curr) > goal = (sumInvSquares' goal (curr + 1) end sum count)
 
-isSet (_, "1") = True
-isSet (_, "0") = False
 
-combination n = [x | x <- zip inverseSquares (toBinString n), isSet x]
-
-# Check that the length is greater than or equal to 2 and less than or equal to 80, 
-# then you should have all the numbers to turn into bit strings
-bitstrings = [x | x <- [0..], log(x) / log(2)
-
-combinations = map combination bitstrings
+run = sumInvSquares 0.5
+main = print run
