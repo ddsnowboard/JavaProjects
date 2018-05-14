@@ -1,49 +1,46 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include "syncQueue.h"
 #define MAX 1000000
-#define NUM_THREADS 8
+#define NUM_THREADS 1
 
 
-void *collatz(void *info);
+void* threadFunc(void* in);
 
-struct Info {
-    int i;
-};
 int main(int argc, char** argv)
 {
     pthread_t threads[NUM_THREADS];
-    struct Info infos[NUM_THREADS];
-    int i = 0;
-    while(i <= MAX)
-    {
-        int processor;
-        for(processor = 0; processor < NUM_THREADS; processor++)
-        {
-            infos[processor].i = i;
-            pthread_create(&threads[processor], NULL, &collatz, (void *) &infos[processor]);
-            i++;
-        }
-        for(processor = 0; processor < NUM_THREADS; processor++)
-        {
-            pthread_join(threads[processor], NULL);
-        }
+    struct Queue* q = queue_create(4 * NUM_THREADS);
+    for(int i = 0; i < NUM_THREADS; i++) {
+        pthread_create(&threads[i], NULL, &threadFunc, (void *) q);
+    }
+
+    for(int i = 0; i < MAX; i++) {
+        queue_push(q, i);
+    }
+
+    for(int i = 0; i < NUM_THREADS; i++) {
+        queue_push(q, -1);
+    }
+
+    for(int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
     }
     return 0;
 }
 
 // Returns 0 if Collatz Conjecture works, a number if otherwise.
-void *collatz(void *info)
+int collatz(int i)
 {
-    struct Info *input = (struct Info *)info;
-    unsigned long long i = input->i;
-    if(i == 0)
+    if(i <= 0)
     {
-        return NULL;
+        return 0;
     }
     // These are to make sure that we aren't just going in a circle.
     int newest = 0;
     int secondNewest = 0;
+    // SOMEHOW WE KEEP GETTING A NEGATIVE NUMBER HERE. I'M CONFUSED
     while(i != 1)
     {
         if(i % 2 == 0)
@@ -57,16 +54,29 @@ void *collatz(void *info)
         else
         {
             printf("Something really bad just happened...");
-            return NULL;
+            return 42;
         }
         if(i == newest || i == secondNewest)
         {
-            printf("Doesn't work for %d", input->i);
+            printf("Doesn't work for %d", i);
+            return i;
         }
         else 
         {
             secondNewest = newest, newest = i;
         }
     }
+    return 0;
+}
+
+void* threadFunc(void* in) {
+    struct Queue* q = in;
+    int i;
+    do {
+        i = queue_pop(q);
+        printf("Popped off an %d\n", i);
+        collatz(i);
+    } while(i != -1);
+
     return NULL;
 }
