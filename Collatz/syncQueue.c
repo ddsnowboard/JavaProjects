@@ -18,13 +18,11 @@ void queue_push(struct Queue* q, int i) {
     pthread_mutex_lock(&q->mut);
 
     while(q->tail - q->head >= q->size) {
-        printf("Full q\n");
         pthread_cond_wait(&q->cv, &q->mut);
-        printf("Freed q\n");
     }
 
     q->arr[q->tail % q->size] = i;
-    q->tail = (q->tail + 1) % q->size;
+    q->tail++;
     pthread_cond_broadcast(&q->cv);
     pthread_mutex_unlock(&q->mut);
 }
@@ -32,12 +30,10 @@ void queue_push(struct Queue* q, int i) {
 int queue_pop(struct Queue* q) {
     pthread_mutex_lock(&q->mut);
     while(q->tail - q->head <= 0) {
-        printf("Empty q\n");
         pthread_cond_wait(&q->cv, &q->mut);
-        printf("Filled q\n");
     }
     int out = q->arr[q->head % q->size];
-    q->head = (q->head + 1) % q->size;
+    q->head++;
     pthread_cond_broadcast(&q->cv);
     pthread_mutex_unlock(&q->mut);
     return out;

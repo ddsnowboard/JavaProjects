@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include "syncQueue.h"
 #define MAX 1000000
-#define NUM_THREADS 1
+#define NUM_THREADS 8
 
 
 void* threadFunc(void* in);
@@ -31,15 +31,16 @@ int main(int argc, char** argv)
 }
 
 // Returns 0 if Collatz Conjecture works, a number if otherwise.
-int collatz(int i)
+int collatz(const int start)
 {
+    long i = start;
     if(i <= 0)
     {
         return 0;
     }
     // These are to make sure that we aren't just going in a circle.
-    int newest = 0;
-    int secondNewest = 0;
+    long newest = 0;
+    long secondNewest = 0;
     // SOMEHOW WE KEEP GETTING A NEGATIVE NUMBER HERE. I'M CONFUSED
     while(i != 1)
     {
@@ -58,7 +59,7 @@ int collatz(int i)
         }
         if(i == newest || i == secondNewest)
         {
-            printf("Doesn't work for %d", i);
+            printf("Doesn't work for %d", start);
             return i;
         }
         else 
@@ -74,7 +75,6 @@ void* threadFunc(void* in) {
     int i;
     do {
         i = queue_pop(q);
-        printf("Popped off an %d\n", i);
         collatz(i);
     } while(i != -1);
 
