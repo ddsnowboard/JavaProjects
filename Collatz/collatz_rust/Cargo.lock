@@ -1,4 +1,4 @@
 [[package]]
-name = "cellatz_rust"
+name = "collatz_rust"
 version = "0.1.0"
 
