@@ -1,16 +1,21 @@
 #include <stdio.h>
+#include "hashSet.h"
 #define MAX 1000000
+#define SET_SIZE 300
 
+// IN ORDER TO EFFICIENTLY CATEGORIZE EVERY NUMBER WE RUN INTO, WE SHOULD USE AN UPTREE.
+// THIS WILL REQUIRE SOME MORE CODE.
+struct hashSet* set;
 
 int collatz(unsigned long long);
 
 int main(int argc, char** argv)
 {
+    set = hs_create(SET_SIZE);
     int i;
     for(i = 1;i<MAX;i++)
     {
-        if(collatz(i) != 0)
-        {
+        if(collatz(i) != 0) {
             printf("%d returned 1\n", i);
         }
     }
