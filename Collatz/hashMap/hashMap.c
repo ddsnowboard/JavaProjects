@@ -1,5 +1,11 @@
 #include "hashMap.h"
 
+struct _node {
+    int key;
+    int val;
+    struct _node* next;
+};
+
 static void free_chain(struct _node* chain);
 
 static struct _node** findNode(struct _node** chainStart, int key);

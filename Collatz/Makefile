@@ -6,26 +6,26 @@ runCollatz : Collatz.exe
 Collatz.exe : Collatz.cs
 	csc $<
 
-main : main.c hashSet.o
-	gcc -Wall -g -O3 -o main main.c hashSet.o
+main : main.c .objs/hashSet.o
+	gcc -Wall -g -O3 -o main $^
 
-mainThread : mainThread.c syncQueue.o
-	gcc -Wall -g -pthread -O3 -o mainThread mainThread.c syncQueue.o
+mainThread : mainThread.c .objs/syncQueue.o
+	gcc -Wall -g -pthread -O3 -o mainThread $^
 
 clean : 
-	$(RM) main mainThread *.o test
+	$(RM) main mainThread .objs/* test
 
-syncQueue.o : syncQueue.h syncQueue.c
-	gcc -Wall -Werror -g -O3 -c syncQueue.c
+.objs/syncQueue.o : syncQueue/syncQueue.c syncQueue/syncQueue.h
+	gcc -Wall -Werror -g -O3 -o $@ -c $<
 
-hashMap.o : hashMap.c hashMap.h 
-	gcc -Wall -Werror -g -O3 -c $<
+.objs/hashMap.o : hashMap/hashMap.c hashMap/hashMap.h 
+	gcc -Wall -Werror -g -O3 -o $@ -c $<
 
-upTree.o : upTree.c upTree.h hashMap.o
-	gcc -Wall -Werror -g -O3 -c $<
+.objs/upTree.o : upTree/upTree.c upTree/upTree.h .objs/hashMap.o
+	gcc -Wall -Werror -g -O3 -o $@ -c $<
 
-test : hashMapTest.o hashMap.o
+test : .objs/hashMapTest.o .objs/hashMap.o
 	gcc -o $@ $^
 
-hashMapTest.o : hashMapTest.c
-	gcc -Wall -Werror -g -O3 -c $<
+.objs/hashMapTest.o : hashMap/hashMapTest.c
+	gcc -Wall -Werror -g -O3 -o $@ -c $<

@@ -1,12 +1,6 @@
 #ifndef HASMMAP_H
 #define HASMMAP_H
 #include <stdlib.h>
-struct _node {
-    int key;
-    int val;
-    struct _node* next;
-};
-
 struct hashMap {
     size_t size;
     struct _node** arr;
