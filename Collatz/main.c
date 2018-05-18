@@ -1,60 +1,46 @@
 #include <stdio.h>
-#include "hashSet.h"
-#define MAX 1000000
+#include "upTree/upTree.h"
+// #define MAX 1000000
+#define MAX 10000
 #define SET_SIZE 300
 
-// IN ORDER TO EFFICIENTLY CATEGORIZE EVERY NUMBER WE RUN INTO, WE SHOULD USE AN UPTREE.
-// THIS WILL REQUIRE SOME MORE CODE.
-struct hashSet* set;
+struct upTree* ut;
 
-int collatz(unsigned long long);
+int collatz(long long);
 
 int main(int argc, char** argv)
 {
-    set = hs_create(SET_SIZE);
+    ut = ut_create(SET_SIZE);
     int i;
     for(i = 1;i<MAX;i++)
     {
-        if(collatz(i) != 0) {
+        if(collatz(i) != 1) {
             printf("%d returned 1\n", i);
         }
     }
+    ut_destroy(ut);
     return 0;
 }
 
 // Returns 0 if Collatz Conjecture works, a number if otherwise.
-int collatz(unsigned long long i)
+int collatz(long long i)
 {
-    int originali = i;
-    if(i == 0)
+    if(i == 1)
         return 1;
-    // These are to make sure that we aren't just going in a circle.
-    int newest = 0;
-    int secondNewest = 0;
-    while(i != 1)
-    {
-        if(i % 2 == 0)
-        {
-            i /= 2;
-        }
-        else if(i % 2 != 0)
-        {
-            i = 3 * i + 1;
-        }
-        else
-        {
-            printf("Something really bad just happened...");
-            return 124;
-        }
-        if(i == newest || i == secondNewest)
-        {
-            printf("Doesn't work for %d", originali);
-            return 1;
-        }
-        else 
-        {
-            secondNewest = newest, newest = i;
-        }
+    else if(i < 0) {
+        return -1;
+    } else if (ut_are_together(ut, i, 1)) {
+        return 1;
+    } else if(ut_get_group(ut, i) != i) {
+        return ut_get_group(ut, i); } 
+    else {
+        int endpoint;
+        if(i % 2 == 0) {
+            endpoint = collatz(i / 2);
+        } else {
+            endpoint = collatz(3 * i + 1);
+        }  
+        ut_union(ut, i, endpoint);
+        return endpoint;
     }
-    return 0;
 }

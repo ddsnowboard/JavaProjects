@@ -2,7 +2,7 @@
 
 struct _node {
     int key;
-    int val;
+    void* val;
     struct _node* next;
 };
 
@@ -19,7 +19,7 @@ struct hashMap* hs_create(size_t arraySize) {
     return out;
 }
 
-void hs_put(struct hashMap* hs, int key, int val) {
+void hs_put(struct hashMap* hs, int key, void* val) {
     size_t hashed = hash(hs, key);
     struct _node** bin = findNode(&hs->arr[hashed], key);
     if(*bin == NULL) {
@@ -35,7 +35,7 @@ int hs_contains(struct hashMap* hs, int key) {
     return hs_get(hs, key) != NULL;
 }
 
-int* hs_get(struct hashMap* hs, int key) {
+void** hs_get(struct hashMap* hs, int key) {
     size_t hashed = hash(hs, key);
     struct _node** bin = findNode(&hs->arr[hashed], key);
     if(*bin == NULL)
@@ -71,4 +71,14 @@ static struct _node** findNode(struct _node** chainStart, int key) {
 
 static size_t hash(struct hashMap* hs, int i) {
     return i % hs->size;
+}
+
+void hs_free_values(struct hashMap* hs) {
+    for(int i = 0; i < hs->size; i++) {
+        struct _node* n = hs->arr[i];
+        while(n != NULL) {
+            free(n->val);
+            n = n->next;
+        }
+    }
 }

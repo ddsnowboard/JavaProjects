@@ -4,17 +4,17 @@
 
 int main(void) {
     struct hashMap* h = hs_create(40);
-    for(int i = 0; i < 60; i++) {
-        hs_put(h, i, i * i);
+    for(long i = 0; i < 60; i++) {
+        hs_put(h, i, (void*)(i * i));
     }
-    for(int i = 0; i < 60; i++) {
-        int* out = hs_get(h, i);
-        assert(*out == i * i);
-        *out = i * 2;
+    for(long i = 0; i < 60; i++) {
+        void** out = hs_get(h, i);
+        assert(*out == (void*)(i * i));
+        *out = (void*)(i * 2);
     }
-    for(int i = 0; i < 60; i++) {
-        int* out = hs_get(h, i);
-        assert(*out == 2 * i);
+    for(long i = 0; i < 60; i++) {
+        void** out = hs_get(h, i);
+        assert(*out == (void*)(2 * i));
     }
     hs_destroy(h);
 }
