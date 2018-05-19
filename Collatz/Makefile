@@ -1,6 +1,6 @@
 .PHONY: runCollatz
 
-CCARGS=-Wall -Werror -g3 -pg
+CCARGS=-Wall -Werror -O3# -pg
 
 main : main.c .objs/upTree.o hashMap/hashMap.o
 	gcc $(CCARGS) -o main $^
@@ -15,7 +15,7 @@ mainThread : mainThread.c .objs/syncQueue.o
 	gcc -Wall -g3 -pthread -O3 -o mainThread $^
 
 clean : 
-	$(RM) main mainThread .objs/* test
+	$(RM) main mainThread .objs/* test gmon.out
 
 .objs/hashMap.o : hashMap/hashMap.c hashMap/hashMap.h 
 	gcc $(CCARGS) -o $@ -c $<

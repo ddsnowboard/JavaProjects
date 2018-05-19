@@ -7,9 +7,9 @@ struct hashMap {
 };
 
 struct hashMap* hs_create(size_t arraySize);
-void hs_put(struct hashMap* hs, int key, void* val);
-int hs_contains(struct hashMap* hs, int key);
-void** hs_get(struct hashMap* hs, int key);
+void hs_put(struct hashMap* hs, long long key, void* val);
+int hs_contains(struct hashMap* hs, long long key);
+void** hs_get(struct hashMap* hs, long long key);
 void hs_destroy(struct hashMap* hs);
 void hs_free_values(struct hashMap* hs);
 #endif

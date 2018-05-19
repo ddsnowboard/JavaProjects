@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include "upTree/upTree.h"
-// #define MAX 1000000
-#define MAX 10000
-#define SET_SIZE 300
+#define MAX 1000000
+#define SET_SIZE 3000000
 
 struct upTree* ut;
 
@@ -11,11 +10,11 @@ int collatz(long long);
 int main(int argc, char** argv)
 {
     ut = ut_create(SET_SIZE);
-    int i;
-    for(i = 1;i<MAX;i++)
+    for(int i = 1; i < MAX; i++)
     {
-        if(collatz(i) != 1) {
-            printf("%d returned 1\n", i);
+        int curr;
+        if((curr = collatz(i)) != 1) {
+            printf("%d returned %d\n", i, curr);
         }
     }
     ut_destroy(ut);
@@ -29,11 +28,9 @@ int collatz(long long i)
         return 1;
     else if(i < 0) {
         return -1;
-    } else if (ut_are_together(ut, i, 1)) {
-        return 1;
-    } else if(ut_get_group(ut, i) != i) {
-        return ut_get_group(ut, i); } 
-    else {
+    }  else if(ut_get_group(ut, i) != i) {
+        return ut_get_group(ut, i); 
+    } else {
         int endpoint;
         if(i % 2 == 0) {
             endpoint = collatz(i / 2);
