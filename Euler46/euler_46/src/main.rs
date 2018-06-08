@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::collections::hash_set::Iter;
+use std::cell::RefCell;
 
 type Num = u32;
 
@@ -37,8 +38,8 @@ impl PrimeSet {
     }
 
     fn fill(&mut self, i: Num) {
-        type float = f64;
-        if (i as float).sqrt() > (self.highest_number as float) {
+        type Float = f64;
+        if (i as Float).sqrt() > (self.highest_number as Float) {
             panic!("You need to fill in the set first!");
         } else if self.highest_number > i {
             return;
@@ -74,13 +75,36 @@ fn goldbach(primes: &mut PrimeSet, i: Num) -> bool {
 }
 
 fn main() {
-    let mut primes = PrimeSet::new();
-    let (first, _) = (1..)
+    let primes = RefCell::new(PrimeSet::new());
+    let even_composites = (2..)
         .filter(|x| x % 2 == 1)
-        .filter(|x| !primes.is_prime(*x))
-        .map(|x| (x, goldbach(&mut primes, x)))
-        .skip_while(|(_, x) | !x)
+        .filter(|x| !RefCell::borrow_mut(&primes).is_prime(*x));
+
+    let (first, _) = even_composites.map(|x| (x, goldbach(&mut *RefCell::borrow_mut(&primes), x)))
+        .skip_while(|(_, x) | *x)
         .nth(0)
         .unwrap();
     println!("First is {}", first);
+}
+
+#[test]
+fn primeset_works_simple() {
+    let mut p = PrimeSet::new();
+    assert!(p.is_prime(3));
+    assert!(!p.is_prime(4));
+
+    let mut p = PrimeSet::new();
+    assert!(!p.is_prime(4));
+    assert!(p.is_prime(3));
+}
+
+#[test]
+fn primeset_works_harder() {
+    let mut p = PrimeSet::new();
+    assert!(p.is_prime(19));
+    assert!(!p.is_prime(21));
+
+    let mut p = PrimeSet::new();
+    assert!(!p.is_prime(21));
+    assert!(p.is_prime(19));
 }
