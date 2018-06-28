@@ -2,41 +2,38 @@ use std::collections::HashSet;
 use std::io::BufReader;
 use std::io::BufRead;
 use std::fs::File;
-use std::iter;
-
-extern crate permutohedron;
-use permutohedron::Heap;
+use std::collections::HashMap;
+use std::hash::Hash;
+use std::iter::Iterator;
+use std::collections::hash_map::Iter;
 
 fn main() {
     let input = get_input();
     let dict = get_wordset();
-    let chars: Vec<_> = input.chars().collect();
-    let combinator = Combinations::new(&chars);
-    type ThingInBox = Vec<char>;
-    // This is too complicated and doesn't work. I need to redo this part.
-    let allPossibilities = combinator.fold(Box::from(iter::empty()) as Box<Iterator<Item = ThingInBox>>, |rest, nextCombo| {
-        let mut combo = nextCombo.clone();
-        let perms = Heap::new(&mut combo);
-        let c: u32 = rest.chain(perms);
-        Box::from(c) as Box<Iterator<Item = ThingInBox>>
-    });
+    let chars = Counter::from_iter(&mut input.chars());
+    let with_letter_counts = dict.iter().map(|word| (word, Counter::from_iter(&mut word.chars())));
+    let good_words = with_letter_counts.filter(|(_, ctr)| chars.is_superset(ctr))
+        .map(|(word, _)| word);
+    for word in good_words {
+        println!("{}", word);
+    }
 }
 
 fn get_input() -> String { 
     use std::env::args;
     use std::process::exit;
-    let mut arguments = args();
-    if let Some(s) = arguments.nth(1) {
-        s
+    let arguments: Vec<_> = args().collect();
+    if arguments.len() == 2 {
+        arguments[1].clone()
     } else {
-        println!("USAGE: {} LETTERS", arguments.nth(0).unwrap());
+        println!("USAGE: {} LETTERS", arguments[0]);
         exit(1);
     }
 }
 
 fn get_wordset() -> HashSet<String> {
     const WORDS_FILE: &'static str = "/usr/share/dict/usa";
-    let mut reader = BufReader::new(File::open(WORDS_FILE).unwrap());
+    let reader = BufReader::new(File::open(WORDS_FILE).unwrap());
     let mut out = HashSet::new();
 
     for word in reader.lines() {
@@ -50,86 +47,48 @@ fn get_wordset() -> HashSet<String> {
     out
 }
 
-struct Combinations<'a, T: 'a> {
-    v: &'a [T],
-    bits: Vec<bool>
+struct Counter<T : Hash + Eq> {
+    dict: HashMap<T, u32>
 }
 
-impl<'a, T> Combinations<'a, T> {
-    fn new(v: &'a [T]) -> Self {
-        Combinations {
-            v: v,
-            bits: vec![false; v.len()]
+impl<T : Hash + Eq> Counter<T> {
+    fn new() -> Self {
+        Counter { dict: HashMap::new() }
+    }
+
+    fn from_iter(it: &mut Iterator<Item = T>) -> Self {
+        let mut out = Self::new();
+        while let Some(el) = it.next() {
+            out.put(el);
+        }
+        out
+    }
+
+    fn put(&mut self, el: T) {
+        let ptr = self.dict.entry(el).or_insert(0);
+        *ptr += 1;
+    }
+
+    fn get(&self, el: &T) -> u32 {
+        match self.dict.get(el) {
+            Some(x) => *x,
+            None => 0
         }
     }
 
-}
-
-fn increment_bits(bits: &mut [bool]) { 
-    // Remember binary adders?
-    let xor = |a, b| (a || b) && !(a && b);
-    let mut carry = true;
-    for v in bits.iter_mut().rev() {
-        let (new_v, new_carry) = (xor(*v, carry), *v && carry);
-        *v = new_v;
-        carry = new_carry;
+    fn iter(&self) -> Iter<T, u32> {
+        self.dict.iter()
     }
-}
 
-impl<'a, T: 'a> Iterator for Combinations<'a, T> {
-    type Item = Vec<&'a T>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.bits.iter().all(|x| *x) {
-            None
-        } else {
-            increment_bits(&mut self.bits);
-            let out = self.bits.iter()
-                .zip(self.v)
-                .filter( |(&b, _)| b)
-                .map(|(_, val)| val)
-                .collect();
-            Some(out)
-        }
+    fn is_superset(&self, other: &Self) -> bool {
+        other.dict.iter().all( |(key, &count)| self.get(key) >= count)
     }
-}
 
-#[test]
-fn test_increment_bits() {
-    let mut num = vec![false; 3];
-    increment_bits(&mut num);
-    assert_eq!(num, &[false, false, true]);
+    fn contains(&self, el: &T) -> bool {
+        self.get(el) > 0
+    }
 
-    increment_bits(&mut num);
-    assert_eq!(num, &[false, true, false]);
-
-    increment_bits(&mut num);
-    assert_eq!(num, &[false, true, true]);
-
-    increment_bits(&mut num);
-    assert_eq!(num, &[true, false, false]);
-
-    increment_bits(&mut num);
-    assert_eq!(num, &[true, false, true]);
-
-    increment_bits(&mut num);
-    assert_eq!(num, &[true, true, false]);
-
-    increment_bits(&mut num);
-    assert_eq!(num, &[true, true, true]);
-
-    increment_bits(&mut num);
-    assert_eq!(num, &[false, false, false]);
-}
-
-#[test]
-fn test_combinator() {
-    const TESTER: &'static str = "acdfhjlnprsuv";
-    let letters: Vec<_> = TESTER.chars().collect();
-    let combinator = Combinations::new(&letters);
-    for combo in combinator {
-        assert!(combo.iter().all( |c| TESTER.contains(&c.to_string())));
-        let mut pairs = TESTER.chars().zip(TESTER.chars().skip(1));
-        assert!(pairs.all( |(a, b)| a < b));
+    fn is_subset(&self, other: &Self) -> bool {
+        !other.is_superset(&self)
     }
 }
