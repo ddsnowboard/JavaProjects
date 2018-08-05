@@ -1,8 +1,11 @@
-main = print $ show findMaxSum
+main = print findMaxSum
+
+allPowers a b = [a'^b' | a' <- [1..a], b' <- [1..b]] 
 
 findMaxSum :: Int
-findMaxSum = maximum (map sumDigits [a^b | a <- [1..100], b <- [1..100]])
+findMaxSum = maximum (map sumDigits (allPowers 100 100))
 
+-- I'm guessing that if I make this faster, it might work. I should skip the getDigits step
 sumDigits :: (Integral a) => a -> a
 sumDigits n = sum (getDigits n)
 
