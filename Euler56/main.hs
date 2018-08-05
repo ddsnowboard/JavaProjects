@@ -1,22 +1,15 @@
-main = print findMaxSum
+-- If I type what main is into the interpreter, it works fine, but I can't just run main. I'm so confused.
+main = print $ findMaxSum 100
 
 allPowers a b = [a'^b' | a' <- [1..a], b' <- [1..b]] 
 
-findMaxSum :: Int
-findMaxSum = maximum (map sumDigits (allPowers 100 100))
+digitSums n = map sumDigits $ allPowers n n
 
--- I'm guessing that if I make this faster, it might work. I should skip the getDigits step
+findMaxSum :: Int -> Int
+findMaxSum n = maximum $ digitSums n
+
 sumDigits :: (Integral a) => a -> a
-sumDigits n = sum (getDigits n)
+sumDigits n = sumDigits' n 0
 
-getDigits :: (Integral b) => b -> [b]
-getDigits n = getDigits' n []
-
-getDigits' :: (Integral c) => c -> [c] -> [c]
-getDigits' 0 l = l
-getDigits' n l = 
-            let 
-                divided = n `div` 10
-                onesDigit = n `mod` 10
-             in
-                getDigits' divided (onesDigit:l)
+sumDigits' 0 acc = acc
+sumDigits' n acc = sumDigits' (n `div` 10) (acc + (n `mod` 10))
