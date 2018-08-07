@@ -3,29 +3,12 @@ package main
 import "fmt"
 
 func main() {
-    const NCORES = 4
 	const MAX = 10000000
-        sendChannel := make(chan uint64, 100)
-	returnChannel := make(chan bool, 100)
-        isDone =: false
-	for i := 0; i < NCORES; i++ {
-		go collatzWorker(sendChannel, returnChannel)
-	}
 	for i := 1; i < MAX; i++ {
-            i -> sendChannel
-	}
-
-	for i := 1; i < MAX; i++ {
-		b := <- returnChannel
-		if !b {
+		if !collatzWorks(i) {
 			fmt.Println("We got a bad one")
 		}
 	}
-}
-
-func collatzWorker(input chan uint64, output chan bool, doneFlag *bool) {
-    // I need to learn how select works to get this going or else it will just go 
-    // forever
 }
 
 func collatzWorks(n int) bool {
