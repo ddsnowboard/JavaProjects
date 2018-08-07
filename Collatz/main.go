@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func main() {
-	const MAX = 1000000;
+	const MAX = 1000000
 	channel := make(chan bool, 100)
 	for i := 1; i < MAX; i++ {
 		go collatzWorks(i, channel)
