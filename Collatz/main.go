@@ -1,34 +1,36 @@
 package main
 
 import "fmt"
+import "sync"
 
 func main() {
-    const NCORES = 4
+	const NCORES = 4
 	const MAX = 10000000
-        sendChannel := make(chan uint64, 100)
+	sendChannel := make(chan uint64, 100)
 	returnChannel := make(chan bool, 100)
-        isDone =: false
+	var wg sync.WaitGroup
+	wg.Add(NCORES)
 	for i := 0; i < NCORES; i++ {
-		go collatzWorker(sendChannel, returnChannel)
+		go collatzWorker(sendChannel, returnChannel, &wg)
 	}
 	for i := 1; i < MAX; i++ {
-            i -> sendChannel
+		sendChannel <- uint64(i)
 	}
+	close(sendChannel)
+	wg.Wait()
+}
 
-	for i := 1; i < MAX; i++ {
-		b := <- returnChannel
-		if !b {
+func collatzWorker(input chan uint64, output chan bool, wg *sync.WaitGroup) {
+	for inp := range input {
+		if !collatzWorks(inp) {
 			fmt.Println("We got a bad one")
 		}
+		// output <- collatzWorks(inp)
 	}
+	wg.Done()
 }
 
-func collatzWorker(input chan uint64, output chan bool, doneFlag *bool) {
-    // I need to learn how select works to get this going or else it will just go 
-    // forever
-}
-
-func collatzWorks(n int) bool {
+func collatzWorks(n uint64) bool {
 	walker := uint64(n)
 	if n == 0 {
 		return true
