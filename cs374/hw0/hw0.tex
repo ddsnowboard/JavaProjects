@@ -1,0 +1,53 @@
+% ---------
+%  Compile with "pdflatex hw0".
+% --------
+%!TEX TS-program = pdflatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[11pt]{article}
+\usepackage{jeffe,handout,graphicx}
+\usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+
+%  Redefine suits
+\usepackage{pifont}
+\def\Spade{\text{\ding{171}}}
+\def\Heart{\text{\textcolor{Red}{\ding{170}}}}
+\def\Diamond{\text{\textcolor{Red}{\ding{169}}}}
+\def\Club{\text{\ding{168}}}
+
+\def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
+\def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
+
+
+
+% =====================================================
+%   Define common stuff for solution headers
+% =====================================================
+\Class{CS/ECE 374}
+\Semester{Spring 2017}
+\Authors{1}
+\AuthorOne{Will Koster}{jameswk2@illinois.edu}
+%\Section{}
+
+% =====================================================
+\begin{document}
+
+% ---------------------------------------------------------
+
+
+\HomeworkHeader{0}{1}	% homework number, problem number
+
+\begin{quote}
+    Suppose $S$ is a set of 103 integers. Prove that there is a subset $S' \subseteq S$ of at least 15 numbers such that the difference of any two numbers in $S'$ is a multiple of 7.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    First, let's prove that every pair of numbers in $S$ that are equal mod 7 have a difference that is a multiple of 7. \\
+    Let a and b be integers, where $a = 7n + c\text{ and }b = 7m + c$. m, n, and c are also integers. Therefore, $a - b = (7n + c) - (7m + c) = 7(n - m)$. Since $n, m \in \mathbb{Z}$, also $(n - m) \in \mathbb{Z}$. Thus, their difference is a multiple of 7. \\
+    Let's also note that, mod 7, numbers can only take 7 possible values, 0-6 inclusive. If we divide the 103 numbers from $S$ into those 7 sets, we will have 7 sets of numbers such that any pair of numbers from the same set has a difference that is a multiple of 7. Furthermore, by dividing 103 numbers into 7 sets, we know by the pigeonhole principle that at least one set has to have 15 or more elements, since $103 \div 7 > 14$.
+\end{solution}
+
+\end{document}
