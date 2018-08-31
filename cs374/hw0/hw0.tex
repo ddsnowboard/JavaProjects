@@ -7,6 +7,8 @@
 \documentclass[11pt]{article}
 \usepackage{jeffe,handout,graphicx}
 \usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
 
 %  Redefine suits
 \usepackage{pifont}
@@ -48,6 +50,75 @@
     First, let's prove that every pair of numbers in $S$ that are equal mod 7 have a difference that is a multiple of 7. \\
     Let a and b be integers, where $a = 7n + c\text{ and }b = 7m + c$. m, n, and c are also integers. Therefore, $a - b = (7n + c) - (7m + c) = 7(n - m)$. Since $n, m \in \mathbb{Z}$, also $(n - m) \in \mathbb{Z}$. Thus, their difference is a multiple of 7. \\
     Let's also note that, mod 7, numbers can only take 7 possible values, 0-6 inclusive. If we divide the 103 numbers from $S$ into those 7 sets, we will have 7 sets of numbers such that any pair of numbers from the same set has a difference that is a multiple of 7. Furthermore, by dividing 103 numbers into 7 sets, we know by the pigeonhole principle that at least one set has to have 15 or more elements, since $103 \div 7 > 14$.
+\end{solution}
+
+
+\HomeworkHeader{0}{2}	% homework number, problem number
+
+\begin{quote}
+    Prove that the recurrence 
+    \[
+        T(n) = T\left(\left \lfloor{\frac{n}{2}} \right \rfloor\right) + 2T\left(\left \lfloor{\frac{n}{2}} \right \rfloor \right) + n\text{, and } T(n) = 1 \text{ for } 1\leq n < 4
+    \]
+    is $O(n\text{log}n)$.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    Strictly speaking, we are proving that 
+    \[
+        T(n) = \leq an\log n + b
+    \]
+    for all $n \geq 1$ and some $a, b \geq 0$.  \\ 
+    We will use induction on n. \\
+    We will start with our base cases. We can pick $a$ and $b$, so let's let $a = 10^{100}, b = 1$. \\
+    For $n = 1$, $T(1) = 1 \leq \cancelto{0}{10^{100}(1)(\log 1)} + 1 = 1$. \\ 
+    For $n = 2$, $T(2) = 1 \leq {10^{100}(2)(\log 2)} + 1$. \\ 
+    For $n = 3$, $T(3) = 1 \leq {10^{100}(3)(\log 3)} + 1$. \\ 
+    For $n = 4$, $T(4) = 1 \leq {10^{100}(4)(\log 4)} + 1$. \\ 
+
+    Now for the inductive step \\
+    Assume that $T(x) = O(x\text{log}x)$ for all $x < n$ and $n$ is an integer $n \geq 4$. \\
+    We want to prove that 
+    \[
+        T(n) = T\left(\left \lfloor{\frac{n}{2}} \right \rfloor\right) + 2T\left(\left \lfloor{\frac{n}{2}} \right \rfloor \right) + n \leq 10^{100}n\log n + 1
+        \]
+
+        We know from our inductive hypothesis that $T\left(\left \lfloor{\frac{n}{2}} \right \rfloor\right) \leq 10^{100}\frac{n}{2}\log \frac{n}{2} + 1$ and $T\left(\left \lfloor{\frac{n}{4}} \right \rfloor\right) \leq 10^{100}\frac{n}{4}\log \frac{n}{4} + 1$, so we can do these substitutions without losing correctness.
+    \[
+        T(n) = 10^{100}\frac{n}{2}\log \frac{n}{2} + 1 + 2\left(10^{100}\frac{n}{4}\log \frac{n}{4} + 1\right) + n \leq 10^{100}n\log n + 1
+        \]
+        Simplifying, 
+    \[
+        T(n) = 10^{100}\frac{n}{2}\left(\log \frac{n}{2} + \log \frac{n}{4}\right) + \cancel{1} + 2 + n \leq 10^{100}n\log n + \cancel{1}
+        \]
+        Since we know $n > 0$, we can divide
+    \[
+        T(n) = 10^{100}\frac{\log \frac{n}{2} + \log \frac{n}{4}}{2} + \frac{2}{n} + 1 \leq 10^{100}\log n
+        \]
+        By the rules of logarithms, 
+    \[
+        T(n) = 10^{100}\frac{2\log n - \log 8}{2} + \frac{2}{n} + 1 \leq 10^{100}\log n
+        \]
+        Simplifying, 
+    \[
+        T(n) = 10^{100}\log n - \frac{10^{100}\log 8}{2} + \frac{2}{n} + 1 \leq 10^{100}\log n
+        \]
+        Rearranging, 
+    \[
+        T(n) =  \frac{2}{n} + 1 \leq \frac{10^{100}\log 8}{2}
+    \]
+    Since we know $n \geq 4$, we can substitute
+    \[
+        T(n) =  \cancelto{1.5}{\frac{2}{n} + 1} \leq \frac{10^{100}\log 8}{2}
+    \]
+    Finally, simplifying a little more, 
+    \[
+        T(n) =  1.5 \leq 10^{100}(1.5)
+    \]
+    This is clearly true.
 \end{solution}
 
 \end{document}
