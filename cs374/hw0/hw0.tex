@@ -121,4 +121,39 @@
     This is clearly true.
 \end{solution}
 
+\HomeworkHeader{0}{3}	% homework number, problem number
+
+\begin{quote}
+    Consider the set of strings $L \subseteq {0,1}^*$ defined recursively as follows:
+    \begin{itemize}
+        \item The string $1$ is in $L$.
+        \item For any string $x$ in $L$, the string $0x$ is also in $L$.
+        \item For any string $x$ in $L$, the string $x0$ is also in $L$.
+        \item For any strings $x$ and $y$ in $L$, the string $x1y$ is also in $L$.
+        \item These are the only strings in $L$.
+    \end{itemize}
+    (a) Prove by induction that every string $w \in L$ contains an odd number of 1s. \\
+    (b) Is every string $w$ that contains an odd number of 1s in $L$?  \\
+\end{quote}
+\hrule
+
+\begin{solution}
+    Part a: \\
+    Let's induct on the length of the string. \\
+    Base case:\\
+    Let $w$ be a string of length 1. The only such string in $L$ is the string 1. It has an odd number of $1$s.\\
+
+    Inductive case:\\
+    Let $w$ be some string in $L$. Assume that every string shorter than $w$ that is in $L$ has an odd number of 1s. The only way to build strings in $L$ is adding zeros, which does not change the number of 1s, or concatenating other strings with 1s in between. So our string $w$ either has a single 1 and a bunch of zeros, in which case it obviously has an odd number of 1s, or it was built from two shorter strings from $L$ with a 1 in between them. By our inductive hypothesis, we know that those two shorter strings each had an odd number of 1s. This means that the total number of 1s between the pair is even, so when we add the one additional 1, as stated in the rules defining the set, we have an odd number of 1s. \\ 
+
+    Part b: \\
+    Every string that contains an odd number of 1s is in L.\\
+    We are going to induct on the length of the string. \\
+    Base case: \\
+    Let $w$ be a string of length 1 that has an odd number of 1s. There is exactly one such string, and it is in $L$ by definition.\\
+    Inductive case: \\
+    Let $w$ be some string with an odd number of 1s and a $|w| \geq 2$, and assume every string shorter than $w$ with an odd number of 1s is in $L$. There are two options for this string. \\
+    Case a: $\#(1,w) = 1$. Since $|w| \geq 2$, either the first or last character in $w$ is a 0, or both. If we remove the leftmost 0 that is at the beginning or end of the string, we have a shorter string with one 1 in it. By our IH, this shorter string is in $L$, and we can make $w$ from our shorter string by adding back the 0 in the correct place, as specified in the definition of $L$. Therefore, $w$ is in $L$.\\
+    Case b: $\#(1,w) \geq 3$. We can split $w$ into 3 substrings: from the beginning up to, but not including, the second leftmost 1, that second leftmost 1, and the rest of the string after that. The first two strings each have one 1, and the last has $\#(1,w)-2$ 1s, which is an odd number since $\#(1,w)$ is odd. Since they are shorter than $w$, by our IH, they are in $L$, and the definition of $L$ shows you can reconstruct $w$ from these three strings, since the middle one is just the string 1, so $w$ is also in $L$.
+\end{solution}
 \end{document}
