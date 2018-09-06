@@ -1,0 +1,61 @@
+% ---------
+%  Compile with "pdflatex hw0".
+% --------
+%!TEX TS-program = pdflatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[11pt]{article}
+\usepackage{jeffe,handout,graphicx}
+\usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
+
+%  Redefine suits
+\usepackage{pifont}
+\def\Spade{\text{\ding{171}}}
+\def\Heart{\text{\textcolor{Red}{\ding{170}}}}
+\def\Diamond{\text{\textcolor{Red}{\ding{169}}}}
+\def\Club{\text{\ding{168}}}
+
+\def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
+\def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
+
+
+
+% =====================================================
+%   Define common stuff for solution headers
+% =====================================================
+\Class{CS/ECE 374}
+\Semester{Fall 2018}
+\Authors{1}
+\AuthorOne{Will Koster}{jameswk2@illinois.edu}
+%\Section{}
+
+% =====================================================
+\begin{document}
+
+% ---------------------------------------------------------
+
+
+\HomeworkHeader{1}{1}	% homework number, problem number
+
+\begin{quote}
+    For each of the following languages over the alphabet ${0,1}$, give a regular expression that describes that language, and briefly argue why your expression is correct.
+    \begin{enumerate}
+        \item All strings except $010$.
+        \item All strings that end in $10$ and contain $101$ as a substring.
+        \item All strings in which every nonempty maximal substring of $1$s is of length divisible by 3. For instance, $0110$ and $101110$ are not in the language while $11101111110$ is.
+        \item All strings that do not contain the substring $010$.
+        \item All strings that do not contain the \textit{subsequence} $010$.
+    \end{enumerate}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    \begin{enumerate}
+    \end{enumerate}
+\end{solution}
+
+\end{document}
