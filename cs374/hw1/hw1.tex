@@ -122,14 +122,7 @@
             $s = (s_1,s_2,s_3,s_4)$ \\
             $A = \{(s1, s2, s3, s4) \textbf{ : } s1 \in A_1, s2 \cancel{\in} A_2, \text{ and either } s3 \cancel{\in} A_3\text{ or } s4 \in A_4 \}$
         \item Prove that some string $w$ is accepted by our machine (ie, $\delta^*(s, w) \in A$) $M$ iff it is in $L$ (ie, in $L_1$ and not $L_2$ and in $L_4$ or the compliment of $L_3$, or both). \\
-            Prove by induction on the length of $w$.\\
-            There are two possibilities: 
-            \begin{enumerate}
-                \item $w = \epsilon$ \\
-                    By the definition of the $\delta$ function for DFAs, the final state for this string is the same as $s$, namely $(s_1, s_2, s_3, s_4)$. By the definition of $A$, this $s$ state is in $A$ iff it is in $A_1$, not in $A_2$, and in one or both of $A_4$ and the complement of $A_3$. By the definitions of $A_n$ for n from 1 to 4 and the definition of $L$, this means that $w$ is in $L$.
-                \item $w = ax$ \\
-                    First, assume that we know that $p \in L \iff p$ is accepted by $M$ for all strings $p$ shorter than $w$.
-            \end{enumerate}
+            By the defintion of our $\delta$ function, we know that each transition simulates $\delta_1, \delta_2, \delta_3, \delta_4$ on the string. Therefore, $M$ simluates $M_1, M_2, M_3, M_4$. Since we know $M$ simulates the other machines, we know that $\delta^*(s, w) = (\delta^*_1(s_1, w), \delta^*_2(s_2, w), \delta^*_3(s_3, w), \delta^*_4(s_4, w))$, where $\delta^*_n$ is the standard $\delta^*$ funtion for $M_n$. By our definition of $A$ and $M_n, n \in \{1,2,3,4\}$, we know that our machine will only accept strings in $L$, which is \textit{quod erat demonstrandum}.
     \end{enumerate}
 \end{solution}
 \end{document}
