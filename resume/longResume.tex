@@ -1,0 +1,111 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Medium Length Professional CV
+    % LaTeX Template
+% Version 2.0 (8/5/13)
+    %
+    % This template has been downloaded from:
+    % http://www.LaTeXTemplates.com
+    %
+    % Original author:
+    % Trey Hunner (http://www.treyhunner.com/)
+    %
+    % Important note:
+    % This template requires the resume.cls file to be in the same directory as the
+    % .tex file. The resume.cls file provides the resume style used for structuring the
+    % document.
+    %
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %----------------------------------------------------------------------------------------
+    %   PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+    %----------------------------------------------------------------------------------------
+
+    \documentclass{tightResume} 
+
+    \usepackage[left=0.3in,top=0.2in,right=0.3in,bottom=0.2in,letterpaper]{geometry} % Document margins
+    \newcommand{\tab}[1]{\hspace{.2667\textwidth}\rlap{#1}}
+    \newcommand{\itab}[1]{\hspace{0em}\rlap{#1}}
+    \name{Will Koster} % Your name
+    \address{7279 Maryland Ave. \\ St. Louis, MO 63130} % Your address
+    \address{(314) 827-5679 \\ jwillkoster@gmail.com \\ github.com/ddsnowboard} % Your phone number and email
+
+    \begin{document}
+
+    %----------------------------------------------------------------------------------------
+    %   EDUCATION SECTION
+    %----------------------------------------------------------------------------------------
+
+    \begin{rSection}{Education}
+
+{\bf University of Illinois, Urbana-Champaign} \hfill {\em August 2016 - Present} 
+\\ Graduation Date: May 2020 \hfill { GPA: 3.89}
+\\ Computer Science
+
+
+        \end{rSection}
+        %----------------------------------------------------------------------------------------
+        %   TECHNICAL STRENGTHS SECTION
+        %----------------------------------------------------------------------------------------
+
+        \begin{rSection}{Technical Knowledge}
+
+            \textbf{Programming Languages (order of proficiency):}\\  Python, JavaScript, Java, HTML/CSS, React, SQL, Rust, C/C++, Go, Haskell, Ruby, Racket
+
+            \end{rSection}
+
+            %----------------------------------------------------------------------------------------
+            %   WORK EXPERIENCE SECTION
+            %----------------------------------------------------------------------------------------
+
+            \begin{rSection}{Experience}
+                \begin{rSubsection}{OneSpace, Inc.}{Summer 2018}{Engineering Intern}{Swansea, IL} 
+                \item Improved Node.js database analysis software for a B2B marketing services company. 
+                \item Fixed ubiquitous crashing bugs and increased efficiency by up to two times while removing unnecessary dependencies
+                \item Found workaround to Microsoft Excel bug that caused system crashes
+                \end{rSubsection}
+
+                \begin{rSubsection}{Social Spaces Research Group}{Fall 2017-Present}{Research Assistant}{github.com/dphuang2/tweedstudy-react}{}
+                \item Research into how users perceive the impact of algorithms in social media
+                \item Built a machine learning model that predicted criminal recidivism with accuracy greater than or equal to similar commercial systems
+                \item Made an application using React for use in a study on algorithm awareness and control settings
+                \item Built SQL database to contain large amount of local crime data
+                \end{rSubsection}
+
+                \begin{rSubsection}{Clearent, LLC}{Summer 2017}{Software Development Intern}{St. Louis, MO}
+                \item Expanded .NET Core webapp for medium-size credit-card processing company
+                \item Finished large user-facing feature, including complete unit tests
+                \item Learned SQL query and data design from working in large, well-maintained database
+                \item Explained accomplishments and goals in daily Agile standup meetings
+                \end{rSubsection}
+
+                \begin{rSubsection}{FocalCast}{Summer 2015}{Software Intern}{St. Louis, MO}{}
+                \item Developed Chromecast JavaScript app for giving presentations with real-time annotations
+                \item Improved efficiency, removing limit on the number of annotations on a slide and number of concurrent users
+                \item Learned about fast-paced, lean software development in a very small startup company, working side-by-side with the cofounders daily
+                \end{rSubsection}
+
+            \end{rSection}
+
+
+    %----------------------------------------------------------------------------------------
+    \begin{rSection}{Relevant Courses}
+        \textit{Discrete Structures, Data Structures, Computer Architecture, Systems Programming, Linear Algebra, Statistics, Advanced Computer Algorithms (In Progress), Numerical Methods (In Progress), Computer Graphics (In Progress)}
+
+    \end{rSection}
+
+
+    %----------------------------------------------------------------------------------------
+    \begin{rSection}{Extra-Curricular} \itemsep -3pt
+        \begin{rSubsection}{Course Assistant}{Fall 2017-Spring 2018}{CS 125 (Introduction to Computer Science) \\ CS 126 (Software Design Studio)}{}{}
+        \item Helped students with technical and conceptual problems during office hours
+        \item Graded weekly assignments
+        \end{rSubsection}
+
+        \begin{rSubsection}{FantasyStocks}{December 2015-May 2016}{Personal Project}{github.com/ddsnowboard/FantasyStocks}
+        \item Created stock-trading simulator game, with a webapp in Python/Django and a native Java Android app
+        \item Built backend that included consuming and producing REST APIs, unit tests, automatic deployment, and push notifications on mobile
+        \end{rSubsection}
+
+    \end{rSection}
+
+    \end{document}
