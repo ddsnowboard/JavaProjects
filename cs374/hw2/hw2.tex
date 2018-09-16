@@ -209,7 +209,17 @@
 
 
 \begin{solution}
-    lskajdf
+    \begin{enumerate}
+        \item The set for the regular expression $\emptyset$ is empty, so the regular expression for $\emph{delete}\Sym{1}(\emptyset)$ is trivially also $\emptyset$. The set for $\epsilon$ only has one string in it, and there are no $\Sym1$s in it to remove, so $\emph{delete}\Sym{1}(\epsilon)$ is also $\emptyset$. There are two 1-letter regular expressions in this language, $\Sym1$ and $\Sym0$. $\emph{delete}\Sym1(\Sym1) = \epsilon$ and $\emph{delete}\Sym1(\Sym0) = \emptyset$.
+
+        \item The regular expression is $r_1' + r_2'$. If we take some string $w$ from $\emph{delete}\Sym1(L(r_1+r_2))$, it is by definition some string from either $L(r_1)$ or $L(r_2)$ with a 1 removed. Since our regular expression matches strings from either $L(r_1)$ or $L(r_2)$ that have had a $1$ removed, w is in $L(r_1' + r_2')$. Therefore, if any string that is in $\emph{delete}\Sym1(L(r_1+r_2))$ is in $L(r_1' + r_2')$, then $\emph{delete}\Sym1(L(r_1+r_2)) \subseteq L(r_1' + r_2')$. Similarly, if we take some string $p$ from $L(r_1' + r_2')$, by the definition of $r_1'$ and $r_2'$, it is either a string from $L(r_1)$ or $L(r_2)$ with a $1$ removed. This means that string will be in $\emph{delete}\Sym1(L(r_1+r_2))$, so $L(r_1' + r_2') \subseteq \emph{delete}\Sym1(L(r_1+r_2))$. Therefore, the languages are the same.
+
+        \item The regular expression is $r_1'r_2 + r_1r_2'$. Let $P = L(r_1'r_2 + r_1r_2')$ and $D = \emph{delete}\Sym1(L(r_1r_2))$. If you take some string from $P$, then it will either be something matching $r_1$, but with a $1$ removed, followed by something matching $r_2$, or something matching $r_1$ followed by something matching $r_2$ but with a $1$ deleted. If you put the $1$ back, then you have something matching $r_1$ followed by something matching $r_2$, which means that the original string is in $D$. If you take a some string matching $r_1r_2$ and then delete a $1$, that $1$ could have come from the $r_1$ part or the $r_2$ part, which means that string also would be in $P$. Therefore, $P = D$.
+            
+        \item The regular expression is $(r_1)^*r_1'(r_1)^*$. Let $P = L((r_1)^*r_1'(r_1)^*)$ and $D = \emph{delete}\Sym1(L((r_1)^*))$. Let $w$ be some string from $P$. If you find the part of the string that matches $r_1'$ and replace the $1$ to make it match $r_1$, giving you a string $w_1$, then $w_1$ is in $L((r_1)^*)$. That means that $w$ is in $D$. If you take some new string $r$ from $D$, you know that it's the concatenation of some number of strings that match $(r_1)^*$ with a single $1$ removed. That means that one of the repetitions of $r_1$ turns into an $r_1'$ and the rest stay how they were, which is the definition of $P$. Therefore, $r \in P$ and $P = D$.
+            
+        \item $(01)^*0(01)^* + 01*0$
+    \end{enumerate}
 \end{solution}
 
 \HomeworkHeader{2}{3}	% homework number, problem number
@@ -243,6 +253,55 @@
 
 
 \begin{solution}
-    lskajdf
+    \begin{enumerate}
+        \item First, let's build $M_2$, the conversion of $N_2$ to a DFA.
+            \[
+                M_2 = (Q_2', \Sigma, \delta_2', s_2', A_2')
+            \]
+            \[
+                Q_2' = \mathbb{P}(Q_2)
+            \]
+            \[
+                \delta_2'(qs, a) = \bigcup_{q \in qs}\left(\bigcup_{r \in \epsilon reach(q)} \epsilon reach(\delta'(r, x))\right)
+            \]
+            \[
+                s_2' = \epsilon reach(s_2)
+            \]
+            \[
+                A_2' = \{q : q \in Q_2', q \cap A_2 \neq \emptyset \}
+            \]
+            Now we're going to create a DFA $F$ that accepts $L(M_1) \setminus L(M_2)$.
+            \[
+                F = (Q_3, \Sigma, \delta_3, s_3, A_3)
+            \]
+            \[
+                Q_3 = Q_1 \times Q_2'
+            \]
+            \[
+                \delta_3((a,b),c) = (\delta_1(a, c), \delta_2'(b,c))
+            \]
+            \[
+                s_3 = (s_1, s_2')
+            \]
+            \[
+                A_3 = \{(a, b) \in Q_3 : a \in A_1, b \in \overline{A_2'}\}
+            \]
+        \item The intuition behind $N$ is that it will be just like $M$ except there will be a new start state $s'$ that has $\epsilon$ transitions to every state reachable from $s$. Also, let $\delta^*$ be the standard extension of $\delta$ to strings.
+            \[
+                N = (Q', \Sigma, \delta', s',A)
+            \]
+            \[
+                Q' = Q \cup \{s'\}
+            \]
+            \[
+                \delta'(s', \epsilon) = \{\delta^*(s, w) : w \in \Sigma^*\}
+            \]
+            \[
+                \delta'(s', x) = \emptyset
+            \]
+            \[
+                \delta'(q, a) = \{\delta(q, a)\}
+            \]
+    \end{enumerate}
 \end{solution}
 \end{document}
