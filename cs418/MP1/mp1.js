@@ -50,6 +50,31 @@ function degToRad(degrees) {
     return degrees * Math.PI / 180;
 }
 
+/**
+ * Translates arr by {x,y,z}
+ */
+function translate(arr, {x,y,z}) {
+    return arr.map((el, idx) => {
+        switch(idx % 3) {
+            case 0: // x
+                return el + x;
+            case 1: // y 
+                return el + y;
+            case 2: // z
+                return el + z
+        }
+    });
+}
+
+/**
+ * Makes an array [0,1,2,3,..n - 1]
+ */
+function range(n) {
+    let out = [];
+    for(let i = 0; i < n; i++)
+        out.push(i);
+    return out;
+}
 
 /**
  * Creates a context for WebGL
@@ -157,105 +182,159 @@ function loadVertices() {
 
     // Start with vertex at the origin    
     let topStripe = [
-        -5.0,4.0,0.0,
-        -4.2,4.0,0.0,
+        -5.0,3.5,0.0,
+        -4.2,3.5,0.0,
         -5.0,5.0,0.0,
 
-        -4.2,4.0,0.0,
+        -4.2,3.5,0.0,
         -5.0,5.0,0.0,
-        -2.0,4.0,0,
+        -2.0,3.5,0,
 
         -5.0,5.0,0.0,
-        -2.0,4.0,0,
+        -2.0,3.5,0,
         5,5,0,
 
-        -2.0,4.0,0,
+        -2.0,3.5,0,
         5,5,0,
-        2,4,0,
+        2,3.5,0,
 
         5,5,0,
-        2,4,0,
-        4.2,4,0,
+        2,3.5,0,
+        4.2,3.5,0,
 
-        2,4,0,
-        4.2,4,0,
-        5,4,0,
+        2,3.5,0,
+        4.2,3.5,0,
+        5,3.5,0,
 
-        4.2,4,0,
-        5,4,0,
+        4.2,3.5,0,
+        5,3.5,0,
         5,5,0
     ];
 
     let leftSide = [
-        -4.2,4,0,
-        -2,4,0,
-        -4.2,1.5,0,
+        -4.2,3.5,0,
+        -2,3.5,0,
+        -4.2,2.05,0,
 
-        -2,4,0,
-        -4.2,1.5,0,
-        -2,1.5,0,
+        -2,3.5,0,
+        -4.2,2.05,0,
+        -2,2.05,0,
 
-        -2,1.5,0,
-        -2,-1.5,0,
-        -4.2,1.5,0,
+        -2,2.05,0,
+        -2,-2.05,0,
+        -4.2,2.05,0,
 
-        -4.2,1.5,0,
-        -2,-1.5,0,
-        -4.2,-1.5,0,
+        -4.2,2.05,0,
+        -2,-2.05,0,
+        -4.2,-2.05,0,
 
-        -2, 1.5,0,
-        -1.25,1.5,0,
-        -1.25,-1.5,0,
+        -2, 2.05,0,
+        -1.15,2.05,0,
+        -1.15,-2.05,0,
 
-        -1.25,-1.5,0,
-        -2, 1.5,0,
-        -2, -1.5,0,
+        -1.15,-2.05,0,
+        -2, 2.05,0,
+        -2, -2.05,0,
 
-        -4.2,-4,0,
-        -2,-4,0,
-        -4.2,-1.5,0,
+        -4.2,-3.5,0,
+        -2,-3.5,0,
+        -4.2,-2.05,0,
 
-        -2,-4,0,
-        -4.2,-1.5,0,
-        -2,-1.5,0,
+        -2,-3.5,0,
+        -4.2,-2.05,0,
+        -2,-2.05,0,
 
-        -2,-1.5,0,
-        -2,1.5,0,
-        -4.2,-1.5,0,
+        -2,-2.05,0,
+        -2,2.05,0,
+        -4.2,-2.05,0,
     ];
     
     let rightSide = leftSide.map((el, idx) => idx % 3 === 0 ? -el : el);
-    let orangeVertices = [];
+    const TOP_OF_STRIPES = -3.8;
+    const STRIPE_WIDTH = 8.4 / 11;
+    const LEFT_OF_STRIPES = -4.2;
+    let leftStripe = [
+        LEFT_OF_STRIPES, TOP_OF_STRIPES, 0,
+        LEFT_OF_STRIPES,-4.6,0,
+        LEFT_OF_STRIPES + STRIPE_WIDTH,TOP_OF_STRIPES,0,
 
-    let allVertices = topStripe.concat(orangeVertices).concat(leftSide).concat(rightSide);
+        LEFT_OF_STRIPES + STRIPE_WIDTH, TOP_OF_STRIPES, 0,
+        LEFT_OF_STRIPES,-4.6,0,
+        LEFT_OF_STRIPES + STRIPE_WIDTH, -5.0, 0
+    ];
+
+    let rightStripe = leftStripe.map((el, idx) => idx % 3 == 0 ? -el : el);
+    const NUM_STRIPES = 6;
+    const INTERSTRIPE_DISTANCE = 8.4 / 5.5;
+    const M = -.85; // The slope of the line made by the bottom of the stripes
+    let stripes = range(NUM_STRIPES).map((n) => {
+        let out;
+        if(n >= 3) {
+            out = translate(rightStripe, {x:-INTERSTRIPE_DISTANCE * (5 - n), y: 0, z: 0});
+        }
+        else {
+            out = translate(leftStripe, {x:INTERSTRIPE_DISTANCE * n, y: 0, z: 0});
+        }
+        out = out.map((el, idx) => {
+            if(idx % 3 == 1 && el !== TOP_OF_STRIPES) { // is y coord
+                let coefficient = (n >= 3 ? (5 - n) : n);
+                return el + coefficient * M;
+            } else {
+                return el;
+            }
+        });
+        return out;
+    }).flat();
+    let orangeVertices = stripes;
+
+    let allVertices = topStripe.concat(leftSide).concat(rightSide).concat(orangeVertices);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(allVertices), gl.DYNAMIC_DRAW);
     vertexPositionBuffer.itemSize = 3;
     vertexPositionBuffer.numberOfItems = allVertices.length / 3;
-    return allVertices;
+    // debugger;
+    return {blue: topStripe.length / 3 + leftSide.length * 2 / 3, orange: orangeVertices.length / 3};
 }
 
 /**
  * Populate color buffer with data
   @param {number} number of vertices to use around the circle boundary
   */
-function loadColors(vertices) {
+function loadColors(counts) {
     vertexColorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexColorBuffer);
 
-    // Set the heart of the circle to be black    
-    var colors = [];
-    let numVertices = vertices.length;
-
+    let orange = {r: .91, g: .29, b: .21};
+    let blue = {r: 0.09, g: 0.16, b: 0.3};
     var a=1.0;
-    let r = 0.09
-    var g=0.16;
-    let b = 0.3;
-    for (let i=0; i<numVertices; i++){
+    let colors = [];
+    for (let i=0; i<counts.blue; i++){
         /*
-        colors.push(Math.random());
-        colors.push(Math.random());
-        colors.push(Math.random());
+        let randRed = Math.random();
+        let randBlue = Math.random();
+        let randGreen = Math.random();
+        colors.push(randRed);
+        colors.push(randBlue);
+        colors.push(randGreen);
+        colors.push(1);
+        colors.push(randRed);
+        colors.push(randBlue);
+        colors.push(randGreen);
+        colors.push(1);
+        colors.push(randRed);
+        colors.push(randBlue);
+        colors.push(randGreen);
+        colors.push(1);
+        i+= 2;
         */
+        let {r, g, b} = blue;
+        colors.push(r);
+        colors.push(g);
+        colors.push(b);
+        colors.push(a);
+    }
+
+    for(let i = 0; i < counts.orange; i++) {
+        let {r, g, b} = orange;
         colors.push(r);
         colors.push(g);
         colors.push(b);
@@ -264,7 +343,7 @@ function loadColors(vertices) {
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
     vertexColorBuffer.itemSize = 4;
-    vertexColorBuffer.numItems = numVertices+2;  
+    vertexColorBuffer.numItems = counts.orange + counts.blue;  
 }
 /**
  * Populate buffers with data
@@ -273,22 +352,26 @@ function loadColors(vertices) {
 function setupBuffers() {
 
     //Generate the vertex positions    
-    let vertices = loadVertices();
+    let counts = loadVertices();
 
     //Generate the vertex colors
-    loadColors(vertices);
+    loadColors(counts);
 }
 
 /**
  * Draw call that applies matrix transformations to model and draws model in frame
  */
+let ticks;
 function draw() { 
+    if(ticks === undefined)
+        ticks = 0;
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
 
     mat4.identity(mvMatrix);
-
-    mat4.ortho(pMatrix,-5,5,-5,5,5,-5);  
+    mat4.rotateZ(mvMatrix, mvMatrix, 0.01 * ticks);
+    
+    mat4.ortho(pMatrix,-7,7,-9,9,5,-5);  
 
 
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexPositionBuffer);
@@ -300,15 +383,9 @@ function draw() {
 
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLES, 0, vertexPositionBuffer.numberOfItems);
+    ticks++;
 }
 
-/**
- * Animation to be called from tick. Updates globals and performs animation for each tick.
- */
-function animate() { 
-    defAngle = (defAngle+1.0) % 360;
-    loadVertices();
-}
 
 /**
  * Startup function called from html code to start program.
@@ -329,7 +406,6 @@ function startup() {
 function tick() {
     requestAnimFrame(tick);
     draw();
-    animate();
 }
 
 function deformSin(x, y, angle) {
