@@ -32,6 +32,8 @@ let vertexShader;
 
 let fragmentShader;
 
+let ticks;
+
 //----------------------------------------------------------------------------------
 /**
  * Sends projection/modelview matrices to shader
@@ -175,6 +177,8 @@ function setupShaders() {
   @param {number} number of vertices to use around the circle boundary
   */
 function loadVertices() {
+    if(ticks === undefined)
+        ticks = 0;
     console.log("Frame", defAngle);
     //Generate the vertex positions    
     vertexPositionBuffer = gl.createBuffer();
@@ -278,7 +282,7 @@ function loadVertices() {
         out = out.map((el, idx) => {
             if(idx % 3 == 1 && el !== TOP_OF_STRIPES) { // is y coord
                 let coefficient = (n >= 3 ? (5 - n) : n);
-                return el + coefficient * M;
+                return el + coefficient * M - Math.abs(1.5 * Math.sin(ticks * 0.05 + n * 0.5));
             } else {
                 return el;
             }
@@ -291,7 +295,6 @@ function loadVertices() {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(allVertices), gl.DYNAMIC_DRAW);
     vertexPositionBuffer.itemSize = 3;
     vertexPositionBuffer.numberOfItems = allVertices.length / 3;
-    // debugger;
     return {blue: topStripe.length / 3 + leftSide.length * 2 / 3, orange: orangeVertices.length / 3};
 }
 
@@ -361,15 +364,16 @@ function setupBuffers() {
 /**
  * Draw call that applies matrix transformations to model and draws model in frame
  */
-let ticks;
 function draw() { 
     if(ticks === undefined)
         ticks = 0;
+    loadVertices();
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
 
     mat4.identity(mvMatrix);
     mat4.rotateZ(mvMatrix, mvMatrix, 0.01 * ticks);
+    mat4.rotateY(mvMatrix, mvMatrix, 0.05 * ticks);
     
     mat4.ortho(pMatrix,-7,7,-9,9,5,-5);  
 
@@ -406,12 +410,4 @@ function startup() {
 function tick() {
     requestAnimFrame(tick);
     draw();
-}
-
-function deformSin(x, y, angle) {
-    let pt = vec2.fromValues(x, y);
-    let dist = 0.2 * Math.sin(angle + degToRad(defAngle));
-    vec2.normalize(pt, pt);
-    vec2.scale(pt, pt, dist);
-    return pt;
 }
