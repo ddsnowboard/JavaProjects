@@ -1,0 +1,172 @@
+% ---------
+%  Compile with "pdflatex hw0".
+% --------
+%!TEX TS-program = pdflatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[11pt]{article}
+\usepackage{jeffe,handout,graphicx}
+\usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
+
+%  Redefine suits
+\usepackage{pifont}
+\def\Spade{\text{\ding{171}}}
+\def\Heart{\text{\textcolor{Red}{\ding{170}}}}
+\def\Diamond{\text{\textcolor{Red}{\ding{169}}}}
+\def\Club{\text{\ding{168}}}
+
+\def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
+\def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
+
+
+
+% =====================================================
+%   Define common stuff for solution headers
+% =====================================================
+\Class{CS/ECE 374}
+\Semester{Fall 2018}
+\Authors{1}
+\AuthorOne{Will Koster}{jameswk2@illinois.edu}
+%\Section{}
+
+% =====================================================
+\begin{document}
+
+% ---------------------------------------------------------
+
+
+\HomeworkHeader{3}{1}	% homework number, problem number
+
+\begin{quote}
+    \begin{enumerate}
+        \item Prove that the following languages are not regular by providing
+            a fooling set. You need to provide an infinite set and
+            also prove that it is a valid fooling set for the given language.
+            \begin{enumerate}
+                \item $L = \{0^i1^j2^k \mid i+j = k+1\}$.
+                \item Recall that a block in a string is a maximal non-empty
+                    substring of indentical symbols. Let $L$ be the set of all strings
+                    in $\set{\Sym0,\Sym1}^*$ that contain two non-empty blocks of \Sym1s of
+                    unequal length.  For example, $L$ contains the strings
+                    \Sym{01101111} and \Sym{01001011100010} but does not contain the
+                    strings \Sym{000110011011} and \Sym{00000000111}.
+                \item $L = \{0^{n^3} \mid n \ge 0\}$.
+            \end{enumerate}
+        \item Suppose $L$ is not regular. Prove that $L \setminus L'$ is not
+            regular for any finite language $L'$. Give a simple example of a
+            non-regular language $L$ and a regular language $L'$ such that $L
+            \setminus L'$ is regular.
+    \end{enumerate}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    \begin{enumerate}
+        \item Let $w = 0^i1^{42}$ and $s = 0^j1^{42}$, where $i \neq j$. Let $p = 2^{42 + i - 1}$. Our language distinguishes $wp$ and $sp$, as $wp \in L$ and $sp \not\in L$. Therefore, our fooling set $F = \{1^i0^{42} : i \geq 0\}$.
+        \item Let $w = 1^n0$ and $p = 1^m0$, where $m \neq n$. Let $f = 1^n$. We know that $wf \not\in L$ but $pf \in L$, so $L$ distinguishes $wf$ and $pf$. Therefore, we can get our fooling set, $F = \{1^i0 : i \in \mathbb(N)\}$.
+        \item Let's do a proof by contradiction. We want to prove that $S = L \setminus L'$ is not regular, but let's assume it is. If $S$ is regular, and $L'$ is regular (since it's finite), then $S \cup (L' \cap L)$ is regular by the closure of regular languages over union. We know that $L' \cap L$ is regular because $L'$ is finite, so the intersection of it and any other set has to be finite too. But $S = L \setminus L' = \{p : p \in L, p \not\in L'\}$. So $S \cup (L \cap L') = \{p : (p \in L, p \not\in L') \text{ or } (p \in L, p \in L')\}$. In other words, $S \cup (L' \cap L)$ is the set of everything that's either in $L$ and not in $L'$, or is in $L$ and $L'$. But that's just everything in $L$. Therefore, since $S$ and $L \cap L'$ are regular, then $L$ must be regular. But we know $L$ isn't regular. We have a contradition. Therefore, our original proposition is wrong, and it's converse is correct; $L \setminus L'$ is not regular. \\
+            If you let $L = \{0^n1^n : n \in \mathbb{N}\}$ and $L' = (0+1)^*$, then $L \setminus L'$ is regular.
+    \end{enumerate}
+\end{solution}
+
+\HomeworkHeader{3}{2}	% homework number, problem number
+
+\begin{quote}
+    Describe a context free grammar for the following languages.
+    Clearly explain how they work and the role of each non-terminal.
+    Unclear grammars will receive little to no credit.
+    \begin{enumerate}
+        \item $\{a^ib^jc^k \mid k = 3(i+j)\}$.
+        \item $\{a^ib^jc^kd^\ell \mid  i,j,k,\ell \ge 0 \mbox{~and~} i+\ell = j+k\}$.
+        \item $L = \{0,1\}^* \setminus \{ 0^n1^{2n} \mid n \ge 0\}$. In other words
+            the complement of the language $\{ 0^n1^{2n} \mid n \ge 0\}$.
+    \end{enumerate}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    \begin{enumerate}
+        \item $S = aSccc | B$ \\
+            $B = bBccc | \epsilon$. \\
+            The $S$ non-terminal is the start state, for when you are generating $a$s, and the $B$ non-terminal is when you're done generating $a$s and you've moved on to $b$s. Thus for any string $w = a^nb^mc^{3n+3m}$, you take the $aSccc$ route from $S$ $n$ times, then you take the $B$ route when you've finished. Then you take the $bBccc$ route from $B$ $m$ times, taking $\epsilon$ when you've finished. And then you'll have your string.
+        \item $S = aBbD | aAcC | D \\
+            A = aCc | B \\
+            B = aBb | \epsilon \\
+            C = cCd | \epsilon \\
+            D = bDd | C$ \\
+            If you have $\Sym{i}$ copies of $\Sym{a}$ in your string, then you can imagine that the each of the $i + 1$st to the $2i$th characters are "married to" an $\Sym{a}$, and rest of the $\Sym{b}$s and $\Sym{c}$s are "married to" a $\Sym{d}$. Our $S$ state finds the first $\Sym{a}$ and its mate. If its mate is a $\Sym{b}$, then we know that no $\Sym{a}$ are mated to $\Sym{c}$s, so we generate an equal number of $\Sym{a}$s and $\Sym{b}$s, and then all the other middle letters are with a $\Sym{d}$. If the first $\Sym{a}$ is mated to a $\Sym{c}$, then every $\Sym{d}$ is mated to a $\Sym{c}$, and the rest of the middle letters go with an $\Sym{a}$. We could also have no $\Sym{a}$s and just generate a $\Sym{b}$ or a $\Sym{c}$ for every $\Sym{d}$. The $A$ state generates letters such that the number of $\Sym{b}$s plus the number of $\Sym{c}$s equals the number of $\Sym{a}$s. The $B$ state locks you out of generating $\Sym{b}$s to the right of $\Sym{c}$s. The $C$ and $D$ states are equivalent but for $\Sym{d}$s.
+        \item $S = A10A | B \\
+            A = 1A | 0A | \epsilon \\ 
+            E = 0E11 | \epsilon \\
+            B = Z | O \\
+            Z = 0Z | 0E \\
+            O = O1 | E1$ \\
+            This language is just the compliment of $\{0^n1^{2n} | n \geq 0\}$, which is just any string not of the form $0^*1^*$ (ie, any string in $(0 + 1)^*10(0 + 1)^*$) or any string in the language $\{0^n1^m|2n \neq m\}$. The first path on $S$ matches strings in $(0 + 1)^*10(0 + 1)^*$, since $A$ matches everything. $B$ matches strings where there are either more or less than $2n$ $\Sym1$s. $E$ means we've whittled down the string to having exactly twice as many $\Sym1$s as $\Sym0$s. Since the only way we can get to $E$ is by removing one or more $\Sym0$s or $\Sym1$s, we know that the string won't be in $\{0^n1^{2n} | n \geq 0\}$.
+
+    \end{enumerate}
+\end{solution}
+
+\HomeworkHeader{3}{3}	% homework number, problem number
+
+\begin{quote}
+    Given languages $L_1$ and $L_2$ we define $\text{\em insert}(L_1,L_2)$
+    to be the language $\{uvw \mid v \in L_1, uw \in L_2\}$ to be the
+    set of strings obtained by ``inserting'' a string of $L_1$ into a
+    string of $L_2$. For example if $L_1 = \{isfun\}$ and $L_2 = \{0, CS\}$
+    then
+    $$\text{\em insert}(L_1,L_2) = \{isfun0,0isfun,isfunCS,CisfunS,CSisfun\}$$
+    \begin{itemize}
+        \item The goal is to show that if $L_1$ and $L_2$ are regular
+            languages then $\text{\em insert}(L_1,L_2)$ is also regular.  In
+            particular you should describe how to construct an NFA $N =
+            (Q,\Sigma, \delta,s, A)$ from two DFAs
+            $M_1=(Q_1,\Sigma,\delta_1,s_1,A_1)$ and
+            $M_2=(Q_2,\Sigma,\delta_2,s_2,A_2)$ such that $L(N) = \text{\em
+                insert}(L(M_1),L(M_2))$. You do not need to prove the correctness of
+            your construction but you should explain the ideas behind the
+            construction (see lab 3 solutions).
+        \item {\bf Not to submit:} Describe an algorithm that given
+            regular expressions $r_1$ and $r_2$ constructs a regular expression
+            $r$ such that $L(r) =  \text{\em insert}(L(r_1),L(r_2))$. Note that you
+            would need to do this from the inductive definitions of $r_1$ and $r_2$.
+    \end{itemize}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    \[
+        Q = (Q_1 \times Q_2) \cup (Q_2 \times \{\text{seen}, \text{notseen}\})
+    \]
+    \[
+        \delta((q, \text{seen}), a) = \{(\delta_2(q, a), \text{seen}\}
+    \]
+    \[
+        \delta((q, \text{notseen}), a) = \{(\delta_2(q, a), \text{notseen}\}
+    \]
+    \[
+        \delta((q, \text{notseen}), \epsilon) = \{(q, s_1)\}
+    \]
+    \[
+        \delta((q, s), a) = \{(q, \delta_1(s, a))\}
+    \]
+    \[
+        \delta((q, s \in A_1), \epsilon) = \{(q, \text{seen})\}
+    \]
+    \[
+        s = (s_2, \text{notseen})
+    \]
+    \[
+        A = \{(q, \text{seen}) | q \in A_2\}
+    \]
+
+    The idea behind this is that you have two parallel sub-machines that are very similar to the original $M_2$, one for when you've already seen something from $L_1$, and one for when you haven't. For each state in the original $M_2$, there is an entire copy of $M_1$. Connecting each state from $M_2$ that hasn't seen an inserted string to its doppelg{\"a}nger that has is an epsilon transition going to the start of that state's copy of $M_1$. That copy of $M_1$ has epsilon transitions from each accepting state to the doppelg{\"a}nger state of the state in $M_2$ that it branched off of. It accepts when it is in an accepting state in $M_2$ that has seen an inserted string. The idea is that, during any state in $M_2$, the machine can go off and accept a string from $L_1$, then return to where it left off in $M_2$ without being able to accept another string from $L_1$.
+\end{solution}
+\end{document}
