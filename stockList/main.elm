@@ -7,6 +7,8 @@ import Http
 import Html.Attributes exposing (attribute, value)
 import Html.Events exposing (onClick, onInput)
 
+import Debug exposing (log)
+
 
 -- MODEL
 
@@ -55,11 +57,14 @@ getStockPrice sym =
                 Ok val ->
                     NewPrice ( sym, val )
 
-                Err _ ->
+                Err e ->
+                    let 
+                        _ = log "error:" e
+                    in
                     BadSymbol sym
 
         url =
-            "https://api.iextrading.com/1.0/stock/" ++ sym ++ "/price"
+            "http://localhost:8080/load/" ++ sym
     in
         Http.send handleResponse (Http.get url priceDecoder)
 
