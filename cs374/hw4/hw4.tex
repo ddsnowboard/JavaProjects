@@ -76,7 +76,7 @@
 
 
 \begin{solution}
-    The grid of the 2D TM will be arranged with the rows written one after the other in order separated by some separator symbol. When you add something new to the end of a row that isn't the last row, everything on the tape after it must be shifted. The position of the head will be denoted by a separate set of symbols such that $\gamma'$ is the symbol $\gamma$ when the head is positioned over it. Each step, the head will start at the current state of the 2D TM. It will read the $\delta$ function and write the necessary symbol. If the direction is left or right, it will move one left or one right. If moving right puts it on a separator, it will put a blank space there and shift everything else down. Moving up and down means counting how many spaces are between the head and the previous separator and going that many spaces after the next separator. This might mean inserting some blanks, just as before. Then it marks that space as the present space, changes states, and starts over. \\
+    The grid of the 2D TM will be arranged on the 1D tape with the rows written one after the other in order separated by some separator symbol. The position of the head will be denoted by a separate set of symbols such that $\gamma'$ is the symbol $\gamma$ when the head is positioned over it. Each step, the head will start at the current position of the 2D TM, and the state of the 2D TM will be encoded in the state of our 1D TM. It will read the $\delta$ function of the 2D TM and write the necessary symbol. If the direction is left or right, it will move one left or one right. If moving right puts it on a separator, it will put a blank space there and shift everything else down. Moving up and down means counting how many spaces are between the head and the previous separator and going that many spaces after the next separator. This might mean inserting some blanks, just as before. Then it marks the new space as the present space, moves to a new state, and starts over. \\
 
     Since the $t$th step can take at most $kt^2$ steps, since there can be at most $ct$ slots simulated on the tape after $t$ steps and it might have to insert $t$ characters, each taking $t$ time. This means that $t$ steps will run in $O(t^3)$.
 \end{solution}
@@ -91,7 +91,7 @@
   sizes $n_1$ and $n_2$ into a sorted array in $O(n_1+n_2)$ time.
   \begin{itemize}
   \item Use a divide and conquer strategy to merge the sorted arrays
-    in $O(n \log k)$ time. To prove the correctness of the algorithm
+    in $O(nk \log k)$ time. To prove the correctness of the algorithm
     you can assume a routine to merge two sorted arrays.
   \item In MergeSort we split the array of size $N$ into two arrays
     each of size $N/2$, recursively sort them and merge the two sorted
