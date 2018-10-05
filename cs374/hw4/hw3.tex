@@ -1,0 +1,155 @@
+% ---------
+%  Compile with "pdflatex hw0".
+% --------
+%!TEX TS-program = pdflatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[11pt]{article}
+\usepackage{jeffe,handout,graphicx}
+\usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
+
+%  Redefine suits
+\usepackage{pifont}
+\def\Spade{\text{\ding{171}}}
+\def\Heart{\text{\textcolor{Red}{\ding{170}}}}
+\def\Diamond{\text{\textcolor{Red}{\ding{169}}}}
+\def\Club{\text{\ding{168}}}
+
+\def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
+\def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
+
+
+
+% =====================================================
+%   Define common stuff for solution headers
+% =====================================================
+\Class{CS/ECE 374}
+\Semester{Fall 2018}
+\Authors{1}
+\AuthorOne{Will Koster}{jameswk2@illinois.edu}
+%\Section{}
+
+% =====================================================
+\begin{document}
+
+% ---------------------------------------------------------
+
+
+\HomeworkHeader{4}{1}	% homework number, problem number
+
+\begin{quote}
+    A {\bf two-dimensional} Turing machine (2D TM for short) uses an infinite
+  two-dimensional grid of cells as the tape. For simplicity assume
+  that the tape cells corresponds to integers $(i,j)$ with $i,j \ge 0$;
+  in other words the tape corresponds to the positive quadrant of the
+  two dimensional plane. The machine crashes if it tries to move below
+  the $x=0$ line or to the left of the $y=0$ line.  The transition
+  function of such a machine has the form
+  $\delta: Q \times \Gamma \rightarrow Q \times \Gamma \times
+  \{L,R,U,D,S\}$ where $L$, $R$, $U$, $D$ stand for ``left'',
+  ``right'', ``up'' and ``down'' respectively, and $S$ stands for
+  ``stay put''. You can assume that the input to the 2D TM is written
+  on the first row and that its head is initially at location $(0,0)$.
+  Argue that a 2D TM can be simulated by an
+  ordinary TM (1D TM); it may help you to use a multi-tape TM for
+  simulation. In particular address the following points.
+  \begin{itemize}
+  \item How does your TM store the grid cells of a 2D TM on a one dimensional
+    tape?
+  \item How does your TM keep track of the head position of the
+    2D TM?
+  \item How does your 1D TM simulate one step of the
+    2D TM?
+  \end{itemize}
+  If a 2D TM takes $t$ steps on some input how many steps
+  (asymptotically) does your simulating 1D TM take on the same input?
+  Give an asymptotic estimate. Note that it is quite difficult to give
+  a formal proof of the simulation argument, hence we are looking for
+  high-level arguments similar to those we gave in lecture for various
+  simulations.
+
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    The grid of the 2D TM will be arranged with the rows written one after the other in order separated by some separator symbol. When you add something new to the end of a row that isn't the last row, everything on the tape after it must be shifted. The position of the head will be denoted by a separate set of symbols such that $\gamma'$ is the symbol $\gamma$ when the head is positioned over it. Each step, the head will start at the current state of the 2D TM. It will read the $\delta$ function and write the necessary symbol. If the direction is left or right, it will move one left or one right. If moving right puts it on a separator, it will put a blank space there and shift everything else down. Moving up and down means counting how many spaces are between the head and the previous separator and going that many spaces after the next separator. This might mean inserting some blanks, just as before. Then it marks that space as the present space, changes states, and starts over. \\
+
+    Since the $t$th step can take at most $kt^2$ steps, since there can be at most $ct$ slots simulated on the tape after $t$ steps and it might have to insert $t$ characters, each taking $t$ time. This means that $t$ steps will run in $O(t^3)$.
+\end{solution}
+
+\HomeworkHeader{4}{2}	% homework number, problem number
+
+\begin{quote}
+    Suppose you are given $k$ sorted arrays $A_1,A_2,\ldots,A_k$
+  each of which has $n$ numbers. Assume that all numbers in the arrays
+  are distinct. You would like to merge them into single sorted array
+  $A$ of $kn$ elements. Recall that you can merge two sorted arrays of
+  sizes $n_1$ and $n_2$ into a sorted array in $O(n_1+n_2)$ time.
+  \begin{itemize}
+  \item Use a divide and conquer strategy to merge the sorted arrays
+    in $O(n \log k)$ time. To prove the correctness of the algorithm
+    you can assume a routine to merge two sorted arrays.
+  \item In MergeSort we split the array of size $N$ into two arrays
+    each of size $N/2$, recursively sort them and merge the two sorted
+    arrays. Suppose we instead split the array of size $N$ into $k$
+    arrays of size $N/k$ each and use the merging algorithm in the
+    preceding step to combine them into a sorted array.  Describe the
+    algorithm formally and analyze its running time via a recurrence.
+    You do not need to prove the correctness of the recursive algorithm.
+  \end{itemize}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    phones
+\end{solution}
+
+\HomeworkHeader{4}{3}	% homework number, problem number
+
+\begin{quote}
+    It is common these days to hear statistics about wealth inequality in
+the United States. A typical statement is that the the top 1\% of
+earners together make more than ten times the total income of the bottom
+70\% of earners. You want to verify these statements on some data
+sets. Suppose you are given the income of people as an $n$ element
+\emph{unsorted} array $A$, where $A[i]$ gives the income of person
+$i$.
+\begin{itemize}
+\item Describe an $O(n)$-time algorithm that given $A$ checks whether
+  the top 1\% of earners together make more than ten times the bottom
+  70\% together. Assume for simplicity that $n$ is a multiple of 100
+  and that all numbers in $A$ are distinct. Note that sorting $A$ will
+  easily solve the problem but will take $\Omega(n\log n)$ time.
+\item More generally we may want to compute the total earnings of the
+  top $\alpha$\% of earners for various values of $\alpha$. Suppose we
+  are given $A$ and $k$ numbers $\alpha_1 < \alpha_2 < \ldots < \alpha_k$
+  each of which is a number between $0$ and $100$ and we wish to
+  compute the total earnings of the top $\alpha_i$\% of earners for
+  each $1 \le i \le k$. Assume for simplicity that $\alpha_i n$ is an
+  integer for each $i$. Describe an algorithm for this problem that
+  runs in $O(n \log k)$ time. Note that sorting will allow you to
+  solve the problem in $O(n \log n)$ time but when $k \ll n$, $O(n
+  \log k)$ is faster. Note that an $O(nk)$ time algorithm is relative
+  easy. {\em Hint:} Use the previous part with $\alpha_{k/2}$ first and then
+  use divide and conquer.
+\end{itemize}
+
+You should prove the correctness of the second part of the problem.
+It helps to write a recursive algorithm so that you can use induction
+to prove correctness.
+
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    phones
+\end{solution}
+\end{document}
