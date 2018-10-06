@@ -107,7 +107,67 @@
 
 
 \begin{solution}
-    phones
+    \begin{enumerate}
+        \item Our algorithm goes as follows. \\
+            MergeN([$A_1, A_2 \ldots A_k$]) \\
+            if n < 5 then merge by brute force and return \\
+            left := MergeN([$A_1, A_2 \ldots A_{\frac{k}{2}}$]) \\
+            right := MergeN([$A_{\frac{k}{2} + 1}, \ldots A_k$]) \\
+            merged := merge(left, right) \\
+            return merged \\
+            \\
+            The time recurrence for this is 
+            \[
+                T(k < 5, n) = O(1) 
+            \]
+            \[
+                T(k, n) = 2T\left(\frac{k}{2}, n\right) + kn
+            \]
+            I claim that this recurrence has a closed form of $nk \log k$. \\
+            Let's prove by induction on $k$, number of arrays to merge. \\
+            First, we know by the definition of the recurrence that this runs in constant time for any $k < 5$. \\
+            Lets take some $k \geq 6$ and assume that for any $p < k$, $T(p, n) = O(nk \log k)$ for any $n$.
+            \[
+                T(k, n) = 2T\left(\frac{k}{2}, n\right) + kn
+            \]
+            \[
+                T(k, n) = 2\left(O\left(n\frac{k}{2} \log \frac{k}{2}\right)\right) + kn
+            \]
+            \[
+                T(k, n) = O\left(nk \log \frac{k}{2}\right) + kn
+            \]
+            \[
+                T(k, n) = O\left(nk \log k\right) + kn
+            \]
+            \[
+                T(k, n) = O\left(nk \log k\right)
+            \]
+            QED \\
+            \\
+            Now we must prove that our algorithm is correct. Again, we will prove by induction on $k$, the number of arrays to merge. \\
+            Strictly speaking, we are proving that, given $k$ sorted arrays of length $n$, our algorithm returns one sorted array of size $nk$ containing all the elements of the original $k$ arrays. \\
+            For any $k < 5$, our algorithm uses brute force, so it works trivially. \\
+            For any $k \geq 6$, assume that we know for any $p < k$. We know by our inductive hypothesis that the arrays named \textit{left} and \textit{right} are sorted and of length $\frac{nk}{2}$. \\
+            The merge function was given, so we know it works, and so we know our merged list has the right values and they are sorted. \\
+            QED
+        \item Our new merge sort works as follows: \\
+            MergeKSort(A[1,2,3, \ldots, n], k): \\
+            if n < 5 sort using brute force and return \\
+            Form lists $L_1, L_2, \ldots, L_k$ where $L_i = [A[\frac{(i - 1)n}{k} + 1],\ldots,A[\frac{in}{k}]]$ \\
+            return MergeN([MergeKSort($L_1$, k), MergeKSort($L_2$, k), MergeKSort($L_3$, k), \ldots, MergeKSort($L_k$, k)]) \\ 
+            The time recurrence is as follows: 
+            \[
+                T(n < 5, k) = O(1)
+            \]
+            \[
+                T(n, k) = kT(\frac{n}{k}, k) + O(nk \log k)
+            \]
+            At each level of the recursion tree, $O(nk\log k)$ work will be done, and there will be $\log_kn$ levels, so our closed form is 
+            \[
+                T(n, k) = O((\log_kn)(nk \log k))
+            \]
+
+    \end{enumerate}
 \end{solution}
 
 \HomeworkHeader{4}{3}	% homework number, problem number
@@ -150,6 +210,29 @@ to prove correctness.
 
 
 \begin{solution}
-    phones
+    \begin{enumerate}
+        \item First, let's define a helper function, the idea for which I stole from lecture (if not the exact implementation). Also, the select function is the same QuickSelect function we derived in lecture. \\
+            TopK(A[1,2,3 \ldots n], k, d $\in$ \{top, bottom\}):\\
+            Form lists $L_1, L_2, \ldots, L_{\ceil{n / 5}}$ where $L_i = \{A[5i - 4],\ldots,A[5i]\}$. \\
+            B = $[ b_i | b_i \text{is the median of }L_i \text{ found by brute force}]$ \\ 
+            b = select(B, $\ceil{n / 10}$) \\
+            Partition $A$ into $A_\text{less}$ and $A_\text{greater}$ using $b$ as pivot \\
+            if d = top then j = n - k \\
+            else j = k \\
+            if $|A_\text{less}|$ = j and d = top then return [b] + $A_\text{greater}$ \\ 
+            else if $|A_\text{less}|$ = j and d = bottom then return $A_\text{less}$ + [b] \\ 
+            else if $|A_\text{less}|$ < j and d = bottom then return $A_\text{less}$ + [b] + TopK($A_\text{greater}$, j - $|A_\text{less}|$, bottom) \\
+            else if $|A_\text{less}|$ > j and d = bottom then return TopK($A_\text{less}$, j, bottom) \\
+            else if $|A_\text{less}|$ < j and d = top then return TopK($A_\text{greater}$, k, top) \\
+            else if $|A_\text{less}|$ > j and d = top then return $A_\text{greater}$ + [b] + TopK($A_\text{less}$, j - 1 - $|A_\text{greater}|$, top) \\
+
+            Now that we have that, the actual function is actually pretty simple. \\
+            OccupyWallSt(A[1,2,3 \ldots, n]): \\
+            topOne := TopK(A, $\frac{99n}{100}$, top) \\
+            bottomSeventy := TopK(A, $\frac{70n}{100}$, bottom) \\
+            return sum(topOne) / sum(bottomSeventy) > 10
+        \item apples
+
+    \end{enumerate}
 \end{solution}
 \end{document}
