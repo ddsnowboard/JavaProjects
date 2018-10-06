@@ -231,7 +231,47 @@ to prove correctness.
             topOne := TopK(A, $\frac{99n}{100}$, top) \\
             bottomSeventy := TopK(A, $\frac{70n}{100}$, bottom) \\
             return sum(topOne) / sum(bottomSeventy) > 10
-        \item apples
+
+        \item Our function to find the earnings of the top $a\%$ for each $a$ in $as$ looks like this: \\
+            TopAs(A[1,\ldots,n], as[1,2,3,\ldots,k]): \\
+            if k < 5 compute by calling TopK k times (naive algorithm) \\
+            leftHalf = TopK(A, n(as[$\frac{k}{2}$]), bottom) \\
+            rightHalf = TopK(A, n(as[$\frac{k}{2}$]), top) \\
+            return TopAs(leftHalf, as[1,2,\ldots,$\frac{k}{2} - 1$]) + [sum(rightHalf)] + TopAs(rightHalf, as[$\frac{k}{2}$ + 1],\ldots,k]) \\
+
+            Let's prove that this works. Specifically, we are proving that, if we call our function TopAs with a list of incomes $A$ and a list of percentages $as$, we will get a list $L$ such that $L_i$ is the total earnings of the top $as[i]$ percent of earners. \\
+            We will prove using induction on $k$, the number of percentages. \\
+            First, for the case where $k < 5$, we know it works trivially. 
+            For the case where $k \geq 5$, assume that we know for any $p < k$, TopAs works properly. \\
+            We can assume TopK works, so the leftHalf and rightHalf variables are correct. Namely, leftHalf is a list of the bottom $as[\frac{k}{2}]\%$ of incomes and rightHalf is a list of the top $as[\frac{k}{2}]\%$. \\
+            By our inductive hypothesis, we know that TopAs(leftHalf, as[1,2,\ldots,$\frac{k}{2} - 1$]) returns $L_i$ for $i \leftarrow [1\ldots \frac{k}{2} - 1]$ and TopAs(rightHalf, as[$\frac{k}{2}$ + 1],\ldots,k]) returns $L_i$ for $i \leftarrow [\frac{k}{2} + 1\ldots k]$. \\
+            Since we know that rightHalf is the list of all the incomes of the top $as[\frac{k}{2}]\%$ of earners, $sum(as[\frac{k}{2}]\%)$ is their total income, $L_\frac{k}{2}$. Thus, we return $L$. \\
+            QED \\
+
+            The time recurrence is 
+            \[
+                T(n, k < 5) = kn
+            \]
+            This is because we are just calling the $O(n)$ time TopK algorithn $k$ times.
+            \[
+                T(n, k) = O(n) + T\left(pn, \frac{k}{2}\right) + T\left((1 - p)n, \frac{k}{2}\right)
+            \]
+            where $p$ is some number between 0 and 1. We don't know how much of $A$ the left subcall will get compared to the right, but we know that together they will see everything in $A$. \\
+
+            We can prove that this runs in $O(n\log k)$ using induction on $k$, the length of the $as$ array. \\
+            We know for $k < 5$, $T(n, k) = O(n\log k)$ by the definition of our recurrence. \\
+            Assume that we know, for any $p < k$, $T(n, p) = O(n\log k)$. 
+            \[
+                T(n, k) = O(n) + T\left(pn, \frac{k}{2}\right) + T\left((1 - p)n, \frac{k}{2}\right)
+            \]
+            By our inductive hypothesis, 
+            \[
+                T(n, k) = O(n) + O\left(pn\log\frac{k}{2}\right) + O\left((1 - p)n\log\frac{k}{2}\right)
+            \]
+            This simplifies to 
+            \[
+                T(n, k) = O\left(n\log k\right)
+            \]
 
     \end{enumerate}
 \end{solution}
