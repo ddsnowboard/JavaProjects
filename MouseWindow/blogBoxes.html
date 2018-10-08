@@ -1,0 +1,86 @@
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>
+            Mouse Chaser
+        </title>
+    <script>
+        function hideEverything(head) {
+            head.style.visibility = "hidden";
+            for(let child of head.children)
+                hideEverything(child);
+        }
+
+        function boxSomeStuff(backgroundEl) {
+            let boxes = backgroundEl.getElementsByClassName("boxed");
+            for(let el of boxes) {
+                let newDiv = document.createElement("div");
+                newDiv.style.border = "1px solid black";
+                newDiv.style.visibility = "visible";
+                newDiv.style.margin = el.style.margin;
+                el.style.margin = "0px";
+                console.log(el);
+                newDiv.appendChild(el.cloneNode(true));
+                el.replaceWith(newDiv);
+            }
+        }
+
+        window.onload = () => {
+            let mouseChaser = document.getElementById("mouseChaser");
+            let newDiv = mouseChaser.cloneNode(true);
+            newDiv.style.zIndex = -1;
+            hideEverything(newDiv);
+            document.body.appendChild(newDiv);
+            boxSomeStuff(newDiv);
+        };
+        window.onmousemove = (event) => {
+            const width = document.body.clientWidth;
+            const height = document.body.clientHeight;
+            const boxSize = 100;
+            let x = event.clientX;
+            let y = event.clientY;
+            document.getElementById("mouseChaser").style.clipPath = 
+                `inset(${y - boxSize}px ${width - x - boxSize}px ${height - y - boxSize}px ${x - boxSize}px)`;
+        };
+    </script>
+    <style>
+        .button {
+            height: 1.1rem;
+            background-color: lightgrey;
+            padding: 15px;
+            margin-bottom: 5px;
+        }
+    </style>
+    </head>
+    <div id="mouseChaser" style="position: absolute; height: 100%; width: 100%">
+        <div style="display: flex">
+            <div class="boxed">
+            <div class="boxed">
+                <div class="button">
+                    Dashboard
+                </div>
+                <div class="button">
+                    Settings
+                </div>
+                <div class="button">
+                    Friends
+                </div>
+                </div>
+            </div>
+            <div class="boxed"><img src="https://i.kym-cdn.com/photos/images/facebook/001/211/928/086.jpg" /></div>
+            <div class="boxed">
+                <div class="boxed">
+                <div class="button">
+                    Settings
+                </div>
+                <div class="button">
+                    Really Obscure Settings
+                </div>
+                <div class="button">
+                    The Most Obscure Settings
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</html>

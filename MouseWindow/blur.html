@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <title>
+            Mouse Chaser
+        </title>
+        <script>
+            window.onload = () => {
+                let mouseChaser = document.getElementById("mouseChaser");
+                let newDiv = mouseChaser.cloneNode(true);
+                newDiv.style.zIndex = -1;
+                newDiv.style.filter = "blur(2rem)";
+                document.body.appendChild(newDiv);
+            };
+            window.onmousemove = (event) => {
+                const width = document.body.clientWidth;
+                const height = document.body.clientHeight;
+                const boxSize = 100;
+                let x = event.clientX;
+                let y = event.clientY;
+                document.getElementById("mouseChaser").style.clipPath = 
+                    `inset(${y - boxSize}px ${width - x - boxSize}px ${height - y - boxSize}px ${x - boxSize}px)`;
+            };
+        </script>
+    </head>
+    <div id="mouseChaser" style="background-image: url(page.png); position: absolute; height: 100%; width: 100%; background-size: cover">
+    </div>
+</html>
