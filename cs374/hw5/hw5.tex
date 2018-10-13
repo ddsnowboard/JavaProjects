@@ -1,0 +1,150 @@
+% ---------
+%  Compile with "pdflatex hw0".
+% --------
+%!TEX TS-program = pdflatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[11pt]{article}
+\usepackage{jeffe,handout,graphicx}
+\usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
+
+%  Redefine suits
+\usepackage{pifont}
+\def\Spade{\text{\ding{171}}}
+\def\Heart{\text{\textcolor{Red}{\ding{170}}}}
+\def\Diamond{\text{\textcolor{Red}{\ding{169}}}}
+\def\Club{\text{\ding{168}}}
+
+\def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
+\def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
+
+\newcommand{\IsSinL}{\text{IsStringInL}}
+\newcommand{\IsSinlang}[1]{\text{IsStringIn}L_{#1}}
+\newcommand{\cost}{\text{cost}}
+
+
+
+% =====================================================
+%   Define common stuff for solution headers
+% =====================================================
+\Class{CS/ECE 374}
+\Semester{Fall 2018}
+\Authors{1}
+\AuthorOne{Will Koster}{jameswk2@illinois.edu}
+%\Section{}
+
+% =====================================================
+\begin{document}
+
+% ---------------------------------------------------------
+
+
+\HomeworkHeader{5}{1}	% homework number, problem number
+
+\begin{quote}
+    Given a graph $G=(V,E)$ a vertex cover of $G$ is a subset
+  $S \subseteq V$ of vertices such that for every edge $(u,v) \in E$,
+  $u$ or $v$ is in $S$. The goal in the minimum vertex cover problem
+  is to find a vertex cover $S$ of smallest size. In the weighted
+  version of the problem, vertices have non-negative weights
+  $w: V \rightarrow \mathbb{Z}_+$, and the goal is to find a vertex
+  cover of minimum weight.  You can find some examples and discussion
+  at the following Wikipedia link
+  \url{https://en.wikipedia.org/wiki/Vertex_cover}.  Describe a {\em
+    recursive} algorithm that given a graph $G=(V,E)$ and weights
+  $w(v), v \in V$ outputs a vertex cover of $G$ with minimum
+  weight. Do not worry about the running time.
+
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+rocks
+\end{solution}
+
+\HomeworkHeader{5}{2}	% homework number, problem number
+
+\begin{quote}
+    Let $\Sigma$ be a finite alphabet and let $L_1$ and $L_2$ be two
+  languages over $\Sigma$. Assume you have access to two routines
+  $\IsSinlang{1}(u)$ and $\IsSinlang{2}(u)$. The former routine
+  decides whether a given string $u$ is in $L_1$ and the latter
+  whether $u$ is in $L_2$. Using these routines as black boxes
+  describe an efficient algorithm that given an arbitrary string
+  $w \in \Sigma^*$ decides whether $w \in (L_1 \cup L_2)^*$. To
+  evaluate the running time of your solution you can assume that calls
+  to $\IsSinlang{1}()$ and $\IsSinlang{2}()$ take constant time. Note
+  that you are not assuming any property of $L_1$ or $L_2$ other than
+  being able to test membership in those languages.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+test
+\end{solution}
+
+\HomeworkHeader{4}{3}	% homework number, problem number
+
+\begin{quote}
+    Recall that a \emph{palindrome} is any string that is exactly
+  the same as its reversal, like \Sym{I}, or \Sym{DEED}, or
+  \Sym{RACECAR}, or \Sym{AMANAPLANACATACANALPANAMA}. For technical
+  reasons, in this problem, we will only be interested in palindromes
+  that are of length at least one, hence we will
+  not treat the string $\epsilon$ as a palindrome.
+
+Any string can be decomposed into a sequence of palindrome substrings.  For example, the string \Sym{BUBBASEESABANANA} (“Bubba sees a banana.”\@) can be broken into palindromes in the following ways (among many others):
+\begin{gather*}
+	\Sym{BUB} \Cdot \Sym{BASEESAB} \Cdot \Sym{ANANA}\\
+	\Sym{B} \Cdot \Sym{U} \Cdot \Sym{BB} \Cdot \Sym{A} \Cdot \Sym{SEES} \Cdot \Sym{ABA} \Cdot \Sym{NAN} \Cdot \Sym{A}\\
+	\Sym{B} \Cdot \Sym{U} \Cdot \Sym{BB} \Cdot \Sym{A} \Cdot \Sym{SEES} \Cdot \Sym{A} \Cdot \Sym{B} \Cdot \Sym{ANANA}\\
+	\Sym{B} \Cdot \Sym{U} \Cdot \Sym{B} \Cdot \Sym{B} \Cdot
+        \Sym{A} \Cdot \Sym{S} \Cdot \Sym{E} \Cdot \Sym{E} \Cdot
+        \Sym{S} \Cdot \Sym{A} \Cdot \Sym{B} \Cdot \Sym{ANA}  \Cdot
+        \Sym{N} \Cdot \Sym{A}\\
+        	\Sym{B} \Cdot \Sym{U} \Cdot \Sym{B} \Cdot \Sym{B}
+                \Cdot \Sym{A} \Cdot \Sym{S} \Cdot \Sym{E} \Cdot
+                \Sym{E} \Cdot \Sym{S} \Cdot \Sym{A} \Cdot \Sym{B}
+                \Cdot \Sym{A} \Cdot \Sym{N} \Cdot \Sym{A}  \Cdot \Sym{N} \Cdot \Sym{A}
+\end{gather*}
+
+Since any string $w \neq \epsilon$ can always be decomposed to palindromes we
+may want to find a decomposition that optimizes some objective. Here
+are two example objectives. The first objective is to decompose $w$ into the
+smallest number of palindromes. A second objective is to find a
+decomposition such that each palindrome in the decomposition has
+length at least $k$ where $k$ is some given input parameter. Both of
+these can be cast as special cases of an abstract problem. Suppose we
+are given a function called $cost()$ that takes a positive integer $h$
+as input and outputs an integer $\cost(h)$.  Given a
+decomposition of $w$ into $u_1,u_2,\ldots, u_r$ (that is,
+$w = u_1u_2\ldots u_r$) we can define the cost of the decomposition as
+$\sum_{i=1}^r \cost(|u_i|)$.
+
+For example if we define $\cost(h) = 1$ for all $h \ge 1$ then finding
+a minimum cost palindromic decomposition of a given string $w$ is the
+same as finding a decomposition of $w$ with as few palindromes as
+possible. Suppose we define $\cost()$ as follows: $\cost(h) = 1$
+for $h < k$ and $\cost(h) = 0$ for $h \ge k$. Then finding a
+minimum cost palindromic decomposition would enable us to decide
+whether there is a decomposition in which all palindromes are
+of length at least $k$; it is possible iff the minimum cost is $0$.
+
+Describe an efficient algorithm that given  black box access to
+a function $\cost()$, and a string $w$, outputs the
+value of a minimum cost palindromic decomposition of $w$.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    birds
+\end{solution}
+\end{document}
