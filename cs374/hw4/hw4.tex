@@ -147,7 +147,7 @@
             Now we must prove that our algorithm is correct. Again, we will prove by induction on $k$, the number of arrays to merge. \\
             Strictly speaking, we are proving that, given $k$ sorted arrays of length $n$, our algorithm returns one sorted array of size $nk$ containing all the elements of the original $k$ arrays. \\
             For any $k < 5$, our algorithm uses brute force, so it works trivially. \\
-            For any $k \geq 6$, assume that we know for any $p < k$. We know by our inductive hypothesis that the arrays named \textit{left} and \textit{right} are sorted and of length $\frac{nk}{2}$. \\
+            For any $k \geq 6$, assume that we know for any $p < k$ our algorithm works with $p$ lists. We know by our inductive hypothesis that the arrays named \textit{left} and \textit{right} are sorted and of length $\frac{nk}{2}$. \\
             The merge function was given, so we know it works, and so we know our merged list has the right values and they are sorted. \\
             QED
         \item Our new merge sort works as follows: \\
@@ -221,7 +221,7 @@ to prove correctness.
             else j = k \\
             if $|A_\text{less}|$ = j and d = top then return [b] + $A_\text{greater}$ \\ 
             else if $|A_\text{less}|$ = j and d = bottom then return $A_\text{less}$ + [b] \\ 
-            else if $|A_\text{less}|$ < j and d = bottom then return $A_\text{less}$ + [b] + TopK($A_\text{greater}$, j - $|A_\text{less}|$, bottom) \\
+            else if $|A_\text{less}|$ < j and d = bottom then return $A_\text{less}$ + [b] + TopK($A_\text{greater}$, j - $|A_\text{less}|$ - 1, bottom) \\
             else if $|A_\text{less}|$ > j and d = bottom then return TopK($A_\text{less}$, j, bottom) \\
             else if $|A_\text{less}|$ < j and d = top then return TopK($A_\text{greater}$, k, top) \\
             else if $|A_\text{less}|$ > j and d = top then return $A_\text{greater}$ + [b] + TopK($A_\text{less}$, j - 1 - $|A_\text{greater}|$, top) \\
@@ -241,7 +241,7 @@ to prove correctness.
 
             Let's prove that this works. Specifically, we are proving that, if we call our function TopAs with a list of incomes $A$ and a list of percentages $as$, we will get a list $L$ such that $L_i$ is the total earnings of the top $as[i]$ percent of earners. \\
             We will prove using induction on $k$, the number of percentages. \\
-            First, for the case where $k < 5$, we know it works trivially. 
+            First, for the case where $k < 5$, we know it works trivially. \\
             For the case where $k \geq 5$, assume that we know for any $p < k$, TopAs works properly. \\
             We can assume TopK works, so the leftHalf and rightHalf variables are correct. Namely, leftHalf is a list of the bottom $as[\frac{k}{2}]\%$ of incomes and rightHalf is a list of the top $as[\frac{k}{2}]\%$. \\
             By our inductive hypothesis, we know that TopAs(leftHalf, as[1,2,\ldots,$\frac{k}{2} - 1$]) returns $L_i$ for $i \leftarrow [1\ldots \frac{k}{2} - 1]$ and TopAs(rightHalf, as[$\frac{k}{2}$ + 1],\ldots,k]) returns $L_i$ for $i \leftarrow [\frac{k}{2} + 1\ldots k]$. \\
@@ -256,7 +256,7 @@ to prove correctness.
             \[
                 T(n, k) = O(n) + T\left(pn, \frac{k}{2}\right) + T\left((1 - p)n, \frac{k}{2}\right)
             \]
-            where $p$ is some number between 0 and 1. We don't know how much of $A$ the left subcall will get compared to the right, but we know that together they will see everything in $A$. \\
+            where $p$ is some number between 0 and 1. We don't know how much of $A$ the left subcall will get compared to the right, but we know that together they will see everything in $A$ a constant number of times. \\
 
             We can prove that this runs in $O(n\log k)$ using induction on $k$, the length of the $as$ array. \\
             We know for $k < 5$, $T(n, k) = O(n\log k)$ by the definition of our recurrence. \\
