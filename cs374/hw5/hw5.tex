@@ -63,7 +63,23 @@
 
 
 \begin{solution}
-rocks
+    The intiution for this is that we are just going to try every subset of $V$. This will take quite a long time (specifically, $2^n$ in the number of vertices) but apparently that's OK.
+    \begin{algo}
+        MinVertexCover((V, E), w) \+
+        \\ lowestWeight = $\infty$
+        \\ smallestCover = V
+        \\ if E = $\emptyset$ \+
+        \\      return 0 \-
+        \\ for vertex in V \+
+        \\      v$'$ = V $\setminus$ \{vertex\}
+        \\      e$'$ = $\{ ed = (u,v) | ed \in E, u \neq vertex \text{ and } v \neq vertex\}$
+        \\      cover = \{vertex\} + MinVertexCover((v$'$, e$'$), w)
+        \\      weight = sum($\{ w(v) | v \in \text{cover}\}$)
+        \\          if weight < lowestWeight \+
+        \\               lowestWeight = weight 
+        \\               smallestCover = cover \- \-
+        \\ return lowestWeight
+    \end{algo}
 \end{solution}
 
 \HomeworkHeader{5}{2}	% homework number, problem number
