@@ -102,7 +102,21 @@
 
 
 \begin{solution}
-test
+    Imagine a string in $(L_1\cup L_2)^*$ as $w_1w_2w_3\ldots w_n$, where each $w_i \in (L_1\cup L_2)$. The recursive algorithm would try to find every way to split $w$ into smaller strings until it finds one such that every smaller string is in $(L_1\cup L_2)$. My algorithm is just going to find all the ways to split off the first substring until it finds one such that the first substring is in $(L_1\cup L_2)$ and the rest of the string has already been confirmed in $(L_1\cup L_2)^*$. $arr$ is an array such that $arr[i] = \text{true}$ iff $w$ from the $i$th character to the end is in $(L_1\cup L_2)^*$.
+    \\ Just for clarity, I'm going to use Python-style list indices/ranges. Also arrays are going to be zero-indexed. 
+    \begin{algo}
+        IsInBoth(w) \+
+        \\ arr = [false] * $|w|$ + [true] // This is just a list of $|w|$ false values and 1 true value.
+        \\ // The last one is a sentinel signifying an empty string, since 
+        \\ // $\epsilon$ is in $L^*$ for any $L$.
+        \\ for start in range($|w|$)[::-1] // This just iterates over the string indices backwards\+
+        \\ for end in range(start + 1, $|w| + 1$) \+
+        \\ if ($\IsSinlang{1}$(w[start:end]) or $\IsSinlang{2}$(w[start:end])) and arr[end] \+
+        \\ arr[start] = true
+        \\ break \- \- \-
+        \\ return arr[0]
+    \end{algo}
+    Since we go through some portion of the whole string for each letter in the string, this runs in $O(n^2)$ time. 
 \end{solution}
 
 \HomeworkHeader{4}{3}	% homework number, problem number
@@ -161,6 +175,41 @@ value of a minimum cost palindromic decomposition of $w$.
 
 
 \begin{solution}
-    birds
+    First, let's find a way to tell whether a substring is a palindrome. For some string $w$, define $w(n, m)$ be the string containing the $n$th through $m$th characters in $w$, inclusive. So if $w = \text{ILLINOIS}$, $w(3, 5) = \text{LIN}$, and $w(1, |w|) = w$ for any $w$.
+    We can define a function $IsPalindrome(n, m)$ to tell us whether $w(n, m)$ is a palindrome for some string $w$. 
+\[
+    \emph{IsPalindrome}(n,m) =
+	\begin{cases}
+		\textsc{True} & \text{if $n=m$}
+\\[0.5ex]
+                w[n] = w[m] & \text{if $n = m - 1$}
+\\[0.5ex]
+        w[n] = w[m] \wedge \emph{IsPalindrome}(n + 1, m - 1) & \text{otherwise}
+\\[0.5ex]
+	\end{cases}
+\]
+We can memoize this by using a 2-d array indexed from 1 to $n$. Since each cell depends on at most the cell 1 up on the $n$ axis and 1 down on the $m$ axis, if done in the right order, they can each be calculated in $O(1)$ time, allowing the whole structure to be created in $O(n^2)$ time. The for-loops showing the correct order would look like this:
+\begin{algo}
+    for diff in [1, 2,.., |w|] \+
+    \\ for n in [1,2,...,|w|] \+
+    \\ ($n$, $m$) = ($n$, $n + \text{diff}$)
+    \\ // Make sure $n$ and $m$ are in bounds
+    \\ // Calculate the value in $O(1)$ time.
+\end{algo}
+
+Now we need to actually figure out the lowest cost. First, note that our $min(l)$ function is the standard linear time min function taking a list as input. 
+\\ Let's define a function $LowestCost(i)$ that is the lowest cost palindrome decomposition for $w$ that starts from the $i$th letter, ie $LowestCost(1)$ is the final output we want in this problem, and $LowestCost(|w|)$ is the lowest cost of decomposing the last letter of $w$ into a palindrome, namely $cost(1)$.
+\[
+    \emph{LowestCost}(i) =
+	\begin{cases}
+		0 & \text{if $i > |w|$}
+\\[0.5ex]
+        min(cost(m - n + 1) + LowestCost(m + 1) \mid (n, m) \in \{(nn, mm) \mid nn = i 
+        \\ \qquad{} \wedge \emph{IsPalindrome}(nn, mm) = \textsc{True}\}) & \text{if $n = m - 1$}
+\\[0.5ex]
+	\end{cases}
+\]
+Note that this can run in $O(n)$ time because the linear search in min only has to cover $O(n)$ items, not all $O(n^2)$, since we know the value of $n$ \textit{a priori}.
+\\ We can memoize this using a 1-d array. Since each value in our array only depends on the next value, we can start from $|w|$ and go down to 1 to fill in our array, each calculation taking linear time. Since we are doing this $O(n)$ time operation $O(n)$ times, the total time for this part is $O(n^2)$. As stated before, once we finsh filling our array, the answer we want is just in the first element. Thus, we can get the answer to the whole problem in $O(n^2)$ time.
 \end{solution}
 \end{document}
