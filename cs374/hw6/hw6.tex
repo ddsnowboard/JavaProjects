@@ -1,0 +1,117 @@
+% ---------
+%  Compile with "pdflatex hw0".
+% --------
+%!TEX TS-program = pdflatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[11pt]{article}
+\usepackage{jeffe,handout,graphicx}
+\usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
+
+%  Redefine suits
+\usepackage{pifont}
+\def\Spade{\text{\ding{171}}}
+\def\Heart{\text{\textcolor{Red}{\ding{170}}}}
+\def\Diamond{\text{\textcolor{Red}{\ding{169}}}}
+\def\Club{\text{\ding{168}}}
+
+\def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
+\def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
+
+\newcommand{\IsSinL}{\text{IsStringInL}}
+\newcommand{\IsSinlang}[1]{\text{IsStringIn}L_{#1}}
+\newcommand{\cost}{\text{cost}}
+
+
+
+% =====================================================
+%   Define common stuff for solution headers
+% =====================================================
+\Class{CS/ECE 374}
+\Semester{Fall 2018}
+\Authors{1}
+\AuthorOne{Will Koster}{jameswk2@illinois.edu}
+%\Section{}
+
+% =====================================================
+\begin{document}
+
+% ---------------------------------------------------------
+
+
+\HomeworkHeader{6}{1}	% homework number, problem number
+
+\begin{quote}
+The McKing chain wants to open several restaurants along Red
+  street in Shampoo-Banana. The possible locations are at $L_1,L_2,
+  \ldots, L_n$ where $L_i$ is at distance $m_i$ meters from the start
+  of Red street. Assume that the street is a straight line and the
+  locations are in increasing order of distance from the starting
+  point (thus $0 \leq m_1 < m_2 < \ldots < m_n$). McKing has collected
+  some data indicating that opening a restaurant at location $L_i$
+  will yield a profit of $p_i$ independent of where the other
+  restaurants are located. However, the city of Shampoo-Banana has a
+  zoning law which requires that any two McKing locations should be
+  $D$ or more meters apart. {\em In addition McKing does not want to
+    open more than $k$ restaurants due to budget constraints.}
+  Describe an algorithm that McKing can use to figure out the maximum
+  profit it can obtain by opening restaurants while satisfying the
+  city's zoning law and the constraint of opening at most $k$
+  restaurants.  Your algorithm should use only $O(n)$ space and you
+  should not assume that $k$ is a constant.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    cows
+\end{solution}
+
+\HomeworkHeader{6}{2}	% homework number, problem number
+
+\begin{quote}
+Let $X = x_1,x_2,\ldots,x_r$, $Y = y_1,y_2,\ldots,y_s$ and $Z =
+  z_1,z_2,\ldots,z_t$ be three sequences. A common {\em supersequence}
+  of $X$, $Y$ and $Z$ is another sequence $W$ such that $X$, $Y$ and $Z$
+  are subsequences of $W$. Suppose $X = a,b,d,c$ and $Y = b,a,b,e,d$ and $Z =
+  b, e, d, c$. A simple common supersequence of $X$, $Y$ and $Z$ is
+  the concatenation of $X$, $Y$ and $Z$ which is
+  $a,b,d,c,b,a,b,e,d,b,e,d,c$ and has length $13$. A shorter one is
+  $b, a, b, e, d, c$ which has length $6$.  Describe an efficient
+  algorithm to compute the {\em length} of the shortest common
+  supersequence of three given sequences $X$, $Y$ and $Z$. You may want to
+  first solve the two sequence problem to get you strated.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    sheep
+\end{solution}
+
+\HomeworkHeader{6}{3}	% homework number, problem number
+
+\begin{quote}
+Given a graph $G=(V,E)$ a matching is a subset of edges in $G$
+  that do not \emph{intersect}. More formally $M \subseteq E$ is a
+  matching if every vertex $v \in V$ is incident to at most one edge
+  in $M$. Matchings are of fundamental importance in combinatorial
+  optimization and have many applications. Given $G$ and non-negative
+  weights $w(e), e \in E$ on the edges one can find the maximum weight
+  matching in a graph in polynomial time but the algorithm requires
+  advanced machinery and is beyond the scope of this course. However,
+  finding the maximum weight matching in a tree is easier via dynamic
+  programming. 
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    goats
+\end{solution}
+\end{document}
