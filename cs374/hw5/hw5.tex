@@ -63,22 +63,22 @@
 
 
 \begin{solution}
-    The intiution for this is that we are just going to try every subset of $V$. This will take quite a long time (specifically, $2^n$ in the number of vertices) but apparently that's OK.
+    The intiution for this is that we are just going to try every subset of $V$ recursively and see which one is optimal.
     \begin{algo}
-        MinVertexCover((V, E), w) \+
+        MinVertexCover(G=(V, E), w) \+
         \\ lowestWeight = $\infty$
         \\ smallestCover = V
         \\ if E = $\emptyset$ \+
         \\      return 0 \-
         \\ for vertex in V \+
         \\      v$'$ = V $\setminus$ \{vertex\}
-        \\      e$'$ = $\{ ed = (u,v) | ed \in E, u \neq vertex \text{ and } v \neq vertex\}$
+        \\      e$'$ = $\{ ed = (u,v) \mid ed \in E, u \neq vertex \text{ and } v \neq vertex\}$
         \\      cover = \{vertex\} + MinVertexCover((v$'$, e$'$), w)
-        \\      weight = sum($\{ w(v) | v \in \text{cover}\}$)
+        \\      weight = sum($\{ w(v) \mid v \in \text{cover}\}$)
         \\          if weight < lowestWeight \+
         \\               lowestWeight = weight 
         \\               smallestCover = cover \- \-
-        \\ return lowestWeight
+        \\ return smallestCover
     \end{algo}
 \end{solution}
 
@@ -197,7 +197,7 @@ We can memoize this by using a 2-d array indexed from 1 to $n$. Since each cell 
     \\ // Calculate the value in $O(1)$ time.
 \end{algo}
 
-Now we need to actually figure out the lowest cost. First, note that our $min(l)$ function is the standard linear time min function taking a list as input. 
+Now we need to actually figure out the lowest cost. First, note that our $min(l)$ function is the standard linear-time min function taking a list as input. 
 \\ Let's define a function $LowestCost(i)$ that is the lowest cost palindrome decomposition for $w$ that starts from the $i$th letter, ie $LowestCost(1)$ is the final output we want in this problem, and $LowestCost(|w|)$ is the lowest cost of decomposing the last letter of $w$ into a palindrome, namely $cost(1)$.
 \[
     \emph{LowestCost}(i) =
@@ -209,7 +209,7 @@ Now we need to actually figure out the lowest cost. First, note that our $min(l)
 \\[0.5ex]
 	\end{cases}
 \]
-Note that this can run in $O(n)$ time because the linear search in min only has to cover $O(n)$ items, not all $O(n^2)$, since we know the value of $n$ \textit{a priori}.
+Note that \emph{LowestCost}(i) can run in $O(n)$ time if we have an array containing the output of \emph{LowestCost}(j) for all $j > i$ and the \emph{IsPalindrome} call just indexes the 2-d array we made earlier. The linear search in min looks like it has to cover $O(n^2)$ items, but note that one of the elements in the 2-tuple is fixed, so it really only has to cover $O(n)$ items, and each element's computation is constant time since it's just array accesses and comparisons.
 \\ We can memoize this using a 1-d array. Since each value in our array only depends on the next value, we can start from $|w|$ and go down to 1 to fill in our array, each calculation taking linear time. Since we are doing this $O(n)$ time operation $O(n)$ times, the total time for this part is $O(n^2)$. As stated before, once we finsh filling our array, the answer we want is just in the first element. Thus, we can get the answer to the whole problem in $O(n^2)$ time.
 \end{solution}
 \end{document}
