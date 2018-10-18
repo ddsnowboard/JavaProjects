@@ -67,17 +67,35 @@ The McKing chain wants to open several restaurants along Red
 
 
 \begin{solution}
-    This basically works off the assumption that you should do the thing with the most gross profit (ie, profit minus opportunity cost) at any time. If you only get k restaurants, do that k times, and you'll be golden. I think this works, but I'm not 100\% sure. 
-    sum = 0
-    k.times do
-        Get array of gross profit (p_i - opportunity cost)
-        remove highest gross profit j and everyone it disallowed from l
-        sum += p_j
-    return sum
-    kn^2
-    The above is totally wrong. If you have d = 1, k = 1, and three slots in a row 30-35-30, it doesn't work. I thought about increasing the opportunity cost when k = 1 to reflect the fact that you're paying for the opportunity to have any others (ie, the opportunity cost of each store is the profit all the other possibilities on the street, not just your neighbors), but I think there's a situation where that doesn't work. I can't think of it, but the fact that you're not amortizing the cost of depleting k can't be good. I don't think this works but I keep coming back to it for some reason. Maybe I'll learn something. So I thought that the real opportunity cost of putting a restaurant somewhere isn't the sum of all the neighbors, it's only the sum of the highest one, since the exact cost of putting it there includes depleting k and for that same depletion of k, you only can place 1. That won't work because you could have the case where you have 3 restaurants (m, p) = (0, 19), (10, 30), (20, 20), k = 2 and d = 10. I thought you could pick the top k neighbors, but that won't work for that example either. 
-    I did figure out that if you look at this as a graph where vertices are locations and E = (u, v) st |u - v| < d, then you have a maximum weight independent set problem where the size of the independent set is k (which is a pretty rare problem, apparently) and your graph is chordal, which means no cycles greater than 3. This has all kinds of properties, and I'm sure some can help me, but I can't figure out which. 
-    I don't know how to encode the finite size into our algorithm. Maybe I do it as if k is infinite and then in a separate loop iterate up to k? That would be O(n + k), and k is not constant, but it is less than n, so that still linear? That could be the ticket. I like this idea.
+    First, let's define a \emph{next}(x) function that gives you the index of the closest location to x that is greater than x.
+    Now let's define our recurrence
+    \[
+    MP(i, 0) = 0
+    \]
+\[
+    MP(i > n, k) = 0
+    \]
+\[
+    MP(i, k) = max(MP(\emph{next}(i + d), k - 1), MP(i + 1, k))
+    \]
+
+    Note that this BinarySearch returns the leftmost element that is greater than or equal to the "needle" input
+    \begin{algo}
+        MaxMoney(L[1..n], k, d) \+
+        L[n + 1] = $\infty$
+        \\ k = [0] * n // k is the k we're at 
+        \\ km = [0] * n // km is our k - 1 
+        \\ k[n + 1] = km[n + 1] = 0
+        \\ currK = 1 // we'll get 0 for everything if k = 0, so we start with 
+        \\ // our k tracking k = 1
+        \\ while currK <= k \+
+        \\ for i $\gets$ n $\ldots$ 1 \+
+        \\ next = BinarySearch($L$, $L_i + d$)
+        \\ k[i] = max(km[next], k[i + 1]) \-
+        \\ currK++
+        \\ km = k \-
+        \\ return km[0]
+    \end{algo}
 \end{solution}
 
 \HomeworkHeader{6}{2}	% homework number, problem number
@@ -100,7 +118,14 @@ Let $X = x_1,x_2,\ldots,x_r$, $Y = y_1,y_2,\ldots,y_s$ and $Z =
 
 
 \begin{solution}
-    sheep
+    Our recurrence finds the shortest common superstring of x[i..n], y[j..n], and z[j..n]. 
+    MS(i, j, k) = $\infty$ if i > n or j > n or k > n
+    MS(i, j, k) = 1 + MS(i + 1, j + 1, k) if x[i] = y[j]
+    MS(i, j, k) = 1 + min(MS(i + 1, j, k + 1), MS(i, j + 1, k)) if x[i] = z[k]
+    MS(i, j, k) = 1 + min(MS(i, j + 1, k + 1), MS(i + 1, j, k)) if y[j] = z[k]
+    MS(i, j, k) = 1 + MS(i + 1, j + 1, k + 1) if x[i] = y[j] = z[k]
+    MS(i, j, k) = 1 + min(MS(i + 1, j, k), MS(i, j + 1, k), MS(i, j, k + 1)) if x[i], y[j], z[k] distinct
+    3-d array and I think we're done.
 \end{solution}
 
 \HomeworkHeader{6}{3}	% homework number, problem number
