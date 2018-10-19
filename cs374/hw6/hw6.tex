@@ -118,14 +118,54 @@ Let $X = x_1,x_2,\ldots,x_r$, $Y = y_1,y_2,\ldots,y_s$ and $Z =
 
 
 \begin{solution}
-    Our recurrence finds the shortest common superstring of x[i..n], y[j..n], and z[j..n]. 
-    MS(i, j, k) = $\infty$ if i > n or j > n or k > n
-    MS(i, j, k) = 1 + MS(i + 1, j + 1, k) if x[i] = y[j]
-    MS(i, j, k) = 1 + min(MS(i + 1, j, k + 1), MS(i, j + 1, k)) if x[i] = z[k]
-    MS(i, j, k) = 1 + min(MS(i, j + 1, k + 1), MS(i + 1, j, k)) if y[j] = z[k]
-    MS(i, j, k) = 1 + MS(i + 1, j + 1, k + 1) if x[i] = y[j] = z[k]
-    MS(i, j, k) = 1 + min(MS(i + 1, j, k), MS(i, j + 1, k), MS(i, j, k + 1)) if x[i], y[j], z[k] distinct
-    3-d array and I think we're done.
+    Our recurrence finds the shortest common superstring of x[i..n], y[j..n], and z[j..n]. Also, let x[n + 1] = $\xi$, y[n + 1] = $\upsilon$, and z[n + 1] = $\zeta$ and assume our three original strings were using only the Latin alphabet. The idea behind this is that, if you run out of letters in any string, the other two strings will proceed as if they were alone because the Greek letters will never be the same as any other letter in any of the strings.
+    \[
+        \emph{MS}(i, j, k) =
+        \begin{cases}
+            \infty & \text{if i > n + 1 or j > n + 1 or k > n + 1}
+            \\[0.5ex]
+            1 + min(MS(i + 1, j + 1, k), MS(i, j, k + 1)) & \text{if x[i] = y[j]}
+            \\[0.5ex]
+            1 + min(MS(i + 1, j, k + 1), MS(i, j + 1, k)) & \text{if x[i] = z[k]}
+            \\[0.5ex]
+            1 + min(MS(i, j + 1, k + 1), MS(i + 1, j, k)) & \text{if y[j] = z[k]}
+            \\[0.5ex]
+            1 + MS(i + 1, j + 1, k + 1) & \text{if x[i] = y[j] = z[k]}
+            \\[0.5ex]
+            1 + min(MS(i + 1, j, k), MS(i, j + 1, k), MS(i, j, k + 1)) & \text{if x[i], y[j], z[k] distinct}
+            \\[0.5ex]
+        \end{cases}
+    \]
+    The actual code looks like this.
+    \begin{algo}
+        MS(x[1..n], y[1..n], z[1..n]) \+
+        \\ memo = $(n + 2) \times (n + 2) \times (n + 2)$ 3-d array initialized to $\infty$
+        \\ // Having a coordinate be n means you're on the last letter, n + 1 means that string is done
+        \\ // (but the other two might still be going), and n + 2 means you've overshot and have to go back.
+        \\ x[n + 1] = $\xi$
+        \\ y[n + 1] = $\upsilon$
+        \\ z[n + 1] = $\zeta$
+        \\ for i $\gets$ n $\ldots$ 1 \+
+        \\ for j $\gets$ n $\ldots$ 1 \+
+        \\ for k $\gets$ n $\ldots$ 1 \+
+        \\ if i = j = k = n + 1 \+
+        \\ // This is the end; if we get here, we're done
+        \\ memo[i,j,k] = 0
+        \\ continue \-
+        \\ xx = x[i]
+        \\ yy = y[j]
+        \\ zz = z[k]
+        \\ if xx = yy then mem[i,j,k] = 1 + min(mem[i + 1, j + 1, k], mem[i, j, k + 1])
+
+        \\ else if xx = zz then mem[i,j,k] = 1 + min(mem[i + 1, j, k + 1], mem[i, j + 1, k])
+
+        \\ else if zz = yy then mem[i,j,k] = 1 + min(mem[i + 1, j, k], mem[i, j + 1, k + 1])
+
+        \\ else if xx = yy = zz then mem[i,j,k] = 1 + mem[i + 1, j + 1, k + 1]
+
+        \\ else mem[i,j,k] = 1 + min(mem[i + 1, j, k], mem[i, j + 1, k], mem[i, j, k + 1]) \-\-\-
+        \\ return mem[0,0,0]
+    \end{algo}
 \end{solution}
 
 \HomeworkHeader{6}{3}	% homework number, problem number
@@ -141,12 +181,37 @@ Given a graph $G=(V,E)$ a matching is a subset of edges in $G$
   advanced machinery and is beyond the scope of this course. However,
   finding the maximum weight matching in a tree is easier via dynamic
   programming. 
+
+  \begin{itemize}
+  \item Solve the previous part even though it is not required to be
+    submitted for grading. It will help you think about this part.
+    \begin{enumerate}
+    \item Given a tree $T=(V,E)$ describe an efficient algorithm to
+      \emph{count} the number of distinct matchings in $T$. Two matchings
+      $M_1$ and $M_2$ are distinct if they are not identical as sets of edges.
+      Unlike the maximum weight matching problem, the problem of couting
+      matchings is known to be hard in general graphs, but trees are
+      easier. 
+    \item Write a recurrence for the exact number of matchings in a
+      path on $n$ nodes. For the base case of a single node tree
+      assume that the answer is $1$ since an empty set is also a valid
+      matching. Would the answer for a path with $n=500$ fit in a
+      $64$-bit integer word? Briefly justify your answer.
+    \item How would you implement your counting algorithm from part
+      (a), more carefully, to run on a $64$ bit machine?  Accounting
+      for this more careful implementation, what is the running time of
+      your algorithm? 
+    \end{enumerate}
+  \end{itemize}
 \end{quote}
 \hrule
 
 
 
 \begin{solution}
-    I think this is trivial. At any root, you can take the edge to one of it's children, or neither. If you take neither, recurse on children. If you take one, recurse on the taken one's grandchildren and the taken one's children. I think.
+    \begin{itemize}
+        \item The idea behind this is that 
+            node.count = 1 if node is leaf else sum(product(chd.count for chd in ((children(node) - {c}) + children(c))) for c in (children(node) + null))
+    \end{itemize}
 \end{solution}
 \end{document}
