@@ -67,11 +67,11 @@ The McKing chain wants to open several restaurants along Red
 
 
 \begin{solution}
-    First, let's define a \emph{next}(x) function that gives you the index of the closest location to x that is greater than x.
-    Now let's define our recurrence
-    \[
+    First, let's define a \emph{next}(x) function that gives you the smallest $i$ such that $L_i$ is greater than x.
+    Now let's define our recurrence. This function $MP(i, k)$ gives you the Maximum Profit you can get given locations $L_j$ such that $j \geq i$ and $k$ restaurants left in your budget. The idea is that, at any location, you can either put a restaurant there or not. This function calculates both options and returns the optimal one. $MP(1, k)$ (where $k$ is your original k) gives your final answer.
+\[
     MP(i, 0) = 0
-    \]
+\]
 \[
     MP(i > n, k) = 0
     \]
@@ -79,7 +79,7 @@ The McKing chain wants to open several restaurants along Red
     MP(i, k) = max(MP(\emph{next}(i + d), k - 1), MP(i + 1, k))
     \]
 
-    Note that this BinarySearch returns the leftmost element that is greater than or equal to the "needle" input
+    Note that our BinarySearch function returns the leftmost element that is greater than or equal to the "needle" input. Also, we are memoizing using 2 1-d arrays.
     \begin{algo}
         MaxMoney(L[1..n], k, d) \+
         L[n + 1] = $\infty$
@@ -96,6 +96,7 @@ The McKing chain wants to open several restaurants along Red
         \\ km = k \-
         \\ return km[0]
     \end{algo}
+    This runs in $O(kn)$ time, taking $O(n)$ space.
 \end{solution}
 
 \HomeworkHeader{6}{2}	% homework number, problem number
@@ -118,7 +119,7 @@ Let $X = x_1,x_2,\ldots,x_r$, $Y = y_1,y_2,\ldots,y_s$ and $Z =
 
 
 \begin{solution}
-    Our recurrence finds the shortest common superstring of x[i..n], y[j..n], and z[j..n]. Also, let x[n + 1] = $\xi$, y[n + 1] = $\upsilon$, and z[n + 1] = $\zeta$ and assume our three original strings were using only the Latin alphabet. The idea behind this is that, if you run out of letters in any string, the other two strings will proceed as if they were alone because the Greek letters will never be the same as any other letter in any of the strings.
+    Our recurrence finds the shortest common superstring of x[i..n], y[j..n], and z[j..n]. Also, let x[n + 1] = $\xi$, y[n + 1] = $\upsilon$, and z[n + 1] = $\zeta$ and assume our three original strings were using only the Latin alphabet. The idea behind this is that, if you run out of letters in any string, the other two strings will proceed as if they were alone because the Greek letters will never be the same as any other letter in any of the strings. Calling $MS(1,1,1)$ will yield the answer to this problem.
     \[
         \emph{MS}(i, j, k) =
         \begin{cases}
@@ -136,7 +137,7 @@ Let $X = x_1,x_2,\ldots,x_r$, $Y = y_1,y_2,\ldots,y_s$ and $Z =
             \\[0.5ex]
         \end{cases}
     \]
-    The actual code looks like this.
+    The actual code looks like this. We are going to memoize with a 3-d array.
     \begin{algo}
         MS(x[1..n], y[1..n], z[1..n]) \+
         \\ memo = $(n + 2) \times (n + 2) \times (n + 2)$ 3-d array initialized to $\infty$
@@ -166,6 +167,7 @@ Let $X = x_1,x_2,\ldots,x_r$, $Y = y_1,y_2,\ldots,y_s$ and $Z =
         \\ else mem[i,j,k] = 1 + min(mem[i + 1, j, k], mem[i, j + 1, k], mem[i, j, k + 1]) \-\-\-
         \\ return mem[0,0,0]
     \end{algo}
+    This will take $O(n^3)$ time.
 \end{solution}
 
 \HomeworkHeader{6}{3}	% homework number, problem number
@@ -210,8 +212,7 @@ Given a graph $G=(V,E)$ a matching is a subset of edges in $G$
 
 \begin{solution}
     \begin{enumerate}
-        \item The idea behind this is that node.count = 1 if node is leaf else sum(product(chd.count for chd in ((children(node) - {c}) + children(c))) for c in (children(node) + null))
-            Our algorithm will go through the tree and set the \texttt{count} field on every node to the count of the matchings in that node's subtree. It will start at the leaves and go up. Our final answer will be the \texttt{count} field of the root.
+        \item Our algorithm will go through the tree and set the \texttt{count} field on every node to the count of the matchings in that node's subtree. It will start at the leaves and go up. Our final answer will be the \texttt{count} field of the root. Call $CountMatchings$(G) to get that final answer. We will memoize using the same tree that we were given.
             \begin{algo}
                 CountMatchings(G) \+
                 \\ Pick some node r and create a tree T rooted at r
@@ -241,6 +242,7 @@ Given a graph $G=(V,E)$ a matching is a subset of edges in $G$
                 \\ ct += prod \-
                 \\ r.count = ct \-
             \end{algo}
+            Finding the value of a single node will take at worse $O(n^2)$ time, so finding the value of all the nodes will take $O(n^3)$ time.
         \item 
             \[
                 T(1) = 1
@@ -252,7 +254,7 @@ Given a graph $G=(V,E)$ a matching is a subset of edges in $G$
             T(n) = T(n - 1) + T(n - 2)
             \]
             This is the Fibonacci sequence. WolframAlpha tells me that the 500th Fibonacci number is 105 decimal digits long, which is quite a lot more than 64 binary digits.
-        \item On a real computer, computing a number that big would require something like a BigInteger, but operations on those do not take constant time. Specifically, addition takes linear time in the length of the number, and multiplication takes $O(n^{\log_2{3}})$ using Karatsuba's algorithm. Previously, we assumed that each of those operations took constant time, so we came up with $O(n^2)$ as the amount of work done for each node. We can ignore addition since it is faster than multiplication. In the worst case, each subtree has a path of length $O(n)$ below it, meaning that it's value is something in the neighborhood of $F_n = O(\phi^n)$, meaning it has $O(n)$ digits. Therefore, multiplying the cost of each multiplication by the number of multiplications, we get a new run time of $O(n^{2\log_2{3}})$.
+        \item On a real computer, computing a number that big would require something like a BigInteger, but operations on those do not take constant time. Specifically, addition takes linear time in the length of the number, and multiplication takes $O(n^{\log_2{3}})$ using Karatsuba's algorithm. Previously, we assumed that each of those operations took constant time, so we came up with $O(n^3)$ as the amount of work done for each node. We can ignore addition since it is faster than multiplication. In the worst case, each subtree has a path of length $O(n)$ below it, meaning that it's value is something in the neighborhood of $F_n = O(\phi^n)$, meaning it has $O(n)$ digits. Therefore, multiplying the cost of each multiplication by the number of multiplications, we get a new run time of $O(n^{3\log_2{3}})$.
     \end{enumerate}
 \end{solution}
 \end{document}
