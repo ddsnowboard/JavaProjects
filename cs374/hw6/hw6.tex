@@ -210,8 +210,37 @@ Given a graph $G=(V,E)$ a matching is a subset of edges in $G$
 
 \begin{solution}
     \begin{enumerate}
-        \item The idea behind this is that 
-            node.count = 1 if node is leaf else sum(product(chd.count for chd in ((children(node) - {c}) + children(c))) for c in (children(node) + null))
+        \item The idea behind this is that node.count = 1 if node is leaf else sum(product(chd.count for chd in ((children(node) - {c}) + children(c))) for c in (children(node) + null))
+            Our algorithm will go through the tree and set the \texttt{count} field on every node to the count of the matchings in that node's subtree. It will start at the leaves and go up. Our final answer will be the \texttt{count} field of the root.
+            \begin{algo}
+                CountMatchings(G) \+
+                \\ Pick some node r and create a tree T rooted at r
+                \\ countMatchings(r)
+                \\ return r.count \-
+                \\ 
+                \\ countMatchings(r) \+
+                \\ if isLeaf(r) \+
+                \\ r.count = 1
+                \\ return \-
+                \\ // Make sure that all my children have been done
+                \\ for c in children(r) \+
+                \\ countMatchings(c) \-
+                \\ 
+                \\ ct = 0
+                \\ for c in children(r) + [null] \+
+                \\ // Each each iteration of this loop signifies one edge from r being selected, 
+                \\ // and null means none of the edges were selected.
+                \\ prod = 1 
+                \\ for ch in children(r) \+
+                \\ if ch == c then continue
+                \\ prod *= ch.count \-
+                \\ // Note that children(c) are the grandchildren of r by c. Since the edge from r to c is selected, none of
+                \\ // c's child edges can be selected. Also, assume that children(null) gives an empty list.
+                \\ for ch in children(c) \+
+                \\ prod *= ch.count \-
+                \\ ct += prod \-
+                \\ r.count = ct \-
+            \end{algo}
         \item 
             \[
                 T(1) = 1
