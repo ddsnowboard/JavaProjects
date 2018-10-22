@@ -209,9 +209,21 @@ Given a graph $G=(V,E)$ a matching is a subset of edges in $G$
 
 
 \begin{solution}
-    \begin{itemize}
+    \begin{enumerate}
         \item The idea behind this is that 
             node.count = 1 if node is leaf else sum(product(chd.count for chd in ((children(node) - {c}) + children(c))) for c in (children(node) + null))
-    \end{itemize}
+        \item 
+            \[
+                T(1) = 1
+            \]
+            \[
+            T(2) = 2
+            \]
+            \[
+            T(n) = T(n - 1) + T(n - 2)
+            \]
+            This is the Fibonacci sequence. WolframAlpha tells me that the 500th Fibonacci number is 105 decimal digits long, which is quite a lot more than 64 binary digits.
+        \item On a real computer, computing a number that big would require something like a BigInteger, but operations on those do not take constant time. Specifically, addition takes linear time in the length of the number, and multiplication takes $O(n^{\log_2{3}})$ using Karatsuba's algorithm. Previously, we assumed that each of those operations took constant time, so we came up with $O(n^2)$ as the amount of work done for each node. We can ignore addition since it is faster than multiplication. In the worst case, each subtree has a path of length $O(n)$ below it, meaning that it's value is something in the neighborhood of $F_n = O(\phi^n)$, meaning it has $O(n)$ digits. Therefore, multiplying the cost of each multiplication by the number of multiplications, we get a new run time of $O(n^{2\log_2{3}})$.
+    \end{enumerate}
 \end{solution}
 \end{document}
