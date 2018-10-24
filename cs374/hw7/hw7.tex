@@ -41,169 +41,28 @@
 % ---------------------------------------------------------
 
 
-\HomeworkHeader{6}{1}	% homework number, problem number
+\HomeworkHeader{7}{1}	% homework number, problem number
 
 \begin{quote}
-The McKing chain wants to open several restaurants along Red
-  street in Shampoo-Banana. The possible locations are at $L_1,L_2,
-  \ldots, L_n$ where $L_i$ is at distance $m_i$ meters from the start
-  of Red street. Assume that the street is a straight line and the
-  locations are in increasing order of distance from the starting
-  point (thus $0 \leq m_1 < m_2 < \ldots < m_n$). McKing has collected
-  some data indicating that opening a restaurant at location $L_i$
-  will yield a profit of $p_i$ independent of where the other
-  restaurants are located. However, the city of Shampoo-Banana has a
-  zoning law which requires that any two McKing locations should be
-  $D$ or more meters apart. {\em In addition McKing does not want to
-    open more than $k$ restaurants due to budget constraints.}
-  Describe an algorithm that McKing can use to figure out the maximum
-  profit it can obtain by opening restaurants while satisfying the
-  city's zoning law and the constraint of opening at most $k$
-  restaurants.  Your algorithm should use only $O(n)$ space and you
-  should not assume that $k$ is a constant.
-\end{quote}
-\hrule
-
-
-
-\begin{solution}
-    First, let's define a \emph{next}(x) function that gives you the smallest $i$ such that $L_i$ is greater than x.
-    Now let's define our recurrence. This function $MP(i, k)$ gives you the Maximum Profit you can get given locations $L_j$ such that $j \geq i$ and $k$ restaurants left in your budget. The idea is that, at any location, you can either put a restaurant there or not. This function calculates both options and returns the optimal one. $MP(1, k)$ (where $k$ is your original k) gives your final answer.
-\[
-    MP(i, 0) = 0
-\]
-\[
-    MP(i > n, k) = 0
-    \]
-\[
-    MP(i, k) = max(MP(\emph{next}(i + d), k - 1), MP(i + 1, k))
-    \]
-
-    Note that our BinarySearch function returns the leftmost element that is greater than or equal to the "needle" input. Also, we are memoizing using 2 1-d arrays.
-    \begin{algo}
-        MaxMoney(L[1..n], k, d) \+
-        L[n + 1] = $\infty$
-        \\ k = [0] * n // k is the k we're at 
-        \\ km = [0] * n // km is our k - 1 
-        \\ k[n + 1] = km[n + 1] = 0
-        \\ currK = 1 // we'll get 0 for everything if k = 0, so we start with 
-        \\ // our k tracking k = 1
-        \\ while currK <= k \+
-        \\ for i $\gets$ n $\ldots$ 1 \+
-        \\ next = BinarySearch($L$, $L_i + d$)
-        \\ k[i] = max(km[next], k[i + 1]) \-
-        \\ currK++
-        \\ km = k \-
-        \\ return km[0]
-    \end{algo}
-    This runs in $O(kn)$ time, taking $O(n)$ space.
-\end{solution}
-
-\HomeworkHeader{6}{2}	% homework number, problem number
-
-\begin{quote}
-Let $X = x_1,x_2,\ldots,x_r$, $Y = y_1,y_2,\ldots,y_s$ and $Z =
-  z_1,z_2,\ldots,z_t$ be three sequences. A common {\em supersequence}
-  of $X$, $Y$ and $Z$ is another sequence $W$ such that $X$, $Y$ and $Z$
-  are subsequences of $W$. Suppose $X = a,b,d,c$ and $Y = b,a,b,e,d$ and $Z =
-  b, e, d, c$. A simple common supersequence of $X$, $Y$ and $Z$ is
-  the concatenation of $X$, $Y$ and $Z$ which is
-  $a,b,d,c,b,a,b,e,d,b,e,d,c$ and has length $13$. A shorter one is
-  $b, a, b, e, d, c$ which has length $6$.  Describe an efficient
-  algorithm to compute the {\em length} of the shortest common
-  supersequence of three given sequences $X$, $Y$ and $Z$. You may want to
-  first solve the two sequence problem to get you strated.
-\end{quote}
-\hrule
-
-
-
-\begin{solution}
-    Our recurrence finds the shortest common superstring of x[i..n], y[j..n], and z[j..n]. Also, let x[n + 1] = $\xi$, y[n + 1] = $\upsilon$, and z[n + 1] = $\zeta$ and assume our three original strings were using only the Latin alphabet. The idea behind this is that, if you run out of letters in any string, the other two strings will proceed as if they were alone because the Greek letters will never be the same as any other letter in any of the strings. Calling $MS(1,1,1)$ will yield the answer to this problem.
-    \[
-        \emph{MS}(i, j, k) =
-        \begin{cases}
-            \infty & \text{if i > n + 1 or j > n + 1 or k > n + 1}
-            \\[0.5ex]
-            1 + min(MS(i + 1, j + 1, k), MS(i, j, k + 1)) & \text{if x[i] = y[j]}
-            \\[0.5ex]
-            1 + min(MS(i + 1, j, k + 1), MS(i, j + 1, k)) & \text{if x[i] = z[k]}
-            \\[0.5ex]
-            1 + min(MS(i, j + 1, k + 1), MS(i + 1, j, k)) & \text{if y[j] = z[k]}
-            \\[0.5ex]
-            1 + MS(i + 1, j + 1, k + 1) & \text{if x[i] = y[j] = z[k]}
-            \\[0.5ex]
-            1 + min(MS(i + 1, j, k), MS(i, j + 1, k), MS(i, j, k + 1)) & \text{if x[i], y[j], z[k] distinct}
-            \\[0.5ex]
-        \end{cases}
-    \]
-    The actual code looks like this. We are going to memoize with a 3-d array.
-    \begin{algo}
-        MS(x[1..n], y[1..n], z[1..n]) \+
-        \\ memo = $(n + 2) \times (n + 2) \times (n + 2)$ 3-d array initialized to $\infty$
-        \\ // Having a coordinate be n means you're on the last letter, n + 1 means that string is done
-        \\ // (but the other two might still be going), and n + 2 means you've overshot and have to go back.
-        \\ x[n + 1] = $\xi$
-        \\ y[n + 1] = $\upsilon$
-        \\ z[n + 1] = $\zeta$
-        \\ for i $\gets$ n $\ldots$ 1 \+
-        \\ for j $\gets$ n $\ldots$ 1 \+
-        \\ for k $\gets$ n $\ldots$ 1 \+
-        \\ if i = j = k = n + 1 \+
-        \\ // This is the end; if we get here, we're done
-        \\ memo[i,j,k] = 0
-        \\ continue \-
-        \\ xx = x[i]
-        \\ yy = y[j]
-        \\ zz = z[k]
-        \\ if xx = yy then mem[i,j,k] = 1 + min(mem[i + 1, j + 1, k], mem[i, j, k + 1])
-
-        \\ else if xx = zz then mem[i,j,k] = 1 + min(mem[i + 1, j, k + 1], mem[i, j + 1, k])
-
-        \\ else if zz = yy then mem[i,j,k] = 1 + min(mem[i + 1, j, k], mem[i, j + 1, k + 1])
-
-        \\ else if xx = yy = zz then mem[i,j,k] = 1 + mem[i + 1, j + 1, k + 1]
-
-        \\ else mem[i,j,k] = 1 + min(mem[i + 1, j, k], mem[i, j + 1, k], mem[i, j, k + 1]) \-\-\-
-        \\ return mem[0,0,0]
-    \end{algo}
-    This will take $O(n^3)$ time.
-\end{solution}
-
-\HomeworkHeader{6}{3}	% homework number, problem number
-
-\begin{quote}
-Given a graph $G=(V,E)$ a matching is a subset of edges in $G$
-  that do not \emph{intersect}. More formally $M \subseteq E$ is a
-  matching if every vertex $v \in V$ is incident to at most one edge
-  in $M$. Matchings are of fundamental importance in combinatorial
-  optimization and have many applications. Given $G$ and non-negative
-  weights $w(e), e \in E$ on the edges one can find the maximum weight
-  matching in a graph in polynomial time but the algorithm requires
-  advanced machinery and is beyond the scope of this course. However,
-  finding the maximum weight matching in a tree is easier via dynamic
-  programming. 
-
+Let $G=(V,E)$ be \emph{directed} graph. A subset of vertices are colored
+  red and a subset are colored blue and the rest are not colored.  Let
+  $R \subset V$ be the set of red vertices and $B \subset V$ be the set
+  of blue vertices.
   \begin{itemize}
-  \item Solve the previous part even though it is not required to be
-    submitted for grading. It will help you think about this part.
-    \begin{enumerate}
-    \item Given a tree $T=(V,E)$ describe an efficient algorithm to
-      \emph{count} the number of distinct matchings in $T$. Two matchings
-      $M_1$ and $M_2$ are distinct if they are not identical as sets of edges.
-      Unlike the maximum weight matching problem, the problem of couting
-      matchings is known to be hard in general graphs, but trees are
-      easier. 
-    \item Write a recurrence for the exact number of matchings in a
-      path on $n$ nodes. For the base case of a single node tree
-      assume that the answer is $1$ since an empty set is also a valid
-      matching. Would the answer for a path with $n=500$ fit in a
-      $64$-bit integer word? Briefly justify your answer.
-    \item How would you implement your counting algorithm from part
-      (a), more carefully, to run on a $64$ bit machine?  Accounting
-      for this more careful implementation, what is the running time of
-      your algorithm? 
-    \end{enumerate}
+  \item Describe an efficient algorithm that given $G$ and
+  two nodes $s,t \in V$ checks whether there is an $s$-$t$ path in $G$
+  that contains at most one red vertex and at most one blue
+  vertex. For simplicity assume that $s,t$ do not have colors. Ideally
+  your algorithm should run in $O(n+m)$ time where $n = |V|$ and $m = |E|$.
+  Do not try to invent a new algorithm. Come up with a way to create
+  a new graph $G'$ and use a standard algorithm on $G'$.
+\item Here is a small variation where edges are colored instead of
+  vertices.  Some of the edges in $G$ are colored red and some are
+  colored blue and the rest are not colored. Let $R \subset E$ be the
+  red edges and $B \subset E$ be the blue edges. Describe an efficient
+  algorithm that given $G$ and two nodes $s,t$ checks whether there is
+  an $s$-$t$ path that contains at most one red edge and at most one
+  blue edge. Reduce the problem to the one in the previous part.
   \end{itemize}
 \end{quote}
 \hrule
@@ -211,50 +70,74 @@ Given a graph $G=(V,E)$ a matching is a subset of edges in $G$
 
 
 \begin{solution}
-    \begin{enumerate}
-        \item Our algorithm will go through the tree and set the \texttt{count} field on every node to the count of the matchings in that node's subtree. It will start at the leaves and go up. Our final answer will be the \texttt{count} field of the root. Call $CountMatchings$(G) to get that final answer. We will memoize using the same tree that we were given.
-            \begin{algo}
-                CountMatchings(G) \+
-                \\ Pick some node r and create a tree T rooted at r
-                \\ countMatchings(r)
-                \\ return r.count \-
-                \\ 
-                \\ countMatchings(r) \+
-                \\ if isLeaf(r) \+
-                \\ r.count = 1
-                \\ return \-
-                \\ // Make sure that all my children have been done
-                \\ for c in children(r) \+
-                \\ countMatchings(c) \-
-                \\ 
-                \\ ct = 0
-                \\ for c in children(r) + [null] \+
-                \\ // Each each iteration of this loop signifies one edge from r being selected, 
-                \\ // and null means none of the edges were selected.
-                \\ prod = 1 
-                \\ for ch in children(r) \+
-                \\ if ch == c then continue
-                \\ prod *= ch.count \-
-                \\ // Note that children(c) are the grandchildren of r by c. Since the edge from r to c is selected, none of
-                \\ // c's child edges can be selected. Also, assume that children(null) gives an empty list.
-                \\ for ch in children(c) \+
-                \\ prod *= ch.count \-
-                \\ ct += prod \-
-                \\ r.count = ct \-
-            \end{algo}
-            Finding the value of a single node will take at worse $O(n^2)$ time, so finding the value of all the nodes will take $O(n^3)$ time.
-        \item 
-            \[
-                T(1) = 1
-            \]
-            \[
-            T(2) = 2
-            \]
-            \[
-            T(n) = T(n - 1) + T(n - 2)
-            \]
-            This is the Fibonacci sequence. WolframAlpha tells me that the 500th Fibonacci number is 105 decimal digits long, which is quite a lot more than 64 binary digits.
-        \item On a real computer, computing a number that big would require something like a BigInteger, but operations on those do not take constant time. Specifically, addition takes linear time in the length of the number, and multiplication takes $O(n^{\log_2{3}})$ using Karatsuba's algorithm. Previously, we assumed that each of those operations took constant time, so we came up with $O(n^3)$ as the amount of work done for each node. We can ignore addition since it is faster than multiplication. In the worst case, each subtree has a path of length $O(n)$ below it, meaning that it's value is something in the neighborhood of $F_n = O(\phi^n)$, meaning it has $O(n)$ digits. Therefore, multiplying the cost of each multiplication by the number of multiplications, we get a new run time of $O(n^{3\log_2{3}})$.
-    \end{enumerate}
+    cats
+\end{solution}
+
+\HomeworkHeader{7}{2}	% homework number, problem number
+
+\begin{quote}
+Let $G=(V,E)$ be a directed graph.
+  \begin{itemize}
+  \item Describe a linear-time algorithm that outputs all the nodes in
+    $G$ that are contained in some cycle. More formally you want to
+    output
+    $$S = \{ v \in V \mid \text{there is some cycle in $G$ that
+      contains v}\}.$$
+  \item Describe a linear time algorithm to check whether there is a
+    node $v \in V$ such that $v$ can reach every node in $V$. First
+    solve the problem when $G$ is a DAG and then generalize it via the
+    meta-graph construction.
+  \end{itemize}
+  No proofs necessary but your algorithm should be clear. Use known
+  algorithms as black boxes rather. In particular the linear-time algorithm to
+  compute the meta-graph is useful here.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    dogs
+\end{solution}
+
+\HomeworkHeader{7}{3}	% homework number, problem number
+
+\begin{quote}
+ Given an \emph{undirected} connected graph $G=(V,E)$ an edge $(u,v)$ is
+  called a cut edge or a bridge if removing it from $G$ results in
+  two connected components (which means that $u$ is in one component
+  and $v$ in the other). The goal in this problem is to design an efficient
+  algorithm to find {\em all} the cut-edges of a graph.
+
+  \begin{itemize}
+  \item What are the cut-edges in the graph shown in the figure?
+
+  \item Given $G$ and edge $e=(u,v)$ describe a linear-time algorithm
+    that checks whether $e$ is a cut-edge or not. What is the running time
+    to find all cut-edges by trying your algorithm for each edge? No proofs
+    necessary for this part.
+  \item Consider {\em any} spanning tree $T$ for $G$. Prove that every
+    cut-edge must belong to $T$. Conclude that there can be at most $(n-1)$
+    cut-edges in a given graph. How does this information improve the
+    algorithm to find all cut-edges from the one in the previous step?
+  \item Suppose $T$ is any spanning tree of $G$. Root it at some
+    arbitrary node.  Prove that an edge $(u,v)$ in $T$ where $u$ is
+    the parent of $v$ is a cut-edge iff there is no edge in $G$, other
+    than $(u,v)$, with one end point in $T_v$ (sub-tree of $T$ rooted
+    at $v$) and one end point outside $T_v$.
+  \item Now consider the DFS tree $T$.  Use the property in the
+    preceding part to design a linear-time algorithm that outputs all
+    the cut-edges of $G$. What additional information can you maintain
+    while running DFS? Recall that there are no cross-edges in a DFS
+    tree $T$. You don't have to prove the correctness of
+    the algorithm.
+  \end{itemize}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    wolves
 \end{solution}
 \end{document}
