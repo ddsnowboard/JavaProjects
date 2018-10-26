@@ -20,11 +20,6 @@
 \def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
 \def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
 
-\newcommand{\IsSinL}{\text{IsStringInL}}
-\newcommand{\IsSinlang}[1]{\text{IsStringIn}L_{#1}}
-\newcommand{\cost}{\text{cost}}
-
-
 
 % =====================================================
 %   Define common stuff for solution headers
@@ -70,7 +65,48 @@ Let $G=(V,E)$ be \emph{directed} graph. A subset of vertices are colored
 
 
 \begin{solution}
-    cats
+    \begin{itemize}
+        \item Our new graph $G'$ will look like 4 copies of $G$ with slight changes. One will be for when we have seen neither a red nor a blue vertex (RB), one for when we have seen a red vertex (B), one for when we have seen a blue vertex (B), and one for when we have seen a red and a blue vertex (N). Once you see a colored vertex, you will move to a graph that has no vertices of that color. If you can find a way from the starting vertex $(s, RB)$ to any vertex of the form $(t, p)$ for $t$ as your ending vertex, there is a path in the orignal graph that touches at most one red and one blue vertex.
+            \[
+                G' = (V', E')
+            \]
+            \[
+                V' = V \times \{RB, B, R, N\} \setminus \{(u, R) \mid u \in V, \text{isBlue}(u)\} \setminus \{(u, B) \mid u \in V, \text{isRed}(u)\} \setminus \{(u, n) \mid u \in V, \text{isRed}(u) \lor \text{isBlue}(u)\}
+            \]
+            \[
+                NC = \{u \mid u \in V, \lnot(\text{isRed}(u) \lor \text{isBlue}(u))\}
+            \]
+            \[
+                C = \{u \mid u \in V, u \not\in NC\}
+            \]
+            \[ 
+                \text{NormalEdges} = \{((u, m), (v, m) \mid u \in C, (u, m) \in V', (v, m) \in V', (u, v) \in E\}
+            \]
+            \[
+                \text{NextSubgraph}(BR, v) = R \text{ if isBlue}(v)
+            \]
+            \[
+                \text{NextSubgraph}(BR, v) = B \text{ if isRed}(v)
+            \]
+            \[
+                \text{NextSubgraph}(R, v) = N \text{ if isRed}(v)
+            \]
+            \[
+                \text{NextSubgraph}(B, v) = N \text{ if isBlue}(v)
+            \]
+            \[
+                \text{FromColored} = \{((u, w), (v, \text{NextSubgraph}(w, u)) \mid u \in C, (u, t) \in V', (v, \text{NextSubgraph}(w, u)) \in V', (u, v) \in E\}
+            \]
+            Once you have this graph, it's just a search problem. Use whatever-first search starting from $(s, RB)$ searching for any any vertex of the form $(t, m)$ for $t$ as your ending vertex. We know whatever-first search takes $O(|V| + |E|)$ time in general, and we know that our $|V'| = O(|V|)$, since it's just a set multiplication with a finite set. $|E'| = O(|E|)$ since we are repeating each edge a finite number of times. This means that search will run in $O(|V| + |E|)$ time in this specific case too.
+        \item We can transform this graph into the graph from above by just replacing every colored edge $(u, v)$ with a new vertex $w$ of the same color and two regular edges, $(u, w)$ and $(w, v)$. Say we make a list of all the colored edges $L_{1..n}$.
+            \[
+                V' = V \cup \{\text{new vertices $v_i$ for each edge $L_i$ $\mid$ $v_i$ has the same color as $L_i$}\}
+            \]
+            \[
+                E' = E \cup \bigcup^L_{L_i = (u, v)}{\{(u, v_i), (v_i, v)\}}\setminus L
+            \]
+            Use the same algorithm as above. $|V'| = O(|V| + |E|)$ and $|E'| = O(|E|)$, so the search will still run in $O(|V| + |E|)$ time.
+    \end{itemize}
 \end{solution}
 
 \HomeworkHeader{7}{2}	% homework number, problem number
