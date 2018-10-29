@@ -192,6 +192,27 @@ Let $G=(V,E)$ be a directed graph.
             \\ \\ Now let's prove the converse. We have some edge $e = (u, v)$, where $u$ is the parent of $v$. We know that there is no edge in $G$ other than $e$ that goes between some vertex inside $T_v$ and a vertex outside it. Let's prove that $e$ is a cut edge.
             \\ We are given that the only edge between any vertex in $T_v$ and the rest of the graph is $e$. Therefore, we know that the path between any vertex in $T_v$ and any vertex not in $T_v$ must contain $e$. If we remove $e$ from the graph, we know that there can be no such path. Therefore, if nothing in $T_v$ can reach anything outside $T_v$ in $G' = (V, E - \{e\})$, we know that $G'$ is disconnected. Since removing $e$ gives us a disconnected graph, we know by the definition that $e$ is a cut edge.
             \\ Since we proven the implication both ways, we have that the two-way implication holds. 
+        \item
+            This algorithm is from https://www.cc.gatech.edu/~rpeng/CS3510\_F16/notes/Sep28DFS.pdf
+            \begin{algo}
+                CutEdges($G = (V, E)$) \+
+                \\ Run DFS(G), marking on each vertex the time it was explored
+                \\ and returning the DFS tree as $T = (V', E')$
+                \\ and the back edges $B$.
+                \\ for all $v$ in $V$ set v.farthest = -1
+                \\ edges = $\emptyset$
+                \\ FindFarthestBackedge(T.root)
+                \\ for $(u, v)$ in $E'$ \+
+                \\ if u.farthest $\geq$ v.time then add $(u, v)$ to edges \-
+                \\ return edges \-
+                \\ FindFarthestBackedge($v$) \+
+                \\ if v.farthest $\neq$ -1 then return v.farthest
+                \\ minChild = min(\{FindFarthestBackedge(c) $\mid$ c is a child of v\})
+                \\ myMinBackedge = min(\{b.time $\mid$ $(v, b)$ where $(v, b)$ is a back edge\})
+                \\ v.farthest = min(minChild, myMinBackedge)
+                \\ return v.farthest
+            \end{algo}
+            Since each node is only touched a constant number of times to calculate the farthest-reaching back edge, that part runs in linear time, so the whole algorithm runs in $O(|V| + |E|)$ time. Calling $CutEdges(G)$ will give you the answer.
     \end{itemize}
 \end{solution}
 \end{document}
