@@ -95,7 +95,7 @@ Let $G=(V,E)$ be \emph{directed} graph. A subset of vertices are colored
                 \text{NextSubgraph}(B, v) = N \text{ if isBlue}(v)
             \]
             \[
-                \text{FromColored} = \{((u, w), (v, \text{NextSubgraph}(w, u)) \mid u \in C, (u, w) \in V', (v, \text{NextSubgraph}(w, u)) \in V', (u, v) \in E\}
+                \text{FromColored} = \{((u, w), (v, \text{NextSubgraph}(w, u))) \mid u \in C, (u, w) \in V', (v, \text{NextSubgraph}(w, u)) \in V', (u, v) \in E\}
             \]
             Once you have this graph, it's just a search problem. Use whatever-first search starting from $(s, RB)$ searching for any vertex of the form $(t, m)$ for $t$ as your ending vertex. We know whatever-first search takes $O(|V| + |E|)$ time in general, and we know that our $|V'| = O(|V|)$, since it's just a set multiplication with a finite set. $|E'| = O(|E|)$ since we are repeating each edge a finite number of times. This means that search will run in $O(|V| + |E|)$ time in this specific case too.
         \item We can transform this graph into the graph from above by just replacing every colored edge $(u, v)$ with a new vertex $w$ of the same color and two regular edges, $(u, w)$ and $(w, v)$. Say we make a list of all the colored edges $L_{1..n}$.
@@ -134,8 +134,24 @@ Let $G=(V,E)$ be a directed graph.
 
 \begin{solution}
     \begin{itemize}
-        \item First, use the linear-time SCC-finding algorithm we learned in lecture to find all the strongly-connected components. Then just make a list of every vertex in a non-singleton SCC. All those vertices are in cycles. There are obviously no more than $|V|$ strongly-connected components, so that part will take linear time, so we know the whole algorithm will take linear time.
-        \item If you have a DAG with 1 source, which we will call the root, then you can get to any node from that root, since at that point we will just have a regular tree. If you have a DAG with 2 or more sources, we know that no source can get to any of the other sources. We know DAGs can't have zero sources. Therefore, for a DAG, there exists a vertex $v$ that can reach all other vertices iff there is exactly 1 source. Finding all the sinks is trivial with the adjacency list representation, and if we make the reverse graph in linear time, then the sources in our original graph will be the sinks in our new graph. Therefore, this can be done in linear time. If we have some general graph, we know we can make the SCC meta-graph in linear time, and the above will apply to that meta-graph. Therefore, to find whether some graph $G$ has a vertex $v$ that can reach every other vertex in $G$, just find the SCC meta-graph and count the sources. If there is exactly 1, there is such a vertex, and if there are more than 1, there is no such vertex.
+        \item First, use the linear-time SCC-finding algorithm we learned in lecture to find all the strongly-connected components. Then just make a list of every vertex in a non-singleton SCC. All those vertices are in cycles. We knowing finding the SCCs takes $O(|V| + |E|)$ time, and finding all the right vertices will take $O(|V|)$ time, since we will look at each vertex no more than once, so this whole algorithm will take $O(|V| + |E|)$ time. 
+        \item If you have a DAG with 1 source, which we will call the root, then you can get to any node from that root, since at that point we will just have a regular tree. If you have a DAG with 2 or more sources, we know that no source can get to any of the other sources. We know DAGs can't have zero sources. Therefore, for a DAG, there exists a vertex $v$ that can reach all other vertices iff there is exactly 1 source. If we have some general graph, we know we can make the SCC meta-graph in linear time, and the above will apply to that meta-graph. Therefore, to find whether some graph $G$ has a vertex $v$ that can reach every other vertex in $G$, just find the SCC meta-graph and count the sources. If there is exactly 1, there is such a vertex, and if there are more than 1, there is no such vertex.
+            \begin{algo}
+                HasAllReachingNode($G = (V, E)$) \+
+                \\ $G' = (V', E') = \text{FindSCCs}(G)$
+                \\ n = CountSources($G'$)
+                \\ if n == 1 return True else return False \-
+                \\ CountSources($G = (V, E)$) \+
+                \\ for v in V set v.outgoing = 0
+                \\ for $(u, v)$ in E \+
+                \\ u.outgoing++ \-
+                \\ ct = 0
+                \\ for v in V \+
+                \\ if v.outgoing == 1 \+
+                \\ ct++ \- \-
+                \\ return ct \-
+            \end{algo}
+            As stated above, the SCC algorithm takes $O(||V| + |E|)$ time, and counting the sources takes $O(|V|+|E|)$ time, so the whole algorithm also runs in $O(|V|+|E|)$ time.
     \end{itemize}
 \end{solution}
 
