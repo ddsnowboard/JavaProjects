@@ -1,0 +1,154 @@
+% ---------
+%  Compile with "pdflatex hw0".
+% --------
+%!TEX TS-program = pdflatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[11pt]{article}
+\usepackage{jeffe,handout,graphicx}
+\usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
+
+%  Redefine suits
+\usepackage{pifont}
+\def\Spade{\text{\ding{171}}}
+\def\Heart{\text{\textcolor{Red}{\ding{170}}}}
+\def\Diamond{\text{\textcolor{Red}{\ding{169}}}}
+\def\Club{\text{\ding{168}}}
+
+\def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
+\def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
+
+
+% =====================================================
+%   Define common stuff for solution headers
+% =====================================================
+\Class{CS/ECE 374}
+\Semester{Fall 2018}
+\Authors{1}
+\AuthorOne{Will Koster}{jameswk2@illinois.edu}
+%\Section{}
+
+% =====================================================
+\begin{document}
+
+% ---------------------------------------------------------
+
+
+\HomeworkHeader{8}{1}	% homework number, problem number
+
+\begin{quote}
+Graphs are a powerful tool to model many phenomena.  The edges
+  of a graph model pairwise relationships. It is natural to consider
+  higher order relationships.  Indeed {\em hypergraphs} provide one
+  such modeling tool.  A hypergraph $G=(V,\mathcal{E})$ consists of a
+  finite set of nodes/vertices $V$ and a finite set of hyper-edges
+  $\mathcal{E}$. A hyperedge $e \in \mathcal{E}$ is simply a subset of
+  nodes and the cardinality of the subset can be larger than two. An
+  undirected graph is a hypergraph where each hyper-edge is of size
+  exactly two. Here is an example. $V=\{1,2,3,4,5\}$ and $\mathcal{E}
+  = \{\{1,2\},\{2,3,4\},\{1,3,4,5\},\{2,5\}\}$. The representation
+  size of a hypergraph is $|V| + \sum_{e \in \mathcal{E}} |e|$.  An
+  alternating sequence of nodes and edges
+  $x_1,e_1,x_2,e_2,\ldots,e_{k-1},x_k$ where $x_i \in V$ for $1 \le i
+  \le k$ and $e_j \in \mathcal{E}$ for $1 \le j \le k-1$ is called a
+  path from $u$ to $v$ if (i) $x_1 = u$ and $x_k = v$ and (ii) for $1
+  \le j < k$, $x_j \in e_j$ and $x_{j+1} \in e_j$.
+
+  \begin{itemize}
+  \item Given a hypergraph $G=(V,\mathcal{E})$ and two nodes $u,v \in V$
+    we say that $u$ is connected to $v$ if there is path from $u$ to $v$.
+    We say that a hypergraph is connected
+    if each pair of nodes $u,v$ in $G$ are connected. Describe an algorithm that
+    given a hypergraph $G$ checks whether $G$ is connected in linear time.
+    In essense describe a reduction of this problem to the standard graph
+    connectivity problem. You need to prove the correctness of your algorithm.
+  \item Suppose we want to quickly spread a message from one person to
+    another person during an emergency on a social network called
+    AppsWhat which is organized as a collection of groups. Messages
+    sent by a group member are broadcast to the entire group. AppsWhat
+    knows the members and the list of groups on its service. The goal
+    is to find the fewest messages that need to be sent such that a
+    person $u$ can reach a person $v$. Model this problem using
+    hypergraphs and describe a linear-time algorithm for it.
+    No proof necessary for this part.
+  \end{itemize}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    ants
+\end{solution}
+
+\HomeworkHeader{8}{2}	% homework number, problem number
+
+\begin{quote}
+Let $G = (V, E)$ be a connected directed graph with non-negative
+  edge lengths, let $s$ and $t$ be vertices of $G$. Suppose you
+  computed the shortest path distances and a shortest path tree $T$
+  from $s$ using Dijkstra's algorithm.
+
+  \begin{itemize}
+  \item {\bf Not to submit:} Suppose you only computed the shortest
+    path distances and forgot to compute the tree $T$. Describe how
+    you can compute a shortest path tree in linear time.
+  \item After you did your shortest path computation you wanted to add
+    a new edge $e=(u,v)$ with length $\ell(e)$ to your graph. Of
+    course you can recompute the shortest path distances (and the tree) using Dijkstra's
+    algorithm in the graph $H$ which is the graph obtained from $G$ by
+    adding $(u,v)$. Describe a linear time algorithm that can do this
+    without running Dijkstra's algorithm again. It may help you to see
+    if the adding the edge would change any distances at all.
+  \item Now consider the case when you want to delete an edge
+    $e=(u,v)$ from the graph $G$. Describe a linear time algorithm that
+    computes the new shortest path distances from $s$ in the graph $G-e$.
+  \end{itemize}
+  Briefly justify the correctness of your algorithms.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    beetles
+\end{solution}
+
+\HomeworkHeader{8}{3}	% homework number, problem number
+
+\begin{quote}
+Since you are taking an algorithms class you decided to create a
+  fun candy hunting game for Halloween. You set up a maze with one
+  way streets that can be thought of as a directed graph
+  $G=(V,E)$. Each node $v$ in the maze has $w(v)$ amount of candy
+  located at $v$.
+  \begin{itemize}
+  \item Each of your friends, starting at a given node $s$, has to
+    figure out the maximum amount of candy they can collect. Note that
+    candy at node $v$ can be collected only once even if the node $v$
+    is visited again on the way to some other place.
+  \item Your friends complain that they can collect more candy if they
+    get to choose the starting node. You agree to their their request
+    and ask them to maximize the amount of candy they can collect
+    starting at any node they choose.
+  \end{itemize}
+  Before you ask your friends to solve the game you need to know how
+  to do it yourself!  Describe efficient algorithms for both variants.
+  Ideally your algorithm should run in linear time.
+  {\em Hint:} Consider what happens if $G$ is strongly connected and
+  if it is a DAG.
+
+  No proof necessary if you use reductions to standard algorithms via
+  graph transformations and simple steps. Otherwise you need to prove
+  the correctness.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    Rocks
+\end{solution}
+\end{document}

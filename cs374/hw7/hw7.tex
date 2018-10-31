@@ -20,11 +20,6 @@
 \def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
 \def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
 
-\newcommand{\IsSinL}{\text{IsStringInL}}
-\newcommand{\IsSinlang}[1]{\text{IsStringIn}L_{#1}}
-\newcommand{\cost}{\text{cost}}
-
-
 
 % =====================================================
 %   Define common stuff for solution headers
@@ -70,7 +65,48 @@ Let $G=(V,E)$ be \emph{directed} graph. A subset of vertices are colored
 
 
 \begin{solution}
-    cats
+    \begin{itemize}
+        \item Our new graph $G'$ will look like 4 near-copies of $G$. One will be for when we have seen neither a red nor a blue vertex (RB), one for when we have seen a red vertex (B), one for when we have seen a blue vertex (R), and one for when we have seen a red and a blue vertex (N). All subgraphs will have copies of all uncolored vertices. The RB subgraph will also have red and blue vertices, R will have only red, and B will have only blue. N will have only uncolored vertices. Once you see a colored vertex, you will move to a graph that has no vertices of that color. If you can find a way from the starting vertex $(s, RB)$ to any vertex of the form $(t, p)$ for $t$ as your ending vertex, there is a path in the original graph that touches at most one red and one blue vertex.
+            \[
+                G' = (V', E')
+            \]
+            \[
+                NC = \{u \mid u \in V, \lnot(\text{isRed}(u) \lor \text{isBlue}(u))\}
+            \]
+            \[
+                C = \{u \mid u \in V, u \not\in NC\}
+            \]
+            \[
+                V' = V \times \{RB, B, R, N\} \setminus \{(u, R) \mid u \in V, \text{isBlue}(u)\} \setminus \{(u, B) \mid u \in V, \text{isRed}(u)\} \setminus \{(u, N) \mid u \in V, u \in C\}
+            \]
+            \[ 
+                \text{NormalEdges} = \{((u, m), (v, m)) \mid u \in NC, (u, m) \in V', (v, m) \in V', (u, v) \in E\}
+            \]
+            \[
+                \text{NextSubgraph}(BR, v) = R \text{ if isBlue}(v)
+            \]
+            \[
+                \text{NextSubgraph}(BR, v) = B \text{ if isRed}(v)
+            \]
+            \[
+                \text{NextSubgraph}(R, v) = N \text{ if isRed}(v)
+            \]
+            \[
+                \text{NextSubgraph}(B, v) = N \text{ if isBlue}(v)
+            \]
+            \[
+                \text{FromColored} = \{((u, w), (v, \text{NextSubgraph}(w, u))) \mid u \in C, (u, w) \in V', (v, \text{NextSubgraph}(w, u)) \in V', (u, v) \in E\}
+            \]
+            Once you have this graph, it's just a search problem. Use whatever-first search starting from $(s, RB)$ searching for any vertex of the form $(t, m)$ for $t$ as your ending vertex. We know whatever-first search takes $O(|V| + |E|)$ time in general, and we know that our $|V'| = O(|V|)$, since it's just a set multiplication with a finite set. $|E'| = O(|E|)$ since we are repeating each edge a finite number of times. This means that search will run in $O(|V| + |E|)$ time in this specific case too.
+        \item We can transform this graph into the graph from above by just replacing every colored edge $(u, v)$ with a new vertex $w$ of the same color and two regular edges, $(u, w)$ and $(w, v)$. Say we make a list of all the colored edges $L_{1..n}$.
+            \[
+                V' = V \cup \{\text{new vertices $v_i$ for each edge $L_i$ $\mid$ $v_i$ has the same color as $L_i$}\}
+            \]
+            \[
+                E' = E \cup \bigcup^L_{L_i = (u, v)}{\{(u, v_i), (v_i, v)\}}\setminus L
+            \]
+            Use the same algorithm as above. $|V'| = O(|V| + |E|)$ and $|E'| = O(|E|)$, so the search will still run in $O(|V| + |E|)$ time.
+    \end{itemize}
 \end{solution}
 
 \HomeworkHeader{7}{2}	% homework number, problem number
@@ -97,7 +133,26 @@ Let $G=(V,E)$ be a directed graph.
 
 
 \begin{solution}
-    dogs
+    \begin{itemize}
+        \item First, use the linear-time SCC-finding algorithm we learned in lecture to find all the strongly-connected components. Then just make a list of every vertex in a non-singleton SCC. All those vertices are in cycles. We knowing finding the SCCs takes $O(|V| + |E|)$ time, and finding all the right vertices will take $O(|V|)$ time, since we will look at each vertex no more than once, so this whole algorithm will take $O(|V| + |E|)$ time. 
+        \item If you have a DAG with 1 source, which we will call the root, then you can get to any node from that root, since at that point we will just have a regular tree. If you have a DAG with 2 or more sources, we know that no source can get to any of the other sources. We know DAGs can't have zero sources. Therefore, for a DAG, there exists a vertex $v$ that can reach all other vertices iff there is exactly 1 source. If we have some general graph, we know we can make the SCC meta-graph in linear time, and the above will apply to that meta-graph. Therefore, to find whether some graph $G$ has a vertex $v$ that can reach every other vertex in $G$, just find the SCC meta-graph and count the sources. If there is exactly 1, there is such a vertex, and if there are more than 1, there is no such vertex.
+            \begin{algo}
+                HasAllReachingNode($G = (V, E)$) \+
+                \\ $G' = (V', E') = \text{FindSCCs}(G)$
+                \\ n = CountSources($G'$)
+                \\ if n == 1 return True else return False \-
+                \\ CountSources($G = (V, E)$) \+
+                \\ for v in V set v.outgoing = 0
+                \\ for $(u, v)$ in E \+
+                \\ u.outgoing++ \-
+                \\ ct = 0
+                \\ for v in V \+
+                \\ if v.outgoing == 1 \+
+                \\ ct++ \- \-
+                \\ return ct \-
+            \end{algo}
+            As stated above, the SCC algorithm takes $O(||V| + |E|)$ time, and counting the sources takes $O(|V|+|E|)$ time, so the whole algorithm also runs in $O(|V|+|E|)$ time.
+    \end{itemize}
 \end{solution}
 
 \HomeworkHeader{7}{3}	% homework number, problem number
@@ -138,6 +193,42 @@ Let $G=(V,E)$ be a directed graph.
 
 
 \begin{solution}
-    wolves
+    \begin{itemize}
+        \item Cut edges are $(h, l)$, $(f, j)$, and $(g, e)$.
+        \item We can just create a new graph $G' = (V, E - \{e\})$ and use some search only once (ie, pick exactly one random starting vertex and search from there. When you run out of unvisited neighbors, stop.) If every vertex is marked after that, then your edge was not a cut edge, otherwise it was. This takes linear time, so finding all the cut edges would take $O(|E|(|E| + |V|))$ time.
+        \item Let's prove that, for any spanning tree $T$ on $G$, all the cut edges of $G$ are in $T$. 
+            \\ Assume the contrary. That is, assume that there is some cut edge $e$ that is not in $T$. 
+            \\ By the definition of a spanning tree, $T$ is connected. We are given that $e \not \in T$. Therefore, if we have some new graph $G' = (V, E - \{e\})$, $T$ will be a spanning tree of $G'$ too.
+            \\ By the definition of a cut edge, $G'$ is disconnected. But it has a spanning tree $T$, so it must be connected. This is a contradiction.
+            \\ Therefore, we conclude our original proposition. QED
+            \\ \\  By finding a spanning tree (which we can do in linear time with DFS), we have narrowed down the number of possible cut edges to $|V| - 1$, which is no greater than $|E|$ in a connected graph. Therefore, we can run the na\"{i}ve algorithm from above faster by only trying the edges in our spanning tree. This would run in $O(|V|(|V| + |E|))$.
+        \item Since we are proving an iff relationship, we're just going to use a 2-way proof. First I'll prove that if $(u, v)$ is a cut-edge, then there is no other edge in $G$ with one end outside $T_v$ and the other inside. Then I'll prove the converse.
+            \\ \\ Say we have some edge $e = (u, v)$ in a spanning tree $T$ on $G$ such that $u$ is the parent of $v$ in $T$. Say we know that $e$ is a cut edge of $G$. Let's prove that there is no other edge in $G$ that starts outside the subtree of $T$ rooted at $v$ $T_v$ and ends inside $T_v$.
+            \\ Let's assume the contrary and say that we have some edge $f = (a, b)$ with one endpoint inside $T_v$ (say it's $a$ without loss of generality) and one outside (say it's $b$). By the definition of a cut edge, there is a graph $G' = (V, E - \{e\})$ that is disconnected, and in $G'$ $u$ and $v$ are in different connected components. Since $a$ is in $T_v$, we know that $a$ reaches $v$. We know that $a$ is outside $T_v$ but it must be connected to $v$ (and therefore not connected to $u$) in $G'$. Therefore, $a$ is not one of $v$'s children. It cannot be its parent because we know $u$ was $v$'s parent, and $a$ can't be $v$'s sibling because they would have to be connected through a parent, which $v$ lacks. We have a contradiction. Therefore, there can be no such edge $f$.
+            \\ \\ Now let's prove the converse. We have some edge $e = (u, v)$, where $u$ is the parent of $v$. We know that there is no edge in $G$ other than $e$ that goes between some vertex inside $T_v$ and a vertex outside it. Let's prove that $e$ is a cut edge.
+            \\ We are given that the only edge between any vertex in $T_v$ and the rest of the graph is $e$. Therefore, we know that the path between any vertex in $T_v$ and any vertex not in $T_v$ must contain $e$. If we remove $e$ from the graph, we know that there can be no such path. Therefore, if nothing in $T_v$ can reach anything outside $T_v$ in $G' = (V, E - \{e\})$, we know that $G'$ is disconnected. Since removing $e$ gives us a disconnected graph, we know by the definition that $e$ is a cut edge.
+            \\ \\ Since we proved the implication both ways, we have that the two-way implication holds. 
+        \item
+            This algorithm is from https://www.cc.gatech.edu/~rpeng/CS3510\_F16/notes/Sep28DFS.pdf
+            \begin{algo}
+                CutEdges($G = (V, E)$) \+
+                \\ Run DFS(G), marking on each vertex the time it was explored
+                \\ and returning the DFS tree as $T = (V', E')$
+                \\ and the back edges $B$.
+                \\ for all $v$ in $V$ set v.farthest = -1
+                \\ edges = $\emptyset$
+                \\ FindFarthestBackedge(T.root)
+                \\ for $(u, v)$ in $E'$ \+
+                \\ if u.farthest $\geq$ v.time then add $(u, v)$ to edges \-
+                \\ return edges \-
+                \\ FindFarthestBackedge($v$) \+
+                \\ if v.farthest $\neq$ -1 then return v.farthest
+                \\ minChild = min(\{FindFarthestBackedge(c) $\mid$ c is a child of v\})
+                \\ myMinBackedge = min(\{b.time $\mid$ $(v, b)$ where $(v, b)$ is a back edge\})
+                \\ v.farthest = min(minChild, myMinBackedge)
+                \\ return v.farthest
+            \end{algo}
+            Since each node is only touched a constant number of times to calculate the farthest-reaching back edge, that part runs in linear time, so the whole algorithm runs in $O(|V| + |E|)$ time. Calling $CutEdges(G)$ will give you the answer.
+    \end{itemize}
 \end{solution}
 \end{document}
