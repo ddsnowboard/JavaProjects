@@ -80,7 +80,19 @@ Graphs are a powerful tool to model many phenomena.  The edges
 
 
 \begin{solution}
-    ants
+    \begin{itemize}
+        \item I stole this from the Wikipedia article on hypergraphs. There was no further citation. 
+            \\ Making the new vertex set $V' = V \cup \mathcal{E}$ in linear time is obvious. Here's how we'll make our new edge set $E'$.
+            \begin{algo}
+                $E' = \emptyset$
+                \\ for e in $\mathcal{E}$ \+
+                \\ for v in e \+
+                \\ $E' = E' \cup \{(v, e)\}$ 
+            \end{algo}
+            Our new regular graph is $G' = (V', E')$.
+            \\ This runs in $|V| + \sum_{e \in \mathcal{E}} |e|$. Then we just run some search to see whether $G'$ it is connected, which we know takes linear time.
+            \\ Note (as the Wikipedia writer did) that this graph $G'$ is bipartite. Therefore every path in $G'$ alternates between edges and vertices of $G$, fitting the definition of a path in a hypergraph. By the definition of the edge set $E'$, every vertex $v \in V$ in the path is in the edge $e \in \mathcal{E}$ before and after it in the path. Therefore every path in $G'$ is also a path in $G'$, so since we know that there is a path between any two vertices in $G'$, that path will take you between those two vertices in $G$ too.
+    \end{itemize}
 \end{solution}
 
 \HomeworkHeader{8}{2}	% homework number, problem number
