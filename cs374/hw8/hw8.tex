@@ -86,27 +86,34 @@ Graphs are a powerful tool to model many phenomena.  The edges
 \HomeworkHeader{8}{2}	% homework number, problem number
 
 \begin{quote}
-Let $G = (V, E)$ be a connected directed graph with non-negative
-  edge lengths, let $s$ and $t$ be vertices of $G$. Suppose you
-  computed the shortest path distances and a shortest path tree $T$
-  from $s$ using Dijkstra's algorithm.
-
+Let $G=(V,E)$ be a directed graph with edge lengths that can be
+  negative. Let $\ell(e)$ denote the length of edge $e \in E$ and
+  assume it is an integer. Assume you have a shortest path tree $T$
+  rooted at a source node $s$ that contains all the nodes in $V$. You
+  also have the distance values $d(s,u)$ for each $u \in V$ in an
+  array (thus, you can access the distance from $s$ to $u$ in $O(1)$
+  time). Note that the existence of $T$ implies that $G$ does not have
+  a negative length cycle. 
   \begin{itemize}
-  \item {\bf Not to submit:} Suppose you only computed the shortest
-    path distances and forgot to compute the tree $T$. Describe how
-    you can compute a shortest path tree in linear time.
-  \item After you did your shortest path computation you wanted to add
-    a new edge $e=(u,v)$ with length $\ell(e)$ to your graph. Of
-    course you can recompute the shortest path distances (and the tree) using Dijkstra's
-    algorithm in the graph $H$ which is the graph obtained from $G$ by
-    adding $(u,v)$. Describe a linear time algorithm that can do this
-    without running Dijkstra's algorithm again. It may help you to see
-    if the adding the edge would change any distances at all.
-  \item Now consider the case when you want to delete an edge
-    $e=(u,v)$ from the graph $G$. Describe a linear time algorithm that
-    computes the new shortest path distances from $s$ in the graph $G-e$.
+  \item  Let $e=(p,q)$ be an edge of $G$ that is {\em not} in
+    $T$. Show how to compute in $O(1)$ time the smallest
+    integer amount by which we can decrease $\ell(e)$ before $T$
+    is not a valid shortest path tree in $G$. Briefly justify the correctness of your solution.
+  \item Let $e=(p,q)$ be an edge in the tree $T$. Show how to
+  compute in $O(m+n)$ time the smallest integer amount by which we can 
+  increase $\ell(e)$ such that $T$ is no longer a valid shortest path tree. 
+  Your algorithm should output $\infty$ if no amount of increase will
+  change the shortest path tree. Briefly justify the correctness of your solution.
   \end{itemize}
-  Briefly justify the correctness of your algorithms.
+  The example below may help you. The dotted 
+ edges form the shortest path tree $T$ and the distances to the nodes
+  from $s$ are shown inside the circles. For the first part consider
+  an edge such as $(b,d)$ and for the second part consider an edge
+  such as $(f,e)$.
+\begin{figure}[h]
+  \centering
+  \includegraphics[height=2.5in]{example}
+\end{figure}
 \end{quote}
 \hrule
 
