@@ -89,9 +89,19 @@ Graphs are a powerful tool to model many phenomena.  The edges
                 \\ for v in e \+
                 \\ $E' = E' \cup \{(v, e)\}$ 
             \end{algo}
-            Our new regular graph is $G' = (V', E')$.
-            \\ This runs in $|V| + \sum_{e \in \mathcal{E}} |e|$. Then we just run some search to see whether $G'$ it is connected, which we know takes linear time.
-            \\ Note (as the Wikipedia writer did) that this graph $G'$ is bipartite. Therefore every path in $G'$ alternates between edges and vertices of $G$, fitting the definition of a path in a hypergraph. By the definition of the edge set $E'$, every vertex $v \in V$ in the path is in the edge $e \in \mathcal{E}$ before and after it in the path. Therefore every path in $G'$ is also a path in $G'$, so since we know that there is a path between any two vertices in $G'$, that path will take you between those two vertices in $G$ too.
+            Our new regular undirected graph is $G' = (V', E')$.
+            \\ This runs in $|V| + |\mathcal{E}| + \sum_{e \in \mathcal{E}} |e| = O(|V| +\sum_{e \in \mathcal{E}}|e|)$. Then we just run some search to see whether $G'$ it is connected, which we know takes linear time.
+            \\ Now let's prove that if some graph $G'$ so constructed is connected, then the original hypergraph $G$ is also connected. Note that this graph $G'$ is bipartite, with the two partitions being hyperedges and vertices. Obviously, no hyperedge is adjacent to any other hyperedge, nor is any vertex adjacent to any other vertex. Since it's connected, we know that for every pair of distinct vertices $(u, v) \mid u, v \in V$, there is some path going between $u$ and $v$. Note that we can say this for a bunch of other pairs too, but we don't care about them. Since $G'$ is bipartite, any path in $G'$ alternates between edges and vertices of $G$. We also know by the definition of $E'$ that there is an edge $(u \in V, v \in \mathcal{E})$ iff $u \in v$. Therefore, we know that for some path $x_1, e_1, x_2, e_2,\ldots, e_k, x_k$, for any $j$ from $1$ to $k - 1$ inclusive, $x_j \in e_j$ and $x_{j+1} \in e_j$.
+            \\ This fits the definition of a path in a hypergraph. Therefore, we know that there is a path between any two vertices $u, v \in V$ in $G$, so $G$ is connected.
+        \item We can model this situation as a hypergraph by making groups into hyperedges and individuals into vertices. You have a vertex for every user of the services, and every hyperedge contains all the vertices that are in the corresponding group. Here's what it looks like mathematically. 
+            \[
+                V = \{\text{All the people using AppWhats}\}
+            \]
+            \[
+                \mathcal{E} = \{\{\text{All the people in group $g$}\} \text{for each group $g$ on the service}\}
+            \]
+            The answer to this problem would be the length of the shortest path between $u$ and $v$. We can use the definition of a path from above and we can say that the length of some path $P$ is the count of elements $e \in P$ such that $e \in V$.
+            \\ To implement this, we just transform the hypergraph to a regular graph as above and then run BFS from $u$ until we find $v$. If we keep track of each node's parent in the BFS tree, we can just climb up from $v$ to $u$ and count all the vertices $v \in V$ we find along the way. 
     \end{itemize}
 \end{solution}
 
@@ -122,17 +132,16 @@ Let $G=(V,E)$ be a directed graph with edge lengths that can be
   from $s$ are shown inside the circles. For the first part consider
   an edge such as $(b,d)$ and for the second part consider an edge
   such as $(f,e)$.
-\begin{figure}[h]
-  \centering
-  \includegraphics[height=2.5in]{example}
-\end{figure}
 \end{quote}
 \hrule
 
 
 
 \begin{solution}
-    beetles
+    \begin{itemize}
+        \item Just to avoid any confusion, our edge $e = (p, q)$ starts at $p$ and goes to $q$. The real goal here is to decrease $\ell(e)$ until it is becomes the shortest path from $p$ to $q$. We can find the distance expended getting from $p$ to $q$; it's just $d(s, q) - d(s, p)$. If we make $\ell(e) < d(s, q) - d(s, p)$, then the path from $p$ to $q$ in $T$ will no longer be the shortest path, but rather taking $e$ directly will. Thus, decrementing $\ell(e)$ by $-(d(s, q) - d(s, p) - 1 - \ell(e))$ will invalidate your tree.
+        \item THIS ISN'T DONE YET. I think what you do is do a topological sort on T. Then you go through all the other edges not in T starting from p and use the same idea as last time to figure out how much it would take to make them part of the tree (which would make this edge probably not part of the tree) and find the min. Although that woudln't work for fe. You would have to make sure the graph sans your edge is still connected first. Or maybe it has something to do with cut edges and subtrees and stuff. I think if you find all the edges not in t that start before your edge in the topological sort and end after, then you find the min change that would be needed to make one of them kick out e, then maybe you'd be set? I'm not sure. None of this is right.
+    \end{itemize}
 \end{solution}
 
 \HomeworkHeader{8}{3}	% homework number, problem number
