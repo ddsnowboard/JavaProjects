@@ -139,8 +139,24 @@ Let $G=(V,E)$ be a directed graph with edge lengths that can be
 
 \begin{solution}
     \begin{itemize}
-        \item Just to avoid any confusion, our edge $e = (p, q)$ starts at $p$ and goes to $q$. The real goal here is to decrease $\ell(e)$ until it is becomes the shortest path from $p$ to $q$. We can find the distance expended getting from $p$ to $q$; it's just $d(s, q) - d(s, p)$. If we make $\ell(e) < d(s, q) - d(s, p)$, then the path from $p$ to $q$ in $T$ will no longer be the shortest path, but rather taking $e$ directly will. Thus, decrementing $\ell(e)$ by $-(d(s, q) - d(s, p) - 1 - \ell(e))$ will invalidate your tree.
-        \item THIS ISN'T DONE YET. I think what you do is do a topological sort on T. Then you go through all the other edges not in T starting from p and use the same idea as last time to figure out how much it would take to make them part of the tree (which would make this edge probably not part of the tree) and find the min. Although that woudln't work for fe. You would have to make sure the graph sans your edge is still connected first. Or maybe it has something to do with cut edges and subtrees and stuff. I think if you find all the edges not in t that start before your edge in the topological sort and end after, then you find the min change that would be needed to make one of them kick out e, then maybe you'd be set? I'm not sure. None of this is right.
+        \item Just to avoid any confusion, our edge $e = (p, q)$ starts at $p$ and goes to $q$. The real goal here is to decrease $\ell(e)$ until it is becomes the shortest path from $p$ to $q$. We can find the distance expended getting from $p$ to $q$; it's just $d(s, q) - d(s, p)$. If we make $\ell(e) < d(s, q) - d(s, p)$, then the path from $p$ to $q$ in $T$ will no longer be the shortest path, but rather taking $e$ directly will, or it could create a negative-length cycle. Thus, decrementing $\ell(e)$ by $-(d(s, q) - d(s, p) - 1 - \ell(e))$ will invalidate your tree.
+        \item This is close to working, but it needs to have some idea of dependency. You have to have some idea of an edge that crosses from "before" to "after" the edge in question or else changes in $e$ won't matter. I'm not sure how to quantify dependence though. Topological sort has too many variables because we can't be sure that $b$ coming after $a$ means $b$ depends on $a$, only the other way around. We could just try a bunch of things but that would be too slow, I suspect. If we could only pick edges that have the dependence structure we want, then we'd be set. I just don't know how to find them fast.
+            \begin{algo}
+                SmallestIncrease($e = (p, q)$) \+
+                \\ if q has no incoming edges other than p, return $\infty$
+                \\ outChanges = $\emptyset$
+                \\ for each edge $(p, m)$ where $(p, m) \not \in T$ \+
+                \\ outChanges = outChanges $\cup \{d(s, p) + \ell((p, m)) - d(s, m) + 1\}$ \-
+                \\ smallestOutChange = min(outChanges)
+                \\ inChanges = $\emptyset$
+                \\ for each edge $(a, q)$ where $(a, q) \not \in T$ \+
+                \\ inChanges = inChanges $\cup \{d(s, a) + \ell((a, q)) - d(s, q) + 1$ \-
+                \\ smallestInChange = min(inChanges)
+                \\ return max(smallestInChange, smallestOutChange)
+            \end{algo}
+            \begin{algo}
+                smallestIncrease = $\ell((a, b)) - d(s, b) + 1$
+            \end{algo}
     \end{itemize}
 \end{solution}
 
