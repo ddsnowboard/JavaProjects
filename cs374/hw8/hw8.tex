@@ -139,24 +139,24 @@ Let $G=(V,E)$ be a directed graph with edge lengths that can be
 
 \begin{solution}
     \begin{itemize}
-        \item Just to avoid any confusion, our edge $e = (p, q)$ starts at $p$ and goes to $q$. The real goal here is to decrease $\ell(e)$ until it is becomes the shortest path from $p$ to $q$. We can find the distance expended getting from $p$ to $q$; it's just $d(s, q) - d(s, p)$. If we make $\ell(e) < d(s, q) - d(s, p)$, then the path from $p$ to $q$ in $T$ will no longer be the shortest path, but rather taking $e$ directly will, or it could create a negative-length cycle. Thus, decrementing $\ell(e)$ by $-(d(s, q) - d(s, p) - 1 - \ell(e))$ will invalidate your tree.
-        \item This is close to working, but it needs to have some idea of dependency. You have to have some idea of an edge that crosses from "before" to "after" the edge in question or else changes in $e$ won't matter. I'm not sure how to quantify dependence though. Topological sort has too many variables because we can't be sure that $b$ coming after $a$ means $b$ depends on $a$, only the other way around. We could just try a bunch of things but that would be too slow, I suspect. If we could only pick edges that have the dependence structure we want, then we'd be set. I just don't know how to find them fast.
+        \item Just to avoid any confusion, our edge $e = (p, q)$ starts at $p$ and goes to $q$. The real goal here is to decrease $\ell(e)$ until it becomes the shortest path from $p$ to $q$. We can find the distance expended getting from $p$ to $q$; it's just $d(s, q) - d(s, p)$. If we make $\ell(e) < d(s, q) - d(s, p)$, then the path from $p$ to $q$ in $T$ will no longer be the shortest path, but rather taking $e$ directly will, or it could create a negative-length cycle. Thus, decrementing $\ell(e)$ by $-(d(s, q) - d(s, p) - 1 - \ell(e))$ will invalidate your tree.
+        \item If I do a DFS on T, I can find the discovery times for every node. Using those, I can easily find whether one depends on another. If I find edges that go from a node whose weight is independent of $\ell(e)$ to one whose weight depends on $\ell(e)$, then I know that that edge could become part of T if I increase $\ell(e)$ enough (or, failing that, it could show some shorter path than T somewhere else). 
             \begin{algo}
-                SmallestIncrease($e = (p, q)$) \+
-                \\ if q has no incoming edges other than p, return $\infty$
-                \\ outChanges = $\emptyset$
-                \\ for each edge $(p, m)$ where $(p, m) \not \in T$ \+
-                \\ outChanges = outChanges $\cup \{d(s, p) + \ell((p, m)) - d(s, m) + 1\}$ \-
-                \\ smallestOutChange = min(outChanges)
-                \\ inChanges = $\emptyset$
-                \\ for each edge $(a, q)$ where $(a, q) \not \in T$ \+
-                \\ inChanges = inChanges $\cup \{d(s, a) + \ell((a, q)) - d(s, q) + 1$ \-
-                \\ smallestInChange = min(inChanges)
-                \\ return max(smallestInChange, smallestOutChange)
+                Depends(A, B) \+
+                \\ // Does A depend on B (ie, if B's distance increases, will A's increase too?)
+                \\ // Note that every node depends on itself
+                \\ return A.startTime $\leq$ B.startTime \&\& B.endTime $\leq$ A.endTime \-
+
+                \\ SmallestIncrease($e = (p, q)$) \+
+                \\ Explore T using DFS, placing startTime and endTime on each node 
+                \\ changes = $\{\infty\}$
+                \\ for each edge $(a, b)$ where $(a, b) \not \in T$ and Depends($p, a$) and Depends($b, q$) \+
+                \\ changes = changes $\cup \{d(s, p) + \ell((a, b)) - d(s, m) + 1\}$ \-
+                \\ smallestChange = min(changes)
+                \\ return smallestChange
             \end{algo}
-            \begin{algo}
-                smallestIncrease = $\ell((a, b)) - d(s, b) + 1$
-            \end{algo}
+            If I increase the weight of $e$ such that the distance from some vertex $a$ to another $b$ is greater than some extant edge not in $T$ $(a, b)$, we are guaranteed that $T$ is no longer valid, since $(a, b)$ is shorter than the path in $T$ going from $a$ to $b$.
+            \\ I know DFS takes $O(|V| + |E|)$ time, and I'm doing a constant amount of work for each edge, so that part of the algorithm takes $O(|E|)$ time, so the whole algorithm takes $O(|V|+|E|)$ time. 
     \end{itemize}
 \end{solution}
 
@@ -193,6 +193,10 @@ Since you are taking an algorithms class you decided to create a
 
 
 \begin{solution}
-    Rocks
+    If you have a strongly-connected graph, this is trivial; since you can get to any vertex from any other, you can get to every house in your neighborhood no matter where you start. If you have a DAG, you can use DP to find the maximum by saying that the maximum candy available in any subtree is the candy available at the root added to the most candy available by going through any of the root's children. 
+    \\ \\ If you run the linear-time SCC algorithm, you have a DAG of strongly connected graphs. From here this is pretty simple: for every node of the meta-graph $v$, you say $w(v) = \text{sum}(w(v') \mid v' \in v)$. Make a topological sort $L[1..n]$ on the meta-graph. For each $L[i]$ for $i$ from $n\ldots 1$, set $L[i].max = w(L[i]) + max(\{w(p) \mid \text{$p$ is a child of $L[i]$}\})$. The answer will be $s.max$. 
+    \\ For part 2, do the same thing as above, except instead of returning $s.max$, find the node $n$ such that $n.max$ is maximized.
+
+    \\ We know making the SCC meta-graph takes linear time. Getting the weights of all the strongly-connected components takes linear time since each vertex in the original graph is counted only once. Topological sorting is just DFS, which takes linear time. Calculating $L[i].max$ for every node takes linear time because each node is child to at most one other node, so we see each node a constant number of times. Finally, looping through all the vertices to get the answer for part 2 is obviously linear time. Therefore, this whole algorithm takes linear time.
 \end{solution}
 \end{document}
