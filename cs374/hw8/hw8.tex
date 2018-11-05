@@ -82,6 +82,7 @@ Graphs are a powerful tool to model many phenomena.  The edges
 \begin{solution}
     \begin{itemize}
         \item I stole this from the Wikipedia article on hypergraphs. There was no further citation. 
+            \\ The idea here is that you're modeling each connection of two vertices through a hyperedge as a normal edge from the first vertex to the hyperedge itself and another edge from the hyperedge to the second vertex. Each hyperedge is adjacent to all the vertices that it connects in the hypergraph.
             \\ Making the new vertex set $V' = V \cup \mathcal{E}$ in linear time is obvious. Here's how we'll make our new edge set $E'$.
             \begin{algo}
                 $E' = \emptyset$
@@ -91,7 +92,7 @@ Graphs are a powerful tool to model many phenomena.  The edges
             \end{algo}
             Our new regular undirected graph is $G' = (V', E')$.
             \\ This runs in $|V| + |\mathcal{E}| + \sum_{e \in \mathcal{E}} |e| = O(|V| +\sum_{e \in \mathcal{E}}|e|)$. Then we just run some search to see whether $G'$ it is connected, which we know takes linear time.
-            \\ Now let's prove that if some graph $G'$ so constructed is connected, then the original hypergraph $G$ is also connected. Note that this graph $G'$ is bipartite, with the two partitions being hyperedges and vertices. Obviously, no hyperedge is adjacent to any other hyperedge, nor is any vertex adjacent to any other vertex. Since it's connected, we know that for every pair of distinct vertices $(u, v) \mid u, v \in V$, there is some path going between $u$ and $v$. Note that we can say this for a bunch of other pairs too, but we don't care about them. Since $G'$ is bipartite, any path in $G'$ alternates between edges and vertices of $G$. We also know by the definition of $E'$ that there is an edge $(u \in V, v \in \mathcal{E})$ iff $u \in v$. Therefore, we know that for some path $x_1, e_1, x_2, e_2,\ldots, e_k, x_k$, for any $j$ from $1$ to $k - 1$ inclusive, $x_j \in e_j$ and $x_{j+1} \in e_j$.
+            \\ \\ Now let's prove that if some graph $G'$ so constructed is connected, then the original hypergraph $G$ is also connected. Note that this graph $G'$ is bipartite, with the two partitions being hyperedges and vertices. Obviously, no hyperedge is adjacent to any other hyperedge, nor is any vertex adjacent to any other vertex. Since it's connected, we know that for every pair of distinct vertices $(u, v) \mid u, v \in V$, there is some path going between $u$ and $v$. Note that we can say this for a bunch of other pairs too, but we don't care about them. Since $G'$ is bipartite, any path in $G'$ alternates between edges and vertices of $G$. We also know by the definition of $E'$ that there is an edge $(u \in V, v \in \mathcal{E})$ iff $u \in v$. Therefore, we know that for some path $x_1, e_1, x_2, e_2,\ldots, e_k, x_k$, for any $j$ from $1$ to $k - 1$ inclusive, $x_j \in e_j$ and $x_{j+1} \in e_j$.
             \\ This fits the definition of a path in a hypergraph. Therefore, we know that there is a path between any two vertices $u, v \in V$ in $G$, so $G$ is connected.
         \item We can model this situation as a hypergraph by making groups into hyperedges and individuals into vertices. You have a vertex for every user of the services, and every hyperedge contains all the vertices that are in the corresponding group. Here's what it looks like mathematically. 
             \[
@@ -100,8 +101,8 @@ Graphs are a powerful tool to model many phenomena.  The edges
             \[
                 \mathcal{E} = \{\{\text{All the people in group $g$}\} \text{for each group $g$ on the service}\}
             \]
-            The answer to this problem would be the length of the shortest path between $u$ and $v$. We can use the definition of a path from above and we can say that the length of some path $P$ is the count of elements $e \in P$ such that $e \in V$.
-            \\ To implement this, we just transform the hypergraph to a regular graph as above and then run BFS from $u$ until we find $v$. If we keep track of each node's parent in the BFS tree, we can just climb up from $v$ to $u$ and count all the vertices $v \in V$ we find along the way. 
+            The answer to this problem would be the length of the shortest path between $u$ and $v$. We can use the definition of a path from above and we can say that the length of some path $P$ is the count of elements $e \in P$ where $e \in V$.
+            \\ To implement this, we just transform the hypergraph to a regular graph as above and then run BFS from $u$ until we find $v$. If we keep track of each node's parent in the BFS tree, we can just climb up from $v$ to $u$ and count all the vertices $v \in V$ we find along the way. We showed above that the transformation takes linear time, and we know BFS takes linear time. Climbing back up the tree will take at most linear time since we'll see each node at most once. Therefore, the whole algorithm will run in linear time.
     \end{itemize}
 \end{solution}
 
@@ -139,8 +140,8 @@ Let $G=(V,E)$ be a directed graph with edge lengths that can be
 
 \begin{solution}
     \begin{itemize}
-        \item Just to avoid any confusion, our edge $e = (p, q)$ starts at $p$ and goes to $q$. The real goal here is to decrease $\ell(e)$ until it becomes the shortest path from $p$ to $q$. We can find the distance expended getting from $p$ to $q$; it's just $d(s, q) - d(s, p)$. If we make $\ell(e) < d(s, q) - d(s, p)$, then the path from $p$ to $q$ in $T$ will no longer be the shortest path, but rather taking $e$ directly will, or it could create a negative-length cycle. Thus, decrementing $\ell(e)$ by $-(d(s, q) - d(s, p) - 1 - \ell(e))$ will invalidate your tree.
-        \item If I do a DFS on T, I can find the discovery times for every node. Using those, I can easily find whether one depends on another. If I find edges that go from a node whose weight is independent of $\ell(e)$ to one whose weight depends on $\ell(e)$, then I know that that edge could become part of T if I increase $\ell(e)$ enough (or, failing that, it could show some shorter path than T somewhere else). 
+        \item Just to avoid any confusion, our edge $e = (p, q)$ starts at $p$ and goes to $q$. We can find the distance expended getting from $p$ to $q$ along $T$; it's just $d(s, q) - d(s, p)$. If we make $\ell(e) < d(s, q) - d(s, p)$, then the path from $p$ to $q$ in $T$ will no longer be the shortest path, but rather taking $e$ directly will. If $e$ is a "forward" edge, $e$ will become part of $T$. If $e$ is a "back edge," it will create a negative-length cycle. Either way, $T$ will no longer be valid. Thus, decrementing $\ell(e)$ by $-(d(s, q) - d(s, p) - 1 - \ell(e))$ will invalidate your tree.
+        \item If I do a DFS on T, I can find the discovery times for every node. Using those, I can easily find whether one depends on another. If I find edges not in $T$ that go from a node whose weight is independent of $\ell(e)$ to one whose weight depends on $\ell(e)$, then I know that that edge could become part of T if I increase $\ell(e)$ enough (or, failing that, it could show some shorter path than T somewhere else). Basically, I'm finding "forward edges" $f \not \in T$ that can bypass $e$ and then increasing $\ell(e)$ until $f$ is in the shortest path.
             \begin{algo}
                 Depends(A, B) \+
                 \\ // Does A depend on B (ie, if B's distance increases, will A's increase too?)
@@ -151,7 +152,7 @@ Let $G=(V,E)$ be a directed graph with edge lengths that can be
                 \\ Explore T using DFS, placing startTime and endTime on each node 
                 \\ changes = $\{\infty\}$
                 \\ for each edge $(a, b)$ where $(a, b) \not \in T$ and Depends($p, a$) and Depends($b, q$) \+
-                \\ changes = changes $\cup \{d(s, p) + \ell((a, b)) - d(s, m) + 1\}$ \-
+                \\ changes = changes $\cup \{d(s, p) + \ell((a, b)) - d(s, q) + 1\}$ \-
                 \\ smallestChange = min(changes)
                 \\ return smallestChange
             \end{algo}
@@ -194,9 +195,9 @@ Since you are taking an algorithms class you decided to create a
 
 \begin{solution}
     If you have a strongly-connected graph, this is trivial; since you can get to any vertex from any other, you can get to every house in your neighborhood no matter where you start. If you have a DAG, you can use DP to find the maximum by saying that the maximum candy available in any subtree is the candy available at the root added to the most candy available by going through any of the root's children. 
-    \\ \\ If you run the linear-time SCC algorithm, you have a DAG of strongly connected graphs. From here this is pretty simple: for every node of the meta-graph $v$, you say $w(v) = \text{sum}(w(v') \mid v' \in v)$. Make a topological sort $L[1..n]$ on the meta-graph. For each $L[i]$ for $i$ from $n\ldots 1$, set $L[i].max = w(L[i]) + max(\{w(p) \mid \text{$p$ is a child of $L[i]$}\})$. The answer will be $s.max$. 
-    \\ For part 2, do the same thing as above, except instead of returning $s.max$, find the node $n$ such that $n.max$ is maximized.
-
-    \\ We know making the SCC meta-graph takes linear time. Getting the weights of all the strongly-connected components takes linear time since each vertex in the original graph is counted only once. Topological sorting is just DFS, which takes linear time. Calculating $L[i].max$ for every node takes linear time because each node is child to at most one other node, so we see each node a constant number of times. Finally, looping through all the vertices to get the answer for part 2 is obviously linear time. Therefore, this whole algorithm takes linear time.
+    \\ \\ If you run the linear-time SCC algorithm, you have a DAG of strongly connected graphs. From here this is pretty simple: for every node of the meta-graph $v$, you say $w(v) = \text{sum}(w(v') \mid v' \in v)$. Make a topological sort $L[1..n]$ on the meta-graph. For each $L[i]$ for $i$ from $n\ldots 1$, set $L[i].max = w(L[i]) + max(\{w(p) \mid \text{$p$ is a child of $L[i]$}\})$. We'll say that calling $max()$ on an empty set returns 0, since that's what our base case (a leaf) will look like. $s.max$ will contain your answer.
+    \\ \\ We know this works from an induction proof. We can induct on the height of our tree. For a tree of height 0 (a leaf node, ie, a house at the end of a one-way dead-end street), the optimal solution is obviously to get candy from that house. For some tree of height $h \geq 1$, let's first assume we know how to find out the maximum candy gained from any tree of height $n < h$. You should obviously get candy from the root, since that has no opportunity cost, and then pick the road starting at the root that leads to the greatest total candy, which we know how to calculate since all those trees have heights less than $h$. This is what our algorithm does, so it should work.
+    \\ \\ For part 2, do the same thing as above, except instead of returning $s.max$, find the node $n$ such that $n.max$ is maximized.
+    \\ \\ We know making the SCC meta-graph takes linear time. Getting the weights of all the strongly-connected components takes linear time since each vertex in the original graph is counted only once. Topological sorting is just DFS, which takes linear time. Calculating $L[i].max$ for every node takes linear time because each node is child to at most one other node, so we see each node a constant number of times. Finally, looping through all the vertices to get the answer for part 2 is obviously linear time. Therefore, this whole algorithm takes linear time.
 \end{solution}
 \end{document}
