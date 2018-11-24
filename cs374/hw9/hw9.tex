@@ -1,0 +1,180 @@
+% ---------
+%  Compile with "pdflatex hw0".
+% --------
+%!TEX TS-program = pdflatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[11pt]{article}
+\usepackage{jeffe,handout,graphicx}
+\usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
+
+%  Redefine suits
+\usepackage{pifont}
+\def\Spade{\text{\ding{171}}}
+\def\Heart{\text{\textcolor{Red}{\ding{170}}}}
+\def\Diamond{\text{\textcolor{Red}{\ding{169}}}}
+\def\Club{\text{\ding{168}}}
+
+\def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
+\def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
+
+
+% =====================================================
+%   Define common stuff for solution headers
+% =====================================================
+\Class{CS/ECE 374}
+\Semester{Fall 2018}
+\Authors{1}
+\AuthorOne{Will Koster}{jameswk2@illinois.edu}
+%\Section{}
+
+% =====================================================
+\begin{document}
+
+% ---------------------------------------------------------
+
+
+\HomeworkHeader{9}{1}	% homework number, problem number
+
+\begin{quote}
+Spanning trees have many nice algorithmic properties and are useful
+  in a number of applications. For those interested, see the connection
+  to abstract structures called matroids.
+  \begin{itemize}
+  \item Consider the following ``local-search'' algorithm for MST.  It
+    starts with an arbitrary spanning tree $T$ of $G$. Suppose
+    $e=(u,v)$ is an edge in $G$ that is not in $T$. It checks if it
+    can add $e$ to $T$ and remove an edge $e'$ on the unique path
+    $p_T(u,v)$ from $u$ to $v$ in $T$ such that tree $T' = T - e' + e$
+    is cheaper than $T$.  If $T'$ is cheaper then it replaces $T$ by
+    $T'$ and repeats. Assuming all edge weights are integers one can
+    see that the algorithm will terminate with a ``local-optimum'' $T$
+    which means it cannot be improved further by these single-edge
+    ``swaps''.  Assuming all edge weghts are distinct prove that a
+    local-optimum tree is an MST. Note that you are not concerned with
+    the running time here.
+  \item We saw in lecture that Borouvka's algorithm for MST can be
+  implemented in $O(m \log n)$ time where $m$ is the number of edges
+  and $n$ is the number of nodes. We also saw that Prim's algorithm
+  can be implemented in $O(m + n \log n)$ time.
+  Obtain an algorithm
+    for MST with running time $O(m \log \log n)$ by running Borouvka's
+    algorithm for some number of steps and then switching to Prim's
+    algorithm. This algorithm is better than either of the algorithms
+    when $m = \Theta(n)$. Formalize the algorithm, specify the
+    parameters and argue carefully about the implementation and running
+    time details. No proof of correctness required but your algorithm should be
+    clear.
+  \end{itemize}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+    \begin{itemize}
+        \item Assume the contrary. That is, assume that we have some local-optimum tree $T$ that is not an MST. 
+            \\ Since all edge weights are distinct, we know there exists exactly one MST $M$ for this graph. 
+            From our given assumption, it differs from $T$ in some way. Since we know all spanning trees have $|V| - 1$ edges, 
+            we know that there is some edge $e_1$ that appears only in $T$. If we make a new graph $M' = M \cup \{e_1\}$, we know there
+            will be a cycle since $M$ is a spanning tree. If there is some other edge $e_2$ in the cycle that has smaller weight 
+            than $e_1$, then we have a contradiction, since our local search algorithm would have found this edge and never would have
+            given us $T$. If $e_1$ is the smallest edge, then we have another contradiction, since $e_1$ would have to be in any MST, 
+            but it isn't in $M$. Since we have a contradiction in either case, we prove the contrary, that any such local-optimum tree is an MST.
+    \end{itemize}
+\end{solution}
+
+\HomeworkHeader{9}{2}	% homework number, problem number
+
+\begin{quote}
+Suppose you have just purchased a new type of hybrid car that
+  uses fuel extremely efficiently, but can only travel $100$ miles on a
+  single battery. The car’s fuel is stored in a single-use battery,
+  which must be replaced after at most $100$ miles. The actual fuel is
+  virtually free, but the batteries are expensive and can only be
+  installed by licensed battery-replacement technicians. Thus, even if
+  you decide to replace your battery early, you must still pay full
+  price for the new battery to be installed. Moreover, because these
+  batteries are in high demand, no one can afford to own more than one
+  battery at a time.  Suppose you are trying to get from San Francisco
+  to New York City on the new InterContinental Super-Highway, which
+  runs in a direct line between these two cities. There are several
+  fueling stations along the way; each station charges a different
+  price for installing a new battery. Before you start your trip, you
+  carefully print the Wikipedia page listing the locations and prices
+  of every fueling station on the ICSH.
+
+  Given this information, how do
+  you decide the best places to stop for fuel?  More formally, suppose
+  you are given two arrays $D[1 .. n]$ and $C[1 .. n]$, where $D[i]$ is the
+  distance from the start of the highway to the ith station, and $C[i]$
+  is the cost to replace your battery at the $i$th station. Assume that
+  your trip starts and ends at fueling stations (so $D[1] = 0$ and $D[n]$
+  is the total length of your trip), and that your car starts with an
+  empty battery (so you must install a new battery at station $1$).
+
+
+  \begin{itemize}
+  \item   Describe and analyze a greedy algorithm to find the minimum number
+  of refueling stops needed to complete your trip. Don’t forget to
+  prove that your algorithm is correct.
+\item But what you really want
+  to minimize is the total cost of travel. Show that your greedy
+  algorithm in the preceding part does not produce an optimal solution when
+  extended to this setting.
+  \end{itemize}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+test
+\end{solution}
+
+\HomeworkHeader{9}{3}	% homework number, problem number
+
+\begin{quote}
+Define a TM generator (or enumerator) $G$ as a TM with a single
+  work tape, but also a special write-only output tape that starts
+  with $\#$ at the left most cell, and the write head one cell to the
+  right of that.  Assume for simplicity that the input alphabet is
+  binary.  From time to time, depending on its computation on the work
+  tape, the generator may write a character on the output tape and
+  move the output head to the right.  It is said to generate a word
+  $w$ if at some point in time, $\#w\#$ is on the output tape. The
+  language generated by $G$, denoted by $L(G)$, is the set of all
+  strings that $G$ ever generates.
+  \begin{itemize}
+  \item A generator $G$ is well-behaved if the strings it generates
+    are lexicographically ordered. Prove that a language $L$ is
+    recursive if and only if there is a well-behaved generator $G$ such
+    that $L=L(G)$. Note that you need
+    to show both directions separately. {\em Hint:} Treat the case of finite and
+    infinite languages separately.
+
+  \item Prove that a language $L$ is recursively enumerable if and
+    only if $L = L(G)$ for some TM generator $G$. Note that you need
+    to show both directions separately. {\em Hint:} Use the idea of
+    dovetailing.
+  \end{itemize}
+  In proving the statement it suffices to show a construction. We
+  describe one case. Suppose you want to show that $L$ is recursively
+  enumerable implies that there is a generator $G$ such that
+  $L = L(G)$. In order to prove this you need to come up with an
+  algorithm that uses, as its input, a description/code
+  $\langle M \rangle$ of a TM $M$ and outputs the description/code
+  $\langle G \rangle$ of generator TM $G$ such that $L(G) = L(M)$.  You
+  do not have to actually prove the correctness of your algorithm as long as
+  the description is clear.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+test
+\end{solution}
+\end{document}
