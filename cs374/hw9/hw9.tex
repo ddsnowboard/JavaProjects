@@ -82,7 +82,15 @@ Spanning trees have many nice algorithmic properties and are useful
             will be a cycle since $M$ is a spanning tree. If there is some other edge $e_2$ in the cycle that has smaller weight 
             than $e_1$, then we have a contradiction, since our local search algorithm would have found this edge and never would have
             given us $T$. If $e_1$ is the smallest edge, then we have another contradiction, since $e_1$ would have to be in any MST, 
-            but it isn't in $M$. Since we have a contradiction in either case, we prove the contrary, that any such local-optimum tree is an MST.
+            but it isn't in $M$. Since we have a contradiction in either case, we prove the contrary, that any local-optimum tree is an MST.
+        \item If you run Borouvka's algorithm on some graph $G = (V, E)$ until you have $\log |V|$ components $c \in C$ and then run Prim's algorithm on the new graph $G' = (C, \{(u, v) \mid \exists (a, b) \in E \text{ st } (a \in u) \land (b \in v)\}$ your algorithm will run
+            in $O(m\log\log n)$ time. 
+            "Component" means the trees that are built up and connected when running Borouvka's algorithm. Thus, every round of Borouvka's algorithm halves your number of components. 
+            \\ Each iteration of Borouvka's takes $O(m)$, and since we only need to reduce our graph to $\log n$ components,
+            instead of $1$, we only have to run $\log \log n$ iterations,
+            meaning that part of the algorithm takes $O(m \log \log n)$ time. We will call Prim's with $O(m)$ edges and $O(\log n)$ vertices, meaning that it will run in $O(m + \log n \log \log n)$ time.
+            This means the whole algorithm will run in $O(m \log \log n + \log n \log \log n)$ time. Assuming a connected graph, we know that $m \geq n - 1$,
+            so this becomes $O(m \log \log n)$.
     \end{itemize}
 \end{solution}
 
@@ -117,10 +125,10 @@ Suppose you have just purchased a new type of hybrid car that
 
 
   \begin{itemize}
-  \item   Describe and analyze a greedy algorithm to find the minimum number
+    \item   Describe and analyze a greedy algorithm to find the minimum number
   of refueling stops needed to complete your trip. Don’t forget to
   prove that your algorithm is correct.
-\item But what you really want
+    \item   But what you really want
   to minimize is the total cost of travel. Show that your greedy
   algorithm in the preceding part does not produce an optimal solution when
   extended to this setting.
@@ -131,7 +139,20 @@ Suppose you have just purchased a new type of hybrid car that
 
 
 \begin{solution}
-test
+    \begin{itemize}
+    \item The idea behind this is that you'll stop at a filling station if and only if you can't make it to the next one. This function returns the number of stops you need to make if you last
+        refilled at station $i$ and start at station $j$. Also note that $D[0] = -\infty$. Call $CountStops(0, 1)$ to get the answer.
+        \[
+            \emph{CountStops}(i, j) = 
+            \begin{cases} 
+                \emph{CountStops}(i, j + 1) & D[j + 1] - D[i] \leq 100 \\
+                            1 + \emph{CountStops}(j, j + 1) & \text{otherwise}
+            \end{cases}
+            \]
+        Let's prove that this works. Let $S$ be some optimal route starting from some $j$ having last gotten fuel at stop $i$, and let $P$ be the schedule that our algorithm generates from that same $i$ and $j$. Say that $S$ and $P$ differ in their decision about whether to stop at $j$. If $P$ stops at $j$ and $S$ doesn't, then $S$ runs out of fuel by the definition of our function, ruling out this scenario entirely. 
+            If $S$ stops at $j$ and $P$ doesn't, first let's assume that $S$ stops again at some next station $n$. We know by the definition of our function that we can get to $j + 1$ without running out of fuel. If we get fuel there, we will have more fuel than the car following plan $S$ until both cars would get to $n$. Since the $S$ car can get to $n$, the $P$ car can too. If both cars get fuel at $n$, they will behave the same the rest of the way, so since we know that $S$ works, we know that $P$ works also. We exchanged $j$ for $j + 1$, meaning that $|S| = |P|$. Therefore, our algorithm also generates optimal plans.
+        \item After some geographical upheavals, San Francisco and New York are now 101 miles apart. If fuel in St. Louis, 50 miles from San Francisco, is \$$5$, and fuel in Philadelphia, 99 miles from San Francisco, is \$$10^{100}$, then this algorithm will take you to Philadelphia even though the optimal route stops only in St. Louis.
+    \end{itemize}
 \end{solution}
 
 \HomeworkHeader{9}{3}	% homework number, problem number
