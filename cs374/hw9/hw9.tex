@@ -196,6 +196,14 @@ Define a TM generator (or enumerator) $G$ as a TM with a single
 
 
 \begin{solution}
-test
+    \begin{itemize}
+        \item First let's prove that if you have some recursive language $L$ you can create a generator $G$ that writes it out in lexicographical order.
+            \\ Since $L$ is recursive, we have some machine $\langle M \rangle$ that can decide it. We can build a generator pretty easily. 
+            \begin{algo}
+                let your alphabet be called $\Sigma$
+                \\ iterate over all strings $s \in \Sigma$ in lexicographical order \+
+                \\ run $\langle M \rangle$ on $s$; if it succeeds, print $s$
+            \end{algo}
+    \end{itemize}
 \end{solution}
 \end{document}
