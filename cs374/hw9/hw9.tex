@@ -201,8 +201,47 @@ Define a TM generator (or enumerator) $G$ as a TM with a single
             \\ Since $L$ is recursive, we have some machine $\langle M \rangle$ that can decide it. We can build a generator pretty easily. 
             \begin{algo}
                 let your alphabet be called $\Sigma$
-                \\ iterate over all strings $s \in \Sigma$ in lexicographical order \+
-                \\ run $\langle M \rangle$ on $s$; if it succeeds, print $s$
+                \\ iterate over all strings $s \in \Sigma^*$ in lexicographical order \+
+                \\ run $\langle M \rangle$ on $s$; if it succeeds, print $s$ followed by a $\#$
+            \end{algo}
+            This will print everything in $L$ in lexicographical order, therefore it is well-behaved. 
+            \\ \\ Now let's assume we have some well-behaved generator $G$ that prints out some language $L = L(G)$. Let's prove that $L$ is recursive. 
+            \\ It's reasonably simple to build a machine $M$ that decides this language. The idea is basically to look through the output 
+            of $G$ until you either find your string or you can see that it will not appear due to the ordering of $G$'s output.
+            \begin{algo}
+                Input: $s$, a string to test
+                while true: \+
+                \\ Run $G$ until it prints an entire string $\ell \in L$ (ie, until it prints a some string and then a \#)
+                \\ if $s = \ell$, return true
+                \\ else if $s > \ell$ return false \-
+            \end{algo}
+            This is guaranteed to return true iff $s \in L$ and always halt. Since this machine exists, $L$ is recursive. 
+            
+        \item First let's assume we have some generator $G$ that prints some language $L = L(G)$. Let's prove that $L$ is recursively enumerable. 
+            We can build a machine $M$ that halts and accepts for any string $s \in L$ and will either halt and reject or not halt for a string $s \not \in L$.
+            \begin{algo}
+                Input: a string $s$
+                while true: \+
+                \\ Run $G$ until it prints an entire string $\ell \in L$ (ie, until it prints a some string and then a \#)
+                \\ if $s = \ell$, return true
+            \end{algo}
+            This will always halt eventually if $s \in L$. Since it exists, we know $L$ is recursively enumerable.
+            \\ \\ Now let's assume that we have some recursively enumerable language $L$ and prove that there is a generator $G$ such that $L = L(G)$.
+            \\ Since $L$ is recursively enumerable, we have some machine $M$ that will halt and accept on any input $s \in L$ and might halt and reject or might just run forever for an $s \not \in L$.
+            \\ The idea behind our machine will be to run some constant number of steps of $M$ for every possible string one after another, effectively doing every string "in parallel". Some versions of 
+            $M$ will never complete, but eventually a copy of $M$ will complete for every string in $L$, therefore this will print every string in $L$ eventually.
+            \\ \\ Given that, our machine looks like this
+            \begin{algo}
+                let your alphabet be $\Sigma = \{0, 1\}$
+                \\ let $d$ be an infinite array such that $d[i]$ shows a 
+                \\ Turing machine starting with the binary representation of $i$ as its input
+                \\ \\ while true \+
+                \\ for all $i$ from $0 \rightarrow \infty$ \+
+                \\ if $d[i]$ exists \+
+                \\ Run $M$ for 30 steps starting with the state written at $d[i]$ 
+                \\ Write the new state back in $d[i]$
+                \\ If $M$ accepted \+
+                \\ write out the binary representation of $i$ and delete $d[i]$.
             \end{algo}
     \end{itemize}
 \end{solution}
