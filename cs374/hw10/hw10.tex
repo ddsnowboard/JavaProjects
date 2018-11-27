@@ -1,0 +1,102 @@
+% ---------
+%  Compile with "pdflatex hw0".
+% --------
+%!TEX TS-program = pdflatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[11pt]{article}
+\usepackage{jeffe,handout,graphicx}
+\usepackage[utf8]{inputenc}		% Allow some non-ASCII Unicode in source
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
+
+%  Redefine suits
+\usepackage{pifont}
+\def\Spade{\text{\ding{171}}}
+\def\Heart{\text{\textcolor{Red}{\ding{170}}}}
+\def\Diamond{\text{\textcolor{Red}{\ding{169}}}}
+\def\Club{\text{\ding{168}}}
+
+\def\Cdot{\mathbin{\text{\normalfont \textbullet}}}
+\def\Sym#1{\textbf{\texttt{\color{BrickRed}#1}}}
+
+
+% =====================================================
+%   Define common stuff for solution headers
+% =====================================================
+\Class{CS/ECE 374}
+\Semester{Fall 2018}
+\Authors{1}
+\AuthorOne{Will Koster}{jameswk2@illinois.edu}
+%\Section{}
+
+% =====================================================
+\begin{document}
+
+% ---------------------------------------------------------
+
+
+\HomeworkHeader{10}{1}	% homework number, problem number
+
+\begin{quote}
+Consider the language $$L_{\text{374H}} = \{ \langle M\rangle
+      \mid M \text{~halts on at least 374 distinct input strings}\}.$$ Note that
+      for $\langle M\rangle \in L_{\text{374H}}$, it is not necessary
+      for $M$ to {\em accept} any string; it is sufficient for it to
+      {\em halt} on (and possibly reject) $374$ different strings. Prove that
+      $L_{\text{374H}}$ is undecidable.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+test
+\end{solution}
+
+\HomeworkHeader{10}{2}	% homework number, problem number
+
+\begin{quote}
+We call an undirected graph an \emph{eight-graph} if it has
+      an odd number of nodes, say $2n-1$, and consists of two cycles
+      $C_1$ and $C_2$ on $n$ nodes each and $C_1$ and $C_2$ share
+      exactly one node. See figure below for an eight-graph on $7$
+      nodes.
+
+  Given an undirected graph $G$ and an integer $k$, the EIGHT
+  problem asks whether or not there exists a subgraph which is an eight-graph
+  on $2k-1$ nodes. Prove that EIGHT is NP-Complete.
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+test
+\end{solution}
+
+\HomeworkHeader{10}{3}	% homework number, problem number
+
+\begin{quote}
+Given an undirected graph $G=(V,E)$, a partition of $V$
+  into $V_1,V_2,\ldots,V_k$ is said to be a clique cover of size $k$
+  if each $V_i$ is a clique in $G$. CLIQUE-COVER is the following
+  decision problem: given $G$ and integer $k$, does $G$ have a clique
+  cover of size at most $k$?
+  \begin{itemize}
+  \item Describe a polynomial-time reduction from CLIQUE-COVER to
+    SAT. Does this prove that CLIQUE-COVER is NP-Complete? For this
+    part you just need to describe the reduction clearly, no proof of
+    correctness is necessary. {\em Hint:} Use variablex $x(u,i)$ to
+    indicate that node $u$ is in partition $i$.
+  \item Prove that CLIQUE-COVER is NP-Complete.
+  \end{itemize}
+\end{quote}
+\hrule
+
+
+
+\begin{solution}
+test
+\end{solution}
+\end{document}
