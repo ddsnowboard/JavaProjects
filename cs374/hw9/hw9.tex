@@ -75,15 +75,15 @@ Spanning trees have many nice algorithmic properties and are useful
 
 \begin{solution}
     \begin{itemize}
-        \item Assume the contrary. That is, assume that we have some local-optimum tree $T$ that is not an MST. 
+        \item Assume the contrary. That is, assume that we have some local-optimum tree $T$ on $G = (V, E)$ that is not an MST. 
             \\ Since all edge weights are distinct, we know there exists exactly one MST $M$ for this graph. 
             From our given assumption, it differs from $T$ in some way. Since we know all spanning trees have $|V| - 1$ edges, 
-            we know that there is some edge $e_1$ that appears only in $T$. If we make a new graph $M' = M \cup \{e_1\}$, we know there
+            we know that there is some edge $e_1$ that appears only in $T$. If we make a new set of edges $M' = M \cup \{e_1\}$, we know there
             will be a cycle since $M$ is a spanning tree. If there is some other edge $e_2$ in the cycle that has smaller weight 
             than $e_1$, then we have a contradiction, since our local search algorithm would have found this edge and never would have
             given us $T$. If $e_1$ is the smallest edge, then we have another contradiction, since $e_1$ would have to be in any MST, 
             but it isn't in $M$. Since we have a contradiction in either case, we prove the contrary, that any local-optimum tree is an MST.
-        \item If you run Borouvka's algorithm on some graph $G = (V, E)$ until you have $\log |V|$ components $c \in C$ and then run Prim's algorithm on the new graph $G' = (C, \{(u, v) \mid \exists (a, b) \in E \text{ st } (a \in u) \land (b \in v)\}$ your algorithm will run
+        \item If you run Borouvka's algorithm on some graph $G = (V, E)$ until you have $\log |V|$ components $c \in C, |C| = \log |V|$ and then run Prim's algorithm on the new graph $G' = (C, \{(u, v) \mid \exists (a, b) \in E \text{ st } (a \in u) \land (b \in v)\}$ your algorithm will run
             in $O(m\log\log n)$ time. 
             "Component" means the trees that are built up and connected when running Borouvka's algorithm. Thus, every round of Borouvka's algorithm halves your number of components. 
             \\ Each iteration of Borouvka's takes $O(m)$, and since we only need to reduce our graph to $\log n$ components,
@@ -210,19 +210,19 @@ Define a TM generator (or enumerator) $G$ as a TM with a single
             of $G$ until you either find your string or you can see that it will not appear due to the ordering of $G$'s output.
             \begin{algo}
                 Input: $s$, a string to test
-                while true: \+
-                \\ Run $G$ until it prints an entire string $\ell \in L$ (ie, until it prints a some string and then a \#)
+                \\ while true: \+
+                \\ Let $G$ run until it prints an entire string $\ell \in L$ (ie, until it prints a some string and then a \#)
                 \\ if $s = \ell$, return true
                 \\ else if $s > \ell$ return false \-
             \end{algo}
             This is guaranteed to return true iff $s \in L$ and always halt. Since this machine exists, $L$ is recursive. 
             
         \item First let's assume we have some generator $G$ that prints some language $L = L(G)$. Let's prove that $L$ is recursively enumerable. 
-            We can build a machine $M$ that halts and accepts for any string $s \in L$ and will either halt and reject or not halt for a string $s \not \in L$.
+            We can build a machine $M$ that halts and accepts for any string $s \in L$ and will not halt for a string $s \not \in L$.
             \begin{algo}
                 Input: a string $s$
-                while true: \+
-                \\ Run $G$ until it prints an entire string $\ell \in L$ (ie, until it prints a some string and then a \#)
+                \\ while true: \+
+                \\ Let $G$ run until it prints an entire string $\ell \in L$ (ie, until it prints a some string and then a \#)
                 \\ if $s = \ell$, return true
             \end{algo}
             This will always halt eventually if $s \in L$. Since it exists, we know $L$ is recursively enumerable.
@@ -233,7 +233,7 @@ Define a TM generator (or enumerator) $G$ as a TM with a single
             \\ \\ Given that, our machine looks like this
             \begin{algo}
                 let your alphabet be $\Sigma = \{0, 1\}$
-                \\ let $d$ be an infinite array such that $d[i]$ shows a 
+                \\ let $d$ be an infinite array such that $d[i]$ holds a 
                 \\ Turing machine starting with the binary representation of $i$ as its input
                 \\ \\ while true \+
                 \\ for all $i$ from $0 \rightarrow \infty$ \+
