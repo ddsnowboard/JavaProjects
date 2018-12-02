@@ -51,7 +51,18 @@ Consider the language $$L_{\text{374H}} = \{ \langle M\rangle
 
 
 \begin{solution}
-test
+    Let's assume the contrary. That is, let's assume that this problem is decidable and we therefore have a Turing machine $H$ that decides it. 
+    Using this machine, we can solve the Halting Problem. This function takes as input a description of a Turing machine $\langle L \rangle$ and a string to
+    test $s$.
+    \begin{algo}
+        DoesHalt($L, s$) \+
+        \\ Define $\langle L' \rangle$ as the description of the Turing machine specified in the following block: \+
+        \\ Run $L$ on $s$
+        \\ Accept \-
+        \\ if running $H$ on $L'$ returns true, return true
+        \\ otherwise return false
+    \end{algo}
+    $L'$ accepts any string iff $L$ halts on $s$, otherwise accepting no strings. This means that iff $L$ halts on $s$, $\langle L' \rangle \in L_{374H}$. This lets us solve the Halting Problem. Since we know the Halting Problem is undecidable, we have a contradiction, meaning there can be no such Turing machine $H$. 
 \end{solution}
 
 \HomeworkHeader{10}{2}	% homework number, problem number
@@ -72,7 +83,51 @@ We call an undirected graph an \emph{eight-graph} if it has
 
 
 \begin{solution}
-test
+    To prove that EIGHT is in NP-Complete, we have to prove that it is in NP and NP-Hard. Let's prove it's in NP first. 
+    \\ To prove that this is in NP, we have to be able to confirm that a solution is indeed a solution in polynomial time. Here's our function, isEIGHT, which takes an undirected graph $G$, an integer $k$, and a subgraph $G' = (V, E)$ of $G$.
+    \begin{algo}
+        FindOneCycle($G = (V, E)$) \+
+        \\ Run DFS on $G$, setting $p(v)$ to be the parent of every $v \in V$ in the DFS tree
+        \\ and a set of backedges $b$.
+        \\ assert($|b| = 1$) // Since this function only returns the cycle in graphs with one cycle, we know this is true
+        \\ Let $e = (u, v)$ be the only edge in $b$. Assume that $u$ is a a descendant of $v$
+        \\ out = $\emptyset$
+        \\ walker = $u$
+        \\ while walker $\not = v$ \+
+        \\ out = out $\cup$ \{walker\}
+        \\ walker = p(walker) \-
+        \\ return out
+
+        \\ isEIGHT($G, k, G' = (V', E')$) \+
+        \\ if $|V'| \not = 2k - 1$ return false
+        \\ Make a spanning tree $T$ on $G'$. 
+        \\ Let $e_1, e_2 \in e$ be the two edges left out of $T$.
+        \\ Let $C_1$ = FindOneCycle($T + \{e_1\}$)
+        \\ Let $C_2$ = FindOneCycle($T + \{e_2\}$)
+        \\ if $|C_1 \cap C_2| = 1$ return true
+        \\ else return false
+    \end{algo}
+    You can make a spanning tree on $G$, and then we know that replacing an edge back into that spanning tree gives us a cycle unique to that edge. We can find the nodes in each of those cycles and then find out how many nodes are common to both cycles and then we have the answer. 
+    \\ Making the spanning tree can be done in many different ways. Since they're all polynomial time, we can just arbitrarily decide to give each edge a random weight and run Kruskal's algorithm. This will take $O(|E| \log |E|)$. FindOneCycle is just DFS and another linear time computation, so it takes $O(|V| + |E|)$. Thus this algorithm takes $O(|E| \log |E|)$, which is polynomial in the size of the graph. Therefore, EIGHT is in NP.
+    \\\\ Now we have to show that we can reduce some known NP-Hard problem can be reduced to EIGHT. We'll use Hamiltonian Cycle. 
+    \\ Say we have some graph $G = (V, E)$ and we want to find out if it has a Hamiltonian Cycle. First let's pick an arbitrary point $s \in V$ to be our "root." Then let's make a new graph $G' = (V', E')$ that we can use for our reduction. $G'$ will in essence be $G$ "reflected" over $s$. More specifically, $G'$ will contain two copies of every vertex and edge in $G$ except it will have only one copy of $s$. Mathematically, it looks like this. 
+    \[
+        V' = (V \times \{1, 2\}) \setminus \{(s, 2)\}
+    \]
+    \[ 
+        \text{NormalEdges} = \{((u, n), (v, n)) \mid n \in \{1, 2\} \land u, v \in V \land (u, v) \in E\}
+    \]
+    \[
+        \text{RootEdges} = \{((u, 1), (s, 1)) \mid (u, s) \in E\} \cup \{((u, 2), (s, 1)) \mid (u, s) \in E\}
+    \]
+    \[
+        E' = \text{NormalEdges} \cup \text{RootEdges}
+    \]
+    Now let's prove that $G$ has a Hamiltonian Cycle iff $G'$ has an eight-graph of size $k = 2|V| - 1$.
+    \\ First let's suppose that $G$ has a Hamiltonian Cycle. Without loss of generality, say we started $H$ at $s$. Therefore $H$ looks like $s \rightarrow v_2 \rightarrow v_3 \rightarrow \cdots \rightarrow v_{|V|} \rightarrow s$. Since we start and end at $s$, there exists a cycle in $G'$ that starts at $(s, 1)$, touches every node of the form $(v, 1)$, and returns to $(s, 1)$, and a cycle that starts at $(s, 1)$, touches every node of the form $(v, 2)$, and comes back to $(s, 2)$. There is only one node common to these two cycles, $(s, 1)$, and they each have the same amount of vertices, $|V|$. Therefore, $G'$ has an eight-graph. Since there are $2|V| - 1$ nodes in $G'$ and each one was in a cycle, the eight-graph has size $2|V| - 1$ too.
+    \\ Now let's suppose that $G'$ has an eight-graph of size $2|V| - 1$. This means that there are two cycles of size $|V|$ and one node $p$ is common to both cycles. We know from how $G'$ was defined that $p = s$. Because of how $G'$ is defined, if you leave $p$ and see a node of the form $(v, n)$, you won't see a node of the form $(u, m \not = n)$ without seeing $p$ first. Therefore, if you leave $p$ to a node of the form $(v, 1)$, to find one of the cycles of length $|V|$, then everything in that cycle will be of the form $(v, 1)$ including $p$. This cycle of length $|V|$ $C$ can be changed into $C' = [u\text{ for each } (u, 1) \in C]$. $C'$ touches each vertex in $G$ exactly once, so it's a Hamiltonian Cycle.
+    \\\\ Therefore, we can reduce the Hamiltonian Cycle problem to EIGHT, which means that EIGHT is at least as hard as Hamiltonian Cycle. Since Hamiltonian Cycle is NP-Hard, we know that EIGHT is NP-Hard too. Since we know EIGHT is also in NP, we know EIGHT is NP-Complete.
+
 \end{solution}
 
 \HomeworkHeader{10}{3}	% homework number, problem number
@@ -97,6 +152,46 @@ Given an undirected graph $G=(V,E)$, a partition of $V$
 
 
 \begin{solution}
-test
+    \begin{itemize}
+        \item I found most of this on CS Stack Exchange (https://cs.stackexchange.com/questions/13082/3-colorability-reduction-to-sat) and the bit about clique covers and vertex colorings on the Wikipedia page for clique covers.
+            \\ \\ Finding a clique cover of size k is the same as finding a k-coloring for the compliment graph. So that's what we're going to do.
+            \\ Let $G' = (V, E)$ be the compliment of $G$. For each edge $e = (u, v)$ in $G'$, we are going to add a few things to our Boolean expression $\phi$.
+            \\ First, say that $x(u, i)$ is true iff vertex $u$ has color $i$ (which is the same as it being in partition $i$).
+            \\ We first need to make sure that no two adjacent vertices are in the same clique. We can do this by adding the clause $(\neg x(u, \ell) \lor \neg x(v, \ell))$ for each $\ell \in \{1, \ldots, k\}$ for each edge $e = (u, v) \in E$.
+            \\ Then we need to make sure that each node has some color. For that, we just add the clause $\left(\bigvee_{\ell \in \{1, \ldots, k\}} x(v, \ell)\right)$ for each $v \in V$.
+            \\ \\ This does not prove that CLIQUE-COVER is NP-Complete. It just shows that it's no harder than SAT. 
+        \item As above, to prove that CLIQUE-COVER is NP-Complete, we have to prove that it is in NP and that it is NP-Hard. 
+            \\ First, let's prove that we can verify a solution to CLIQUE-COVER in polynomial time, which implies that it is in NP.
+            \\ Say we have a set of partitions $V_1, V_2, \ldots, V_k$ of some graph $G = (V, E)$. We assume that the $k$ numbering our partitions and the $k$ in the decision problem are the same a priori. Now we just have to prove that each $V_n$ is a clique and that they form a covering.
+            \begin{algo}
+                IsCC($G = (V, E), Vs = [V_1, V_2,\ldots, V_k]$) \+
+                \\ for each $v \in V$ \+
+                \\ found = 0
+                \\ for each $V_n$ \+
+                \\ if $v \in V_n$ \+
+                \\ found = 1
+                \\ break \- \-
+                \\ if found = 0 \+
+                \\ return false \- \-
+                \\ for each $V_n$ \+
+                \\ if not IsClique($V_n, E$) \+
+                \\ return false \- \- 
+                \\ return true \-
+
+                \\ \\ IsClique($V, E$)  \+
+                \\ for each $u \in V$ \+
+                \\ for each $v \in V$ \+
+                \\ if not $((u, v) \in E \lor v = u)$ \+
+                \\ return false \-\-\-
+                \\ return true
+            \end{algo}
+            IsClique is the slowest part of this function, running in $O(|V|^2)$ time, meaning the whole function runs in $O(|V|^2k)$ time, which is polynomial. Therefore, CLIQUE-COVER is in NP.
+            \\\\ Now let's prove that CLIQUE-COVER is NP-Hard by proving that it is no easier than some other known NP-Hard problem, in this case Graph Coloring. This means we have to reduce Graph Coloring to CLIQUE-COVER.
+            \\ Let's say we have some graph $G = (V, E)$ that we want to color with $k$ colors. First let's define $G' = (V', E')$ as the compliment of $G$.
+            \\ Now we have to prove that iff we can find a clique covering of size $k$ on $G'$ then we can color $G$ with $k$ colors.
+            \\ \\ First let's assume we have a clique cover of size $k$ on $G'$. Call each of the cliques $V_n, n \in \{1,\ldots, k\}$. For each vertex $v \in V', v \in V_n$, $v$ is adjacent to every other vertex in $V_n$. Therefore, in $G'$, there is no edge between $v$ and any of the other vertices in $V_n$. Therefore, we can legally color everything in $V_n$ with the same color. Since there are $n$ cliques, we can do this $n$ times, and thus color $G$ with $n$ colors. Nothing will be left out because we know that every node is in some clique in $G'$.
+            \\ \\ Now let's assume that we have an n-coloring for $G$. Since every vertex $v \in V$ with color $c$ has no edge to any other vertex with color $c$ in $G$, we know that it has an edge to every other such vertex in $G'$ by its definition. Therefore, for every color in the graph $c$, we know that all the vertices colored with $c$ are in the same clique in $G'$. Since there are $n$ colors, we can make $n$ cliques, and since no vertex is uncolored, we know that the cliques cover the graph. Therefore, we can reduce CLIQUE-COVER to graph coloring.
+            \\ Since graph coloring is NP-Hard, we know that CLIQUE-COVER is NP-Hard too. Since we know that CLIQUE-COVER is NP-Hard and NP, we know it is NP-Complete. 
+    \end{itemize}
 \end{solution}
 \end{document}
