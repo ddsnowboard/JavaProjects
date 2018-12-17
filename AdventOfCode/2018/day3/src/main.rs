@@ -10,7 +10,7 @@ use regex::Regex;
 fn main() {
     let claims: Vec<Claim> = read_input();
     let mut squares: HashMap<(u32, u32), u32> = HashMap::new();
-    for c in claims {
+    for c in &claims {
         let xs: Vec<_> = (c.x_start..c.x_start + c.x_width).collect();
         let ys: Vec<_> = (c.y_start..c.y_start + c.y_height).collect();
         for &x in &xs {
@@ -20,10 +20,11 @@ fn main() {
             }
         }
     }
-    let count = squares.iter()
-        .filter(|(_, &ct)| ct > 1)
-        .count();
-    println!("Found {}", count);
+    
+    if let Some(good) = claims.iter()
+        .find(|c| c.all_squares().iter().all(|t| *(squares.get(t).unwrap()) == 1)) {
+            println!("{}", good.id);
+        }
 }
 
 struct Claim {
@@ -32,6 +33,18 @@ struct Claim {
     y_start: u32,
     x_width: u32,
     y_height: u32
+}
+
+impl Claim {
+    fn all_squares(&self) -> Vec<(u32, u32)> {
+        let mut out = Vec::new();
+        for x in self.x_start..self.x_start + self.x_width {
+            for y in self.y_start..self.y_start + self.y_height {
+                out.push((x, y));
+            }
+        }
+        out
+    }
 }
 
 fn read_input() -> Vec<Claim> {
