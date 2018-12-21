@@ -12,35 +12,37 @@ use std::cmp::Ordering;
 use regex::Regex;
 use regex::RegexSet;
 
-#[derive(PartialEq, Eq, Debug)]
+type Time = i32;
+type GuardId = u32;
+
+#[derive(PartialEq, Eq, Debug, Clone)]
 enum EventType {
     Awake,
     Asleep,
-    Change(u32),
+    Change(GuardId),
+}
+
+#[derive(PartialEq, Eq, Debug, Clone)]
+struct Sleep {
+    start_time: Time,
+    end_time: Time,
+    guard_id: GuardId,
+}
+
+#[derive(PartialEq, Eq, Debug, Clone)]
+struct Event {
+    which: EventType,
+    year: Time,
+    month: Time,
+    day: Time,
+    hour: Time,
+    minute: Time,
 }
 
 #[derive(PartialEq, Eq, Debug)]
-struct Event {
-    which: EventType,
-    year: u32,
-    month: u32,
-    day: u32,
-    hour: u32,
-    minute: u32,
-}
-
-impl Event {
-    fn total_minutes(&self) -> u32 {
-        const DAYS_IN_MONTH: u32 = 30;
-        const MONTHS_IN_YEAR: u32 = 12;
-        const HOURS_IN_DAY: u32 = 24;
-        const MINUTES_IN_HOUR: u32 = 60;
-        self.year * MONTHS_IN_YEAR * DAYS_IN_MONTH * HOURS_IN_DAY * MINUTES_IN_HOUR
-            + self.month * DAYS_IN_MONTH * HOURS_IN_DAY * MINUTES_IN_HOUR
-            + self.day * HOURS_IN_DAY * MINUTES_IN_HOUR
-            + self.hour * MINUTES_IN_HOUR
-            + self.minute
-    }
+struct GuardEvent {
+    event: Event,
+    guard_id: GuardId,
 }
 
 impl Ord for Event {
@@ -69,71 +71,40 @@ impl PartialOrd for Event {
 
 fn main() {
     let sorted_event_list: Vec<Event> = parse_input();
-    let mut current_guard = None;
-    let mut last_sleep_time = None;
+    let annotated_events = annotate_events(&sorted_event_list);
+    let sleeps = pair_up(&annotated_events);
     let mut sleep_times = HashMap::new();
-    for event in &sorted_event_list {
-        match event.which {
-            EventType::Awake => {
-                if let Some(guard) = current_guard {
-                    let current_count = sleep_times.entry(guard).or_insert(0);
-                    *current_count += event.minute - last_sleep_time.unwrap();
-                    last_sleep_time = None;
-                } else {
-                    panic!("We got a bad ordering! A guard woke up before a guard was stationed!");
-                }
-            }
-            EventType::Asleep => last_sleep_time = Some(event.minute),
-            EventType::Change(guard_number) => current_guard = Some(guard_number),
-        }
+    for sleep in &sleeps {
+        let current_count = sleep_times.entry(sleep.guard_id).or_insert(0);
+        *current_count += sleep.end_time - sleep.start_time;
     }
     let (most_likely_guard_number, _): (&u32, _) =
         sleep_times.iter().max_by_key(|(_, &b)| b).unwrap();
     let most_likely_guard_number = *most_likely_guard_number;
+    let our_guard_actions: Vec<_> = sleeps
+        .iter()
+        .filter(|s| s.guard_id == most_likely_guard_number)
+        .map(|s| s.clone())
+        .collect();
+    let _our_guard_most_likely_minute = most_common_minute(&our_guard_actions);
 
-    let mut sleepy_minutes = HashMap::new();
-    let sleepy_guard_start_indices = (1..)
-        .zip(sorted_event_list.iter())
-        .filter(|(_, e)| match e.which {
-            EventType::Change(id) if id == most_likely_guard_number => true,
-            _ => false,
-        })
-        .map(|(idx, _)| idx);
-
-    let sleepy_guard_days = sleepy_guard_start_indices.map(|idx| {
-        sorted_event_list[idx..sorted_event_list.len()]
-            .iter()
-            .take_while(|e| match e.which {
-                EventType::Asleep | EventType::Awake => true,
-                _ => false,
-            })
-    });
-    let sleepy_guard_actions: Vec<_> = sleepy_guard_days.flatten().collect();
-    assert!(sleepy_guard_actions.len() % 2 == 0);
-    let pairs = (0..sleepy_guard_actions.len() / 2)
-        .map(|i| 2 * i)
-        .map(|i| (sleepy_guard_actions[i], sleepy_guard_actions[i + 1]))
-        .inspect(|(f, s)| {
-            if let (EventType::Asleep, EventType::Awake) = (&f.which, &s.which) {
-                assert!(f < s);
-            } else {
-                panic!("Got a bad pair! {:?}", (f, s));
-            }
-        });
-
-    for (f, s) in pairs {
-        let in_mins = |e: &Event| e.hour * 60 + e.minute;
-        let rng = in_mins(f)..in_mins(s);
-        for i in rng {
-            let ent = sleepy_minutes.entry(i).or_insert(0);
-            *ent += 1;
+    let mut guards_by_minutes: HashMap<(GuardId, Time), u32> = HashMap::new();
+    for s in &sleeps {
+        for min in s.start_time..=s.end_time {
+            let entry = guards_by_minutes.entry((s.guard_id, min)).or_insert(0);
+            *entry += 1;
         }
     }
-    let (most_likely_minute, _): (&u32, _) = sleepy_minutes
+    if let Some(((id, minute), count)) = guards_by_minutes
         .iter()
-        .max_by_key(|(_, &k)| k)
-        .unwrap();
-    println!("{}", most_likely_minute * most_likely_guard_number);
+        .inspect(|p| println!("{:?}", p))
+        .max_by_key(|(_, &c)| c)
+    {
+        println!("id is {}, time is {}, count is {}", id, minute, count);
+        println!("{}", (*id) as Time * *minute);
+    } else {
+        panic!("Apparently something was empty. Hmm.");
+    }
 }
 
 fn parse_input() -> Vec<Event> {
@@ -187,4 +158,76 @@ fn parse_input() -> Vec<Event> {
     let mut out: Vec<_> = l.map(|r| mapper(&r.unwrap())).collect();
     out.sort_unstable();
     out
+}
+
+fn most_common_minute(events: &[Sleep]) -> Time {
+    let mut sleepy_minutes = HashMap::new();
+
+    for sleep in events {
+        for i in sleep.start_time..=sleep.end_time {
+            let ent = sleepy_minutes.entry(i).or_insert(0);
+            *ent += 1;
+        }
+    }
+    let (most_likely_minute, _): (&Time, _) =
+        sleepy_minutes.iter().max_by_key(|(_, &k)| k).unwrap();
+    *most_likely_minute
+}
+
+fn annotate_events(events: &[Event]) -> Vec<GuardEvent> {
+    let mut out = Vec::new();
+    let mut current_guard_number = None;
+    for e in events {
+        match e.which {
+            EventType::Change(id) => current_guard_number = Some(id),
+            _ => out.push(GuardEvent {
+                event: e.clone(),
+                guard_id: current_guard_number.unwrap(),
+            }),
+        }
+    }
+    out
+}
+
+fn pair_up(events: &[GuardEvent]) -> Vec<Sleep> {
+    let clamp = |h, m| {
+        let n = 60 * h + m;
+        if n > 12 * 60 {
+            24 * 60 - n
+        } else {
+            n
+        }
+    };
+    assert!(events.len() % 2 == 0);
+    let num_wakes = events
+        .iter()
+        .filter(|e| {
+            if let EventType::Awake = e.event.which {
+                true
+            } else {
+                false
+            }
+        })
+        .count();
+    let num_sleeps = events
+        .iter()
+        .filter(|e| {
+            if let EventType::Asleep = e.event.which {
+                true
+            } else {
+                false
+            }
+        })
+        .count();
+    assert!(num_wakes == num_sleeps);
+    (0..events.len() / 2)
+        .map(|i| 2 * i)
+        .map(|i| (&events[i], &events[i + 1]))
+        .inspect(|(f, s)| assert!(f.guard_id == s.guard_id && f.event < s.event))
+        .map(|(f, s)| Sleep {
+            start_time: clamp(f.event.hour, f.event.minute),
+            end_time: clamp(s.event.hour, s.event.minute),
+            guard_id: f.guard_id,
+        })
+        .collect()
 }
