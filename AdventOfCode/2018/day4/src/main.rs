@@ -12,8 +12,6 @@ use std::cmp::Ordering;
 use regex::Regex;
 use regex::RegexSet;
 
-use std::iter;
-
 #[derive(PartialEq, Eq, Debug)]
 enum EventType {
     Awake,
@@ -77,23 +75,23 @@ fn main() {
     for event in &sorted_event_list {
         match event.which {
             EventType::Awake => {
-                let current_count = sleep_times.entry(current_guard).or_insert(0);
-                *current_count += event.minute - last_sleep_time.unwrap();
-                last_sleep_time = None;
+                if let Some(guard) = current_guard {
+                    let current_count = sleep_times.entry(guard).or_insert(0);
+                    *current_count += event.minute - last_sleep_time.unwrap();
+                    last_sleep_time = None;
+                } else {
+                    panic!("We got a bad ordering! A guard woke up before a guard was stationed!");
+                }
             }
             EventType::Asleep => last_sleep_time = Some(event.minute),
             EventType::Change(guard_number) => current_guard = Some(guard_number),
         }
     }
-    let (most_likely_guard_number, _): (u32, _) = sleep_times
-        .iter()
-        .map(|(a, &b)| (a.unwrap(), b))
-        .fold(
-            (0, 0),
-            |(a, ct1), (b, ct2)| if ct1 > ct2 { (a, ct1) } else { (b, ct2) },
-        );
+    let (most_likely_guard_number, _): (&u32, _) =
+        sleep_times.iter().max_by_key(|(_, &b)| b).unwrap();
+    let most_likely_guard_number = *most_likely_guard_number;
 
-    let sleepy_minutes = HashMap::new();
+    let mut sleepy_minutes = HashMap::new();
     let sleepy_guard_start_indices = (1..)
         .zip(sorted_event_list.iter())
         .filter(|(_, e)| match e.which {
@@ -110,7 +108,32 @@ fn main() {
                 _ => false,
             })
     });
-    let sleepy_guard_actions = sleepy_guard_days.fold(iter::empty(), |a, b| a.chain(b));
+    let sleepy_guard_actions: Vec<_> = sleepy_guard_days.flatten().collect();
+    assert!(sleepy_guard_actions.len() % 2 == 0);
+    let pairs = (0..sleepy_guard_actions.len() / 2)
+        .map(|i| 2 * i)
+        .map(|i| (sleepy_guard_actions[i], sleepy_guard_actions[i + 1]))
+        .inspect(|(f, s)| {
+            if let (EventType::Asleep, EventType::Awake) = (&f.which, &s.which) {
+                assert!(f < s);
+            } else {
+                panic!("Got a bad pair! {:?}", (f, s));
+            }
+        });
+
+    for (f, s) in pairs {
+        let in_mins = |e: &Event| e.hour * 60 + e.minute;
+        let rng = in_mins(f)..in_mins(s);
+        for i in rng {
+            let ent = sleepy_minutes.entry(i).or_insert(0);
+            *ent += 1;
+        }
+    }
+    let (most_likely_minute, _): (&u32, _) = sleepy_minutes
+        .iter()
+        .max_by_key(|(_, &k)| k)
+        .unwrap();
+    println!("{}", most_likely_minute * most_likely_guard_number);
 }
 
 fn parse_input() -> Vec<Event> {
