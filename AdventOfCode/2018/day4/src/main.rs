@@ -73,10 +73,11 @@ fn main() {
     let sorted_event_list: Vec<Event> = parse_input();
     let annotated_events = annotate_events(&sorted_event_list);
     let sleeps = pair_up(&annotated_events);
-    let mut sleep_times = HashMap::new();
+    let mut sleep_times: HashMap<GuardId, u32> = HashMap::new();
     for sleep in &sleeps {
         let current_count = sleep_times.entry(sleep.guard_id).or_insert(0);
-        *current_count += sleep.end_time - sleep.start_time;
+        assert!(sleep.end_time > sleep.start_time);
+        *current_count += (sleep.end_time - sleep.start_time) as u32;
     }
     let (most_likely_guard_number, _): (&u32, _) =
         sleep_times.iter().max_by_key(|(_, &b)| b).unwrap();
@@ -90,7 +91,7 @@ fn main() {
 
     let mut guards_by_minutes: HashMap<(GuardId, Time), u32> = HashMap::new();
     for s in &sleeps {
-        for min in s.start_time..=s.end_time {
+        for min in s.start_time..s.end_time {
             let entry = guards_by_minutes.entry((s.guard_id, min)).or_insert(0);
             *entry += 1;
         }
