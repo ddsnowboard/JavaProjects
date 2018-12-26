@@ -29,9 +29,6 @@ fn main() {
         even_groups.push(next);
     }
     assert!(even_groups.len() == cpus);
-    for l in even_groups.iter().map(|l| l.len()) {
-        println!("{}", l);
-    }
     let handles: Vec<_> = even_groups
         .into_iter()
         .map(|cs| {
