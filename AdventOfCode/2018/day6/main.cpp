@@ -18,6 +18,7 @@ struct Point {
     int nearestDistance;
     const Coordinate* parent;
     bool marked;
+    int count = 0;
 };
 
 struct Board {
@@ -35,6 +36,8 @@ void print_board(const vector<Coordinate> starts, const Board& board);
 int distance(const Coordinate& a, const Coordinate& b);
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     const vector<Coordinate> coords = get_input();
     Board board;
     {
@@ -78,6 +81,27 @@ int main(int argc, char** argv) {
                 return distance(c1, bottomRight) < distance(c2, bottomRight);
                 });
     // Count up all the points that belong to each coordinate, but don't count the ones that go to one of the above 4, or any of the actual coordinates.
+    for(int x = board.minX; x <= board.maxX; x++) {
+        for(int y = board.minY; y <= board.maxY; y++) {
+            Coordinate c = std::make_pair(x, y);
+            const auto& point = board.board[c];
+            if(point.parent != nullptr) {
+                Point& parentPoint = board.board[*(point.parent)];
+                parentPoint.count++;
+            }
+        }
+    }
+    {
+        // Zero out the corner points because they'll have infinite points
+        const Coordinate* corners[] = {&nearestBottomRight, &nearestTopRight, &nearestBottomLeft, &nearestTopLeft};
+        for(const auto& c : corners) {
+            board.board[*c].count = 0;
+        }
+    }
+    auto& finalCoord = *std::max_element(coords.begin(), coords.end(), [&](const Coordinate& c1, const Coordinate& c2) {
+                return board.board[c1].count < board.board[c2].count;
+            });
+    cout << board.board[finalCoord].count;
 }
 
 
