@@ -1,10 +1,10 @@
 .PHONY: clean
 
-all : main
-main : main.o
-	g++ --std=c++11 $? -o $@
-main.o : main.cpp
-	g++ --std=c++11 main.cpp -c -o main.o
+CC=clang++
 
+all : main
+main : main.cpp
+	$(CC) -g --std=c++11 main.cpp -o main
+	@# $(CC) -O3 --std=c++11 main.cpp -o main
 clean : 
-	$(RM) main.o main
+	$(RM) main
