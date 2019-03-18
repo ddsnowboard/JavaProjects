@@ -12,15 +12,19 @@ type RetVal struct {
 
 func main() {
 	first := make(chan NumType)
-	middle := make(chan *RetVal)
+	middle1 := make(chan *RetVal)
+	middle2 := make(chan *RetVal)
 	last := make(chan []NumType)
-	go splitDigits(first, middle)
-	go checkEquals(middle, last)
+	go splitDigits(first, middle1)
+	go splitDigits(first, middle2)
+	go checkEquals(middle1, last)
+	go checkEquals(middle2, last)
 	for i := NumType(2); i < 1000000; i++ {
 		first <- i
 	}
 	close(first)
 	ret := <-last
+	ret = append(ret, (<-last)...)
 	fmt.Println("Sum was", sum(ret))
 }
 
@@ -51,7 +55,6 @@ func checkEquals(in chan *RetVal, out chan []NumType) {
 		}
 	}
 	out <- collection
-	close(out)
 }
 
 func sum(arr []NumType) NumType {
@@ -65,13 +68,13 @@ func sum(arr []NumType) NumType {
 func mergeNumType(a chan []NumType, b chan []NumType, out chan []NumType) {
 	for a != nil && b != nil {
 		select {
-		case n, ok = <-a:
+		case n, ok := <-a:
 			if ok {
 				out <- n
 			} else {
 				a = nil
 			}
-		case n, ok = <-b:
+		case n, ok := <-b:
 			if ok {
 				out <- n
 			} else {
@@ -94,13 +97,13 @@ func mergeNumType(a chan []NumType, b chan []NumType, out chan []NumType) {
 func mergeRetVal(a chan []*RetVal, b chan []*RetVal, out chan []*RetVal) {
 	for a != nil && b != nil {
 		select {
-		case n, ok = <-a:
+                case n, ok := <-a:
 			if ok {
 				out <- n
 			} else {
 				a = nil
 			}
-		case n, ok = <-b:
+                    case n, ok := <-b:
 			if ok {
 				out <- n
 			} else {
