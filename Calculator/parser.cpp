@@ -1,4 +1,5 @@
 #include <memory>
+#include <optional>
 #include "parser.h"
 #include <stack>
 #include <iostream>
@@ -48,7 +49,10 @@ Expression::Expression(string exp) : exString(exp) {
     if(!empty)
         q.push(std::make_unique<Val>(holder));
     queue<shared_ptr<Atom>> rpn = shuntingYard(std::move(q));
-    this->value = evaluateRpn(std::move(rpn));
+    if(auto ret = evaluateRpn(std::move(rpn)))
+        this->value = *ret;
+    else
+        cout << "Failed" << endl;
 }
 
 ostream& operator<<(ostream& out, const Expression& ex) {
@@ -144,16 +148,16 @@ queue<shared_ptr<Atom>> shuntingYard(queue<shared_ptr<Atom>> q) {
     return vals;
 }
 
-NumberType evaluateRpn(queue<shared_ptr<Atom>> q) {
+std::optional<NumberType> evaluateRpn(queue<shared_ptr<Atom>> q) {
     stack<NumberType> other;
     while(!q.empty()) {
         auto worked = q.front()->execute(other);
         if(!worked)
-            throw "Ran out of numbers!";
+            return {};
         q.pop();
     }
     if(other.empty())
-        throw "Ran out of numbers!";
+        return {};
     else
         return other.top();
 }

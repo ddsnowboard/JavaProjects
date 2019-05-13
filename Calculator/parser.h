@@ -1,5 +1,6 @@
 #pragma once
 #include <queue>
+#include <optional>
 #include <stack>
 #include <string>
 
@@ -77,4 +78,4 @@ class Divide : public BinOp {
 
 std::queue<std::shared_ptr<Atom>> shuntingYard(std::queue<std::shared_ptr<Atom>> q);
 
-NumberType evaluateRpn(std::queue<std::shared_ptr<Atom>> q);
+std::optional<NumberType> evaluateRpn(std::queue<std::shared_ptr<Atom>> q);
