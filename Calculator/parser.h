@@ -1,5 +1,6 @@
 #pragma once
 #include <queue>
+#include <unordered_map>
 #include <optional>
 #include <stack>
 #include <string>
@@ -15,6 +16,8 @@ class Expression {
         bool failed = false;
     public:
         Expression(std::string exp);
+        Expression(std::string exp, const std::unordered_map<std::string, NumberType>& varEnv);
+        bool succeeded() const;
         friend std::ostream& operator<<(std::ostream& out, const Expression& ex);
 };
 
@@ -79,3 +82,7 @@ class Divide : public BinOp {
 std::queue<std::shared_ptr<Atom>> shuntingYard(std::queue<std::shared_ptr<Atom>> q);
 
 std::optional<NumberType> evaluateRpn(std::queue<std::shared_ptr<Atom>> q);
+
+bool consumeNumber(std::string::const_iterator& it, const std::string::const_iterator& end, int& out);
+
+bool consumeVar(std::string::const_iterator& it, const std::string::const_iterator& end, std::string& out);

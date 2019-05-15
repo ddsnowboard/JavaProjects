@@ -5,6 +5,7 @@
 #include <iostream>
 #include <queue>
 #include <cctype>
+#include <unordered_map>
 
 using std::cout;
 using std::ostream;
@@ -14,27 +15,43 @@ using std::queue;
 using std::shared_ptr;
 using std::string;
 using std::cin;
+using std::unordered_map;
 
 int main() {
     string s;
     getline(cin, s);
-    Expression ex(s);
-    cout << ex << endl;
+    Expression ex(s, {{"apple", 55}});
+    if(ex.succeeded())
+        cout << ex << endl;
+    else
+        cout << "Failed parsing " << s << endl;
     return 0;
 }
 
-Expression::Expression(string exp) : exString(exp) {
+Expression::Expression(string exp) : Expression(exp, unordered_map<string, NumberType>()) {
+    // Do nothing
+}
+
+Expression::Expression(string exp, const unordered_map<string, NumberType>& varEnv) : exString(exp) {
+    (void)varEnv;
     queue<shared_ptr<Atom>> q;
     bool empty = true;
     int holder = 0;
-    for(auto it = exp.cbegin(); it != exp.cend(); it++) {
-        if(isdigit(*it)) {
-            holder = holder * 10 + (*it - '0');
-            empty = false;
-        } else if (!isblank(*it)) {
-            q.push(std::make_unique<Val>(holder));
-            holder = 0;
-            empty = true;
+    for(string::const_iterator it = exp.cbegin(); it != exp.cend(); it++) {
+        int num;
+        string var;
+        if(consumeNumber(it, exp.cend(), num)) {
+            q.push(std::make_shared<Val>(num));
+        } else if (isblank(*it)) {
+            // Do nothing
+        } else if (consumeVar(it, exp.cend(), var)) {
+            if(varEnv.find(var) != varEnv.end()) {
+                q.push(std::make_shared<Val>(varEnv.at(var)));
+            } else {
+                this->failed = true;
+                return;
+            }
+        } else {
             if(*it == '+') {
                 q.push(std::make_unique<Sum>());
             } else if (*it == '-') {
@@ -52,7 +69,31 @@ Expression::Expression(string exp) : exString(exp) {
     if(auto ret = evaluateRpn(std::move(rpn)))
         this->value = *ret;
     else
-        cout << "Failed" << endl;
+        this->failed = true;
+}
+
+bool consumeNumber(string::const_iterator& it, const string::const_iterator& end, int& out) {
+    int buildOut = 0;
+    if(!isdigit(*it))
+        return false;
+    for(; it != end && isdigit(*it); it++) {
+        buildOut = buildOut * 10 + (*it - '0');
+    }
+    it--;
+    out = buildOut;
+    return true;
+}
+
+bool consumeVar(string::const_iterator& it, const string::const_iterator& end, std::string& out) {
+    string buildOut;
+    if(!isalpha(*it))
+        return false;
+    for(; it != end && isalpha(*it); it++) {
+        buildOut += *it;
+    }
+    it--;
+    out = buildOut;
+    return true;
 }
 
 ostream& operator<<(ostream& out, const Expression& ex) {
@@ -160,4 +201,8 @@ std::optional<NumberType> evaluateRpn(queue<shared_ptr<Atom>> q) {
         return {};
     else
         return other.top();
+}
+
+bool Expression::succeeded() const {
+    return !this->failed;
 }
