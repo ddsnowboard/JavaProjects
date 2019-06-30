@@ -8,31 +8,36 @@ use std::iter::Iterator;
 use std::collections::hash_map::Iter;
 
 fn main() {
-    let input = get_input();
-    let dict = get_wordset();
-    let chars = Counter::from_iter(&mut input.chars());
-    let with_letter_counts = dict.iter().map(|word| (word, Counter::from_iter(&mut word.chars())));
-    let good_words = with_letter_counts.filter(|(_, ctr)| chars.is_superset(ctr))
-        .map(|(word, _)| word);
-    for word in good_words {
-        println!("{}", word);
-    }
-}
-
-fn get_input() -> String { 
-    use std::env::args;
     use std::process::exit;
-    let arguments: Vec<_> = args().collect();
-    if arguments.len() == 2 {
-        arguments[1].clone()
+    use std::env::args;
+    if let Some(input) = get_input() {
+        let dict = get_wordset();
+        let chars = Counter::from_iter(&mut input.chars());
+        let with_letter_counts = dict.iter().map(|word| (word, Counter::from_iter(&mut word.chars())));
+        let good_words = with_letter_counts.filter(|(_, ctr)| chars.is_superset(ctr))
+            .map(|(word, _)| word);
+        for word in good_words {
+            println!("{}", word);
+        }
     } else {
+        let arguments: Vec<_> = args().collect();
         println!("USAGE: {} LETTERS", arguments[0]);
         exit(1);
     }
 }
 
+fn get_input() -> Option<String> { 
+    use std::env::args;
+    let arguments: Vec<_> = args().collect();
+    if arguments.len() == 2 {
+        Some(arguments[1].clone())
+    } else {
+        None
+    }
+}
+
 fn get_wordset() -> HashSet<String> {
-    const WORDS_FILE: &'static str = "/usr/share/dict/usa";
+    const WORDS_FILE: &'static str = "/usr/share/dict/words";
     let reader = BufReader::new(File::open(WORDS_FILE).unwrap());
     let mut out = HashSet::new();
 
