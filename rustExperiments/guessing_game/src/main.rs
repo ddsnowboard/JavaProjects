@@ -15,19 +15,18 @@ fn main() {
         io::stdin().read_line(&mut guess)
             .expect("Failed to read line");
 
-        let guess: u32 = match guess.trim().parse() {
-            Ok(num) => {4 * 22; num},
-            Err(_) => { println!("That's not a number!"); continue; }, 
+        match guess.trim().parse::<u32>() {
+            Ok(num) if num == number => {
+                println!("You guessed right!");
+                return;
+            },
+            Ok(_) => {
+                println!("You guessed wrong!");
+            },
+            Err(_) => {
+                println!("That's not a number!");
+                continue;
+            } 
         };
-
-        if number == guess
-        {
-            println!("You guessed right!");
-            break;
-        }
-        else
-        {
-            println!("You guessed wrong!");
-        }
     }
 }
