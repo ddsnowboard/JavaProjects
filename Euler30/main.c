@@ -4,17 +4,18 @@
 #include <stdlib.h>
 
 #define POWER 5
+#define MAX 1200000
 
 int main(void)
 {
     int count = 0;
     int total = 0;
     int currCount = 0;
-    char* currString = malloc(1);
+    char* currString = malloc(8);
     char *currLetter = malloc(2 * sizeof(char));
     currLetter[1] = '\0';
     int i = 2;
-    for( ;i < 1200000; i++)
+    for( ;i < MAX; i++)
     {
         sprintf(currString, "%d", i);
         currCount = 0;
@@ -31,5 +32,7 @@ int main(void)
         }
     }
     printf("There were %d and they add up to %d\n", count, total);
+    free(currLetter);
+    free(currString);
     return 0;
 }
