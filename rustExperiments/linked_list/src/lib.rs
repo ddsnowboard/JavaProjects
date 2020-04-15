@@ -16,16 +16,14 @@ mod linked_list {
         }
 
         pub fn push_front(&mut self, val: T) {
-            use std::mem;
-            let newNode = Box::new(Node {
+            let new_node = Box::new(Node {
                 value: val,
                 next: self.head.take()
             });
-            self.head = Some(newNode);
+            self.head = Some(new_node);
         }
 
         pub fn pop_back(&mut self) -> Option<T> {
-            use std::mem;
             self.head.take().map(|node| {
                 let node = *node;
                 self.head = node.next;
