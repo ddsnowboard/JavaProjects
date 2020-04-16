@@ -171,7 +171,7 @@ fn read_input() -> String {
     reader.lines().nth(0).unwrap().unwrap()
 }
 
-fn run_game(word: String, strategy: &mut HangmanStrategy) -> GameState {
+fn run_game(word: String, strategy: &mut dyn HangmanStrategy) -> GameState {
     let mut state = GameState::new(word);
     while !state.is_done() {
         let next_guess = strategy.guess(&state.current_problem_state());
