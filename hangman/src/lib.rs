@@ -171,7 +171,7 @@ pub struct DictionaryStrategy {
 
 impl DictionaryStrategy {
     fn word_matches_slots(word: &str, slots: &[Option<char>]) -> bool {
-        assert!(word.len() == slots.len());
+        debug_assert!(word.len() == slots.len());
         word.chars().zip(slots.iter()).all(|(c, s)| match *s {
             Some(cc) => c == cc,
             None => true,
