@@ -12,7 +12,8 @@ fn main() {
     */
 
     let wins = hangman::DICTIONARY
-        .par_iter()
+        .iter()
+        .take(1000)
         .map(|w| hangman::run_game(w.to_string(), &mut hangman::DictionaryStrategy::default()))
         .filter(hangman::GameState::whole_word_guessed)
         .count() as f32;

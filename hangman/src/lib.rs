@@ -171,9 +171,7 @@ pub struct DictionaryStrategy {
 
 impl DictionaryStrategy {
     fn word_matches_slots(word: &str, slots: &[Option<char>]) -> bool {
-        if word.len() != slots.len() {
-            return false;
-        }
+        assert!(word.len() == slots.len());
         word.chars().zip(slots.iter()).all(|(c, s)| match *s {
             Some(cc) => c == cc,
             None => true,
@@ -185,11 +183,13 @@ impl HangmanStrategy for DictionaryStrategy {
     fn guess(&mut self, problem: &ProblemState) -> char {
         let matching_words: HashSet<String> = if let Some(w) = self.current_word_set.take() {
             w.into_iter()
+                .filter(|word| word.len() == problem.slots.len())
                 .filter(|word| Self::word_matches_slots(&word, &problem.slots))
                 .collect()
         } else {
             DICTIONARY
                 .iter()
+                .filter(|word| word.len() == problem.slots.len())
                 .filter(|w| Self::word_matches_slots(w, &problem.slots))
                 .cloned()
                 .collect()
