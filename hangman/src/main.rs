@@ -1,7 +1,9 @@
 use hangman;
-use rayon::prelude::*;
 
+use rayon::prelude::*;
 use std::io::{stdin, BufRead, BufReader};
+
+const COUNT: usize = 10000;
 
 fn main() {
     /*
@@ -11,13 +13,14 @@ fn main() {
     )
     */
 
-    let wins = hangman::DICTIONARY
-        .iter()
-        .take(1000)
-        .map(|w| hangman::run_game(w.to_string(), &mut hangman::DictionaryStrategy::default()))
+    let words: Vec<String> = hangman::DICTIONARY.iter().take(COUNT).cloned().collect();
+    let wins = words
+        .into_par_iter()
+        .take(COUNT)
+        .map(|w| hangman::run_game(w, &mut hangman::DictionaryStrategy::default()))
         .filter(hangman::GameState::whole_word_guessed)
         .count() as f32;
-    println!("{}%", wins / hangman::DICTIONARY.len() as f32);
+    println!("{}%", wins * 100.0 / COUNT as f32);
 }
 
 fn read_input() -> String {
