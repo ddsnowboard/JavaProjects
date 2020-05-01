@@ -181,22 +181,24 @@ impl DictionaryStrategy {
 
 impl HangmanStrategy for DictionaryStrategy {
     fn guess(&mut self, problem: &ProblemState) -> char {
-        let matching_words: HashSet<String> = if let Some(w) = self.current_word_set.take() {
-            w.into_iter()
-                .filter(|word| word.len() == problem.slots.len())
-                .filter(|word| Self::word_matches_slots(&word, &problem.slots))
-                .collect()
+        let matching_words: &HashSet<String> = if let Some(ref mut w) = self.current_word_set {
+            w.retain(|word| {
+                word.len() == problem.slots.len() && Self::word_matches_slots(word, &problem.slots)
+            });
+            w
         } else {
-            DICTIONARY
-                .iter()
-                .filter(|word| word.len() == problem.slots.len())
-                .filter(|w| Self::word_matches_slots(w, &problem.slots))
-                .cloned()
-                .collect()
+            self.current_word_set.get_or_insert(
+                DICTIONARY
+                    .iter()
+                    .filter(|word| word.len() == problem.slots.len())
+                    .filter(|w| Self::word_matches_slots(w, &problem.slots))
+                    .cloned()
+                    .collect(),
+            )
         };
 
         let letters_count: Counter<_> = matching_words.iter().flat_map(|w| w.chars()).collect();
-        let output = if let Some((c, _)) = letters_count
+        if let Some((c, _)) = letters_count
             .most_common()
             .into_iter()
             .find(|(c, _)| !problem.all_guessed_letters().contains(c))
@@ -208,9 +210,7 @@ impl HangmanStrategy for DictionaryStrategy {
                 .iter()
                 .find(|c| !used_characters.contains(c))
                 .unwrap()
-        };
-        self.current_word_set.replace(matching_words);
-        output
+        }
     }
 }
 
