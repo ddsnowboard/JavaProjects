@@ -4,6 +4,7 @@ extern crate lazy_static;
 extern crate itertools;
 
 use rand::seq::SliceRandom;
+use rand::SeedableRng;
 use rayon::prelude::*;
 use std::sync::Arc;
 
@@ -43,7 +44,7 @@ fn best_strategy(other: Strategy) -> Strategy {
 }
 
 fn simulate_iteration() {
-    let mut rand = rand::thread_rng();
+    let mut rand = rand::rngs::StdRng::seed_from_u64(8399999);
     let mut start_strategies: Vec<_> = STRATEGIES.choose_multiple(&mut rand, 2).collect();
     start_strategies.shuffle(&mut rand);
     let (mut s1, mut s2) = (*start_strategies[0], *start_strategies[1]);
