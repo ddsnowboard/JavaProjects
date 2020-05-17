@@ -44,7 +44,7 @@ fn best_strategy(other: Strategy) -> Strategy {
 }
 
 fn simulate_iteration() {
-    let mut rand = rand::rngs::StdRng::seed_from_u64(8399999);
+    let mut rand = rand::rngs::StdRng::seed_from_u64(839_9999);
     let mut start_strategies: Vec<_> = STRATEGIES.choose_multiple(&mut rand, 2).collect();
     start_strategies.shuffle(&mut rand);
     let (mut s1, mut s2) = (*start_strategies[0], *start_strategies[1]);
