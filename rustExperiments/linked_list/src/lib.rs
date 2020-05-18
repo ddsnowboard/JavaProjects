@@ -1,6 +1,24 @@
 mod linked_list {
+    macro_rules! with_last_link {
+        ($head: expr, $name: ident, $code: block) => {{
+            let mut $name: &mut Link<T> = &mut $head;
+            let mut handle: RefMut<Node<T>>;
+            while let Some(next) = $name {
+                handle = next.borrow_mut();
+                $name = &mut handle.next;
+            }
+            let $name = $name;
+            $code
+        }};
+    }
     use std::cell::RefCell;
+    use std::cell::RefMut;
     use std::rc::Rc;
+
+    pub enum PopFrontError {
+        EmptyList,
+        SplitOwnership,
+    }
 
     pub struct List<T> {
         head: Link<T>,
@@ -25,42 +43,51 @@ mod linked_list {
             self.head = Some(new_node);
         }
 
-        pub fn pop_front(&mut self) -> Option<T> {
+        pub fn pop_front(&mut self) -> Result<T, PopFrontError> {
             if let Some(old_front) = self.head.take() {
-                let handle = old_front.borrow_mut();
-                self.head = Rc::clone(&handle.next);
-                Some(handle.value)
+                match Rc::try_unwrap(old_front) {
+                    Ok(out) => {
+                        let inner = out.into_inner();
+                        self.head = inner.next;
+                        Ok(inner.value)
+                    }
+                    Err(rc) => {
+                        self.head = Some(rc);
+                        Err(PopFrontError::SplitOwnership)
+                    }
+                }
             } else {
-                None
+                Err(PopFrontError::EmptyList)
             }
         }
 
         pub fn push_back(&mut self, val: T) {
-            let last_link = self.last_link_mut();
-            *last_link = Some(Self::make_new_node(val, None));
+            // let last_link = self.last_link_mut();
+            with_last_link!(self.head, last_link, {
+                *last_link = Some(Self::make_new_node(val, None));
+            });
         }
 
+        /*
         fn last_link_mut(&mut self) -> &mut Link<T> {
-            fn f<V>(curr: &mut Link<V>) -> &mut Link<V> {
-                if let Some(node) = curr {
-                    f(&mut node.borrow_mut().next)
-                } else {
-                    curr
-                }
-            }
-            f(&mut self.head)
+        let mut curr: &mut Link<T> = &mut self.head;
+        while let Some(next) = curr {
+        curr = &mut next.borrow_mut().next;
+        }
+        curr
         }
 
         fn last_link(&self) -> &Link<T> {
-            fn f<V>(curr: &Link<V>) -> &Link<V> {
-                if let Some(node) = curr {
-                    f(&node.borrow().next)
-                } else {
-                    curr
-                }
-            }
-            f(&self.head)
+        fn f<V>(curr: &Link<V>) -> &Link<V> {
+        if let Some(node) = curr {
+        f(&node.borrow().next)
+        } else {
+        curr
         }
+        }
+        f(&self.head)
+        }
+        */
 
         fn make_new_node(val: T, next: Link<T>) -> NodeRef<T> {
             Rc::new(RefCell::new(Node {
