@@ -1,23 +1,68 @@
 mod linked_list {
-    macro_rules! with_last_link {
-        ($head: expr, $name: ident, $code: block) => {{
-            let mut $name: &mut Link<T> = &mut $head;
-            let mut handle: RefMut<Node<T>>;
-            while let Some(next) = $name {
-                handle = next.borrow_mut();
-                $name = &mut handle.next;
-            }
-            let $name = $name;
-            $code
-        }};
-    }
+    use std::cell::Ref;
     use std::cell::RefCell;
     use std::cell::RefMut;
+    use std::ops::Deref;
     use std::rc::Rc;
+
+    macro_rules! with_last_link {
+        ($head: expr, $name: ident, $code: block) => {{
+            if let None = $head {
+                let $name = &mut $head;
+                $code
+            } else if let Some(ref first) = $head {
+                let mut handle: NodeRef<T> = Rc::clone(first);
+                loop {
+                    let new_handle: Option<NodeRef<T>> = {
+                        let borrow = handle.borrow_mut();
+                        if let Some(ref rc) = borrow.next {
+                            Some(Rc::clone(rc))
+                        } else {
+                            None
+                        }
+                    };
+                    if let Some(new) = new_handle {
+                        handle = new;
+                    } else {
+                        break;
+                    }
+                }
+                let mut borrow = handle.borrow_mut();
+                let $name = &mut borrow.next;
+                $code
+            }
+        }};
+    }
 
     pub enum PopFrontError {
         EmptyList,
         SplitOwnership,
+    }
+
+    pub struct ValueReference<'a, T> {
+        rc: NodeRef<T>,
+        borrow: RefCell<Option<Ref<'a, T>>>,
+    }
+
+    impl<'a, T> ValueReference<'a, T> {
+        fn new(node_ref: NodeRef<T>) -> ValueReference<'a, T> {
+            ValueReference::<'a, T> {
+                rc: node_ref,
+                borrow: RefCell::new(None),
+            }
+        }
+    }
+
+    impl<'a, T> Deref for ValueReference<'a, T> {
+        type Target = T;
+        fn deref(&self) -> &Self::Target {
+            if let Some(ref out) = self.borrow.borrow() {
+                out
+            } else {
+                *self.borrow.borrow_mut() = Some(self.rc.borrow_mut());
+                self.borrow.borrow().unwrap()
+            }
+        }
     }
 
     pub struct List<T> {
@@ -96,8 +141,13 @@ mod linked_list {
             }))
         }
 
-        pub fn peek(&self) -> Option<&T> {
-            self.head.as_ref().map(|node| &node.borrow().value)
+        pub fn peek(&self) -> Option<impl Deref<Target = T>> {
+            if let Some(ref link) = self.head {
+                let rc = Rc::clone(link);
+                Some(ValueReference::new(rc))
+            } else {
+                None
+            }
         }
 
         pub fn peek_mut(&mut self) -> Option<&mut T> {
