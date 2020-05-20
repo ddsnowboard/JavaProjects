@@ -1,5 +1,7 @@
 mod linked_list {
+    use std::cell::Ref;
     use std::cell::RefCell;
+    use std::cell::RefMut;
     use std::rc::Rc;
 
     use std::fmt::Debug;
@@ -16,6 +18,7 @@ mod linked_list {
                         // If we want to take the value out of the RC, we need to drop it here
                         // otherwise it will look like many people hold the value.
                         std::mem::drop(handle);
+                        #[allow(unused_mut)]
                         let mut $name: Option<&mut Link<T>> = Some(&mut $head);
                         $code
                     } else {
@@ -36,11 +39,13 @@ mod linked_list {
                             }
                         }
                         let mut last_handle = handle.borrow_mut();
+                        #[allow(unused_mut)]
                         let mut $name: Option<&mut Link<T>> = Some(&mut last_handle.next);
                         $code
                     }
                 }
                 None => {
+                    #[allow(unused_mut)]
                     let mut $name: Option<&mut Link<T>> = None;
                     $code
                 }
@@ -83,6 +88,26 @@ mod linked_list {
 
     type Link<T> = Option<NodeRef<T>>;
     type NodeRef<T> = Rc<RefCell<Node<T>>>;
+
+    pub struct ValueReference<T: Debug> {
+        rc: Rc<RefCell<Node<T>>>,
+    }
+
+    impl<T: Debug> ValueReference<T> {
+        pub fn get_ref(&self) -> Ref<T> {
+            Ref::map(self.rc.borrow(), |node| &node.value)
+        }
+    }
+
+    pub struct MutableValueReference<T: Debug> {
+        rc: Rc<RefCell<Node<T>>>,
+    }
+
+    impl<T: Debug> MutableValueReference<T> {
+        pub fn get_ref(&self) -> RefMut<T> {
+            RefMut::map(self.rc.borrow_mut(), |node| &mut node.value)
+        }
+    }
 
     impl<T: Debug> List<T> {
         pub fn new() -> Self {
@@ -143,6 +168,35 @@ mod linked_list {
             Rc::new(RefCell::new(Node { value: val, next }))
         }
 
+        pub fn peek_front(&self) -> Option<ValueReference<T>> {
+            self.head.as_ref().map(|noderef| ValueReference {
+                rc: Rc::clone(noderef),
+            })
+        }
+
+        pub fn peek_front_mut(&mut self) -> Option<MutableValueReference<T>> {
+            self.head.as_ref().map(|noderef| MutableValueReference {
+                rc: Rc::clone(noderef),
+            })
+        }
+
+        pub fn peek_back(&self) -> Option<ValueReference<T>> {
+            with_last_full_link!(self.head, last, {
+                last.map(|last_link| {
+                    let last_node_rc = last_link.as_ref().unwrap();
+                    ValueReference {
+                        rc: Rc::clone(last_node_rc),
+                    }
+                })
+            })
+        }
+
+        pub fn peek_back_mut(&mut self) -> Option<MutableValueReference<T>> {
+            self.head.as_ref().map(|noderef| MutableValueReference {
+                rc: Rc::clone(noderef),
+            })
+        }
+
         pub fn extend(&mut self, other: &List<T>) {
             if let Some(ref tail) = other.head {
                 with_last_link!(self.head, last, {
@@ -155,8 +209,8 @@ mod linked_list {
 
 #[cfg(test)]
 mod test {
-    use super::linked_list::List;
     use super::linked_list;
+    use super::linked_list::List;
     #[test]
     fn basic() {
         let mut l = List::new();
@@ -212,10 +266,7 @@ mod test {
 
     #[test]
     fn test_singleton_pop_back() {
-        let v: Vec<String> = vec!["are"]
-            .into_iter()
-            .map(|s| s.to_owned())
-            .collect();
+        let v: Vec<String> = vec!["are"].into_iter().map(|s| s.to_owned()).collect();
         let mut l: List<String> = List::new();
         for s in v.iter() {
             l.push_back(s.to_owned());
@@ -246,13 +297,97 @@ mod test {
         assert_eq!(common_tail.pop_back(), Ok("eat".to_owned()));
         assert_eq!(common_tail.pop_back(), Ok("to".to_owned()));
         assert_eq!(common_tail.pop_back(), Ok("fun".to_owned()));
-        assert_eq!(common_tail.pop_back(), Err(linked_list::PopError::SplitOwnership));
+        assert_eq!(
+            common_tail.pop_back(),
+            Err(linked_list::PopError::SplitOwnership)
+        );
         assert_eq!(head1.pop_back(), Err(linked_list::PopError::SplitOwnership));
         assert_eq!(head2.pop_back(), Err(linked_list::PopError::SplitOwnership));
         std::mem::drop(head2);
-        assert_eq!(common_tail.pop_back(), Err(linked_list::PopError::SplitOwnership));
+        assert_eq!(
+            common_tail.pop_back(),
+            Err(linked_list::PopError::SplitOwnership)
+        );
         assert_eq!(head1.pop_back(), Err(linked_list::PopError::SplitOwnership));
         std::mem::drop(common_tail);
         assert_eq!(head1.pop_back(), Ok("are".to_owned()));
+    }
+
+    #[test]
+    fn test_peek_front() {
+        let mut list = List::new();
+        list.push_back("apples".to_owned());
+        let front_ref = list.peek_front();
+        assert_eq!(*front_ref.unwrap().get_ref(), "apples".to_owned());
+    }
+
+    #[test]
+    fn test_peek_front_empty() {
+        let list: List<String> = List::new();
+        let front_ref = list.peek_front();
+        assert!(front_ref.is_none());
+    }
+
+    #[test]
+    fn test_peeks_stop_pop() {
+        let mut list = List::new();
+        list.push_back("apples".to_owned());
+        let _front_ref1 = list.peek_front_mut().unwrap();
+        let _ptr1 = _front_ref1.get_ref();
+        assert_eq!(list.pop_front(), Err(linked_list::PopError::SplitOwnership));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_many_writers_panics() {
+        let mut list = List::new();
+        list.push_back("apples".to_owned());
+        let _front_ref1 = list.peek_front_mut().unwrap();
+        let _ptr1 = _front_ref1.get_ref();
+        let _front_ref2 = list.peek_front_mut().unwrap();
+        let _ptr2 = _front_ref2.get_ref();
+    }
+
+    #[test]
+    fn peek_back() {
+        let mut list = List::new();
+        list.push_back("apples".to_owned());
+        list.push_back("are".to_owned());
+        list.push_back("fun".to_owned());
+        assert_eq!(*list.peek_back().unwrap().get_ref(), "fun".to_owned());
+    }
+
+    #[test]
+    fn test_both_front_peeks() {
+        let mut list = List::new();
+        list.push_back("apples".to_owned());
+        let front_ref = list.peek_front().unwrap();
+        {
+            let ptr = front_ref.get_ref();
+            assert_eq!(*ptr, "apples".to_owned());
+        }
+
+        let mut_ref = list.peek_front_mut();
+        *mut_ref.unwrap().get_ref() = "pears".to_owned();
+
+        let front_ref = list.peek_front();
+        assert_eq!(*front_ref.unwrap().get_ref(), "pears".to_owned());
+    }
+
+    #[test]
+    fn test_peek_front_mut() {
+        let mut list = List::new();
+        list.push_back("apples".to_owned());
+        {
+            let front_ref = list.peek_front_mut();
+            let ptr = front_ref.unwrap();
+            assert_eq!(*ptr.get_ref(), "apples".to_owned());
+            *ptr.get_ref() = "pears".to_owned();
+        }
+        let head = list.pop_front();
+        match head {
+            Ok(s) => assert_eq!(s, "pears".to_owned()),
+            Err(e) => panic!("Got error: {:?}", e),
+        }
     }
 }
