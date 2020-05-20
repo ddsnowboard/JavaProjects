@@ -53,6 +53,10 @@ mod linked_list {
         }};
     }
 
+    struct NodeReference<T: Debug> {
+        rc: NodeRef<T>,
+    }
+
     macro_rules! with_last_link {
         ($head: expr, $name: ident, $code: block) => {{
             with_last_full_link!($head, last_link, {
@@ -97,6 +101,10 @@ mod linked_list {
         pub fn get_ref(&self) -> Ref<T> {
             Ref::map(self.rc.borrow(), |node| &node.value)
         }
+
+        fn get_node(&self) -> Ref<Node<T>> {
+            self.rc.borrow()
+        }
     }
 
     pub struct MutableValueReference<T: Debug> {
@@ -107,11 +115,46 @@ mod linked_list {
         pub fn get_ref(&self) -> RefMut<T> {
             RefMut::map(self.rc.borrow_mut(), |node| &mut node.value)
         }
+
+        fn get_node(&self) -> RefMut<Node<T>> {
+            self.rc.borrow_mut()
+        }
     }
 
     impl<T: Debug> List<T> {
         pub fn new() -> Self {
             List { head: None }
+        }
+
+        fn get_last_node(&self) -> Option<NodeReference<T>> {
+            match self.head {
+                Some(ref first) => {
+                    if first.borrow().next.is_none() {
+                        Some(NodeReference {
+                            rc: Rc::clone(first),
+                        })
+                    } else {
+                        let mut handle = Rc::clone(first);
+                        loop {
+                            let new_handle: Option<NodeRef<T>> = {
+                                let borrow = handle.borrow_mut();
+                                if let Some(ref next_handle) = borrow.next {
+                                    Some(Rc::clone(next_handle))
+                                } else {
+                                    None
+                                }
+                            };
+                            if let Some(new) = new_handle {
+                                handle = new;
+                            } else {
+                                break;
+                            }
+                        }
+                        Some(NodeReference { rc: handle })
+                    }
+                }
+                None => None,
+            }
         }
 
         pub fn push_front(&mut self, val: T) {
@@ -181,13 +224,9 @@ mod linked_list {
         }
 
         pub fn peek_back(&self) -> Option<ValueReference<T>> {
-            with_last_full_link!(self.head, last, {
-                last.map(|last_link| {
-                    let last_node_rc = last_link.as_ref().unwrap();
-                    ValueReference {
-                        rc: Rc::clone(last_node_rc),
-                    }
-                })
+            let last = self.get_last_node();
+            last.map(|last_noderef| ValueReference {
+                rc: last_noderef.rc,
             })
         }
 
