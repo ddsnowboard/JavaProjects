@@ -226,6 +226,36 @@ mod test {
     }
 
     #[test]
+    fn test_from_nth_puah_back() {
+        let mut list = list_from_slice_vec(vec!["apples", "are", "bad", "at", "coding"]);
+
+        let mut new_list = list.from_nth(4);
+        assert_eq!(
+            *new_list.peek_front().unwrap().get_ref(),
+            "coding".to_owned()
+        );
+
+        list.push_back("complicated".to_owned());
+        assert_eq!(
+            *new_list.peek_front().unwrap().get_ref(),
+            "coding".to_owned()
+        );
+        assert_eq!(
+            *new_list.peek_back().unwrap().get_ref(),
+            "complicated".to_owned()
+        );
+        std::mem::drop(list);
+        assert_eq!(
+            *new_list.peek_front().unwrap().get_ref(),
+            "coding".to_owned()
+        );
+        assert_eq!(
+            *new_list.peek_back().unwrap().get_ref(),
+            "complicated".to_owned()
+        );
+    }
+
+    #[test]
     fn test_from_nth_singleton() {
         let mut list: List<String> = list_from_slice_vec(vec!["pears"]);
         {

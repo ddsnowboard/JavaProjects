@@ -2,6 +2,7 @@ use std::cell::Ref;
 use std::cell::RefCell;
 use std::cell::RefMut;
 use std::ops::Deref;
+use std::ops::DerefMut;
 use std::rc::Rc;
 
 use std::fmt::Debug;
@@ -21,6 +22,43 @@ pub struct List<T: Debug> {
 pub struct Node<T: Debug> {
     value: T,
     next: Link<T>,
+}
+
+pub struct MutableValueHandle<'a, T: Debug> {
+    nr: NodeRef<T>,
+    rm: Option<MutableValueRef<'a, T>>,
+}
+
+impl<'a, T: Debug> Deref for MutableValueHandle<'a, T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        self.rm.get_or_insert_with(|| {
+            MutableValueRef::<'a, T>(RefMut::map(self.nr.borrow_mut(), |node| &mut node.value))
+        })
+    }
+}
+
+impl<'a, T: Debug> DerefMut for MutableValueHandle<'a, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        let out: &mut Self::Target =
+            &mut MutableValueRef(RefMut::map(self.nr.borrow_mut(), |node| &mut node.value));
+        out
+    }
+}
+
+pub struct MutableValueRef<'a, T: Debug>(RefMut<'a, T>);
+
+impl<'a, T: Debug> Deref for MutableValueRef<'a, T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        &*self.0
+    }
+}
+
+impl<'a, T: Debug> DerefMut for MutableValueRef<'a, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut *self.0
+    }
 }
 
 type Link<T> = Option<NodeRef<T>>;
@@ -162,8 +200,7 @@ impl<T: Debug> List<T> {
     }
 
     pub fn peek_back(&self) -> Option<NodeRef<T>> {
-        let last = self.get_last_node();
-        last.map(|last_noderef| last_noderef)
+        self.get_last_node()
     }
 
     fn get_last_full_link(&self) -> Option<LinkReference<T>> {
@@ -206,15 +243,10 @@ impl<T: Debug> List<T> {
     }
 
     pub fn from_nth(&self, n: usize) -> List<T> {
-        let mut curr_node: Link<T> = self.head.as_ref().map(|lr| lr.clone());
+        let mut curr_node: Link<T> = self.head.as_ref().cloned();
         for _ in 0..n {
             curr_node = curr_node
-                .map(|node| {
-                    node.borrow()
-                        .next
-                        .as_ref()
-                        .map(|next_node| next_node.clone())
-                })
+                .map(|node| node.borrow().next.as_ref().cloned())
                 .flatten();
         }
         List { head: curr_node }
