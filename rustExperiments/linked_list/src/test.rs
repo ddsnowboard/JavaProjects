@@ -5,7 +5,7 @@ mod test {
 
     #[test]
     fn basic() {
-        let mut l = List::new();
+        let mut l = List::default();
         l.push_front("apples");
         l.push_front("are");
         l.push_front("fun");
@@ -25,7 +25,7 @@ mod test {
 
     #[test]
     fn test_push_back() {
-        let mut l = List::new();
+        let mut l = List::default();
         l.push_back("Eat".to_owned());
         l.push_back("To".to_owned());
         l.push_back("fun".to_owned());
@@ -46,7 +46,7 @@ mod test {
             .into_iter()
             .map(|s| s.to_owned())
             .collect();
-        let mut l: List<String> = List::new();
+        let mut l: List<String> = List::default();
         for s in v.iter() {
             l.push_back(s.to_owned());
         }
@@ -59,7 +59,7 @@ mod test {
     #[test]
     fn test_singleton_pop_back() {
         let v: Vec<String> = vec!["are"].into_iter().map(|s| s.to_owned()).collect();
-        let mut l: List<String> = List::new();
+        let mut l: List<String> = List::default();
         for s in v.iter() {
             l.push_back(s.to_owned());
         }
@@ -75,13 +75,13 @@ mod test {
             .into_iter()
             .map(|s| s.to_owned())
             .collect();
-        let mut common_tail = List::new();
+        let mut common_tail = List::default();
         for el in common_tail_vec.iter().rev() {
             common_tail.push_front(el.to_owned());
         }
-        let mut head1 = List::new();
+        let mut head1 = List::default();
         head1.push_front("apples".to_owned());
-        let mut head2 = List::new();
+        let mut head2 = List::default();
         head2.push_front("cookies".to_owned());
 
         head1.extend(&common_tail);
@@ -107,7 +107,7 @@ mod test {
 
     #[test]
     fn test_peek_front() {
-        let mut list = List::new();
+        let mut list = List::default();
         list.push_back("apples".to_owned());
         let front_ref = list.peek_front();
         assert_eq!(*front_ref.unwrap().get_ref(), "apples".to_owned());
@@ -115,34 +115,34 @@ mod test {
 
     #[test]
     fn test_peek_front_empty() {
-        let list: List<String> = List::new();
+        let list: List<String> = List::default();
         let front_ref = list.peek_front();
         assert!(front_ref.is_none());
     }
 
     #[test]
     fn test_peeks_stop_pop() {
-        let mut list = List::new();
+        let mut list = List::default();
         list.push_back("apples".to_owned());
-        let _front_ref1 = list.peek_front_mut().unwrap();
-        let _ptr1 = _front_ref1.get_ref();
+        let _front_ref1 = list.peek_front().unwrap();
+        let _ptr1 = _front_ref1.get_ref_mut();
         assert_eq!(list.pop_front(), Err(linked_list::PopError::SplitOwnership));
     }
 
     #[test]
     #[should_panic]
     fn test_many_writers_panics() {
-        let mut list = List::new();
+        let mut list = List::default();
         list.push_back("apples".to_owned());
-        let _front_ref1 = list.peek_front_mut().unwrap();
-        let _ptr1 = _front_ref1.get_ref();
-        let _front_ref2 = list.peek_front_mut().unwrap();
-        let _ptr2 = _front_ref2.get_ref();
+        let _front_ref1 = list.peek_front().unwrap();
+        let _ptr1 = _front_ref1.get_ref_mut();
+        let _front_ref2 = list.peek_front().unwrap();
+        let _ptr2 = _front_ref2.get_ref_mut();
     }
 
     #[test]
     fn peek_back() {
-        let mut list = List::new();
+        let mut list = List::default();
         list.push_back("apples".to_owned());
         list.push_back("are".to_owned());
         list.push_back("fun".to_owned());
@@ -151,7 +151,7 @@ mod test {
 
     #[test]
     fn test_both_front_peeks() {
-        let mut list = List::new();
+        let mut list = List::default();
         list.push_back("apples".to_owned());
         let front_ref = list.peek_front().unwrap();
         {
@@ -159,8 +159,8 @@ mod test {
             assert_eq!(*ptr, "apples".to_owned());
         }
 
-        let mut_ref = list.peek_front_mut();
-        *mut_ref.unwrap().get_ref() = "pears".to_owned();
+        let mut_ref = list.peek_front();
+        *mut_ref.unwrap().get_ref_mut() = "pears".to_owned();
 
         let front_ref = list.peek_front();
         assert_eq!(*front_ref.unwrap().get_ref(), "pears".to_owned());
@@ -168,13 +168,13 @@ mod test {
 
     #[test]
     fn test_peek_front_mut() {
-        let mut list = List::new();
+        let mut list = List::default();
         list.push_back("apples".to_owned());
         {
-            let front_ref = list.peek_front_mut();
+            let front_ref = list.peek_front();
             let ptr = front_ref.unwrap();
-            assert_eq!(*ptr.get_ref(), "apples".to_owned());
-            *ptr.get_ref() = "pears".to_owned();
+            assert_eq!(*ptr.get_ref_mut(), "apples".to_owned());
+            *ptr.get_ref_mut() = "pears".to_owned();
         }
         let head = list.pop_front();
         match head {

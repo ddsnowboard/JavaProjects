@@ -1,13 +1,10 @@
 use std::cell::Ref;
 use std::cell::RefCell;
 use std::cell::RefMut;
+use std::ops::Deref;
 use std::rc::Rc;
 
 use std::fmt::Debug;
-
-struct NodeReference<T: Debug> {
-    rc: NodeRef<T>,
-}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PopError {
@@ -15,72 +12,74 @@ pub enum PopError {
     SplitOwnership,
 }
 
+#[derive(Default)]
 pub struct List<T: Debug> {
     head: Link<T>,
 }
 
 #[derive(Debug)]
-struct Node<T: Debug> {
+pub struct Node<T: Debug> {
     value: T,
     next: Link<T>,
 }
 
 type Link<T> = Option<NodeRef<T>>;
-type NodeRef<T> = Rc<RefCell<Node<T>>>;
+#[derive(Debug)]
+pub struct NodeRef<T: Debug>(Rc<RefCell<Node<T>>>);
 
-pub struct ValueReference<T: Debug> {
-    rc: Rc<RefCell<Node<T>>>,
-}
-
-impl<T: Debug> ValueReference<T> {
+impl<T: Debug> NodeRef<T> {
     pub fn get_ref(&self) -> Ref<T> {
-        Ref::map(self.rc.borrow(), |node| &node.value)
+        Ref::map(self.borrow(), |node| &node.value)
     }
 
     fn get_node(&self) -> Ref<Node<T>> {
-        self.rc.borrow()
+        self.borrow()
+    }
+
+    pub fn get_ref_mut(&self) -> RefMut<T> {
+        RefMut::map(self.borrow_mut(), |node| &mut node.value)
+    }
+
+    fn get_node_mut(&self) -> RefMut<Node<T>> {
+        self.borrow_mut()
+    }
+
+    fn take_rc(self) -> Rc<RefCell<Node<T>>> {
+        self.0
     }
 }
 
-pub struct MutableValueReference<T: Debug> {
-    rc: NodeRef<T>
-}
-
-impl<T: Debug> MutableValueReference<T> {
-    pub fn get_ref(&self) -> RefMut<T> {
-        RefMut::map(self.rc.borrow_mut(), |node| &mut node.value)
-    }
-
-    fn get_node(&self) -> RefMut<Node<T>> {
-        self.rc.borrow_mut()
+impl<T: Debug> Clone for NodeRef<T> {
+    fn clone(&self) -> Self {
+        NodeRef(Rc::clone(&self.0))
     }
 }
+
+impl<T: Debug> Deref for NodeRef<T> {
+    type Target = Rc<RefCell<Node<T>>>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 enum LinkReference<'a, T: Debug> {
     First(&'a List<T>),
-    Other(NodeReference<T>),
+    Other(NodeRef<T>),
 }
 
 impl<T: Debug> List<T> {
-    pub fn new() -> Self {
-        List { head: None }
-    }
-
-    fn get_last_node(&self) -> Option<NodeReference<T>> {
+    fn get_last_node(&self) -> Option<NodeRef<T>> {
         self.head.as_ref().map(|first| {
-            let mut handle = Rc::clone(first);
+            let mut handle = first.clone();
             loop {
-                let new_handle: Option<NodeRef<T>> = handle
-                    .borrow_mut()
-                    .next
-                    .as_ref()
-                    .map(|next_handle| Rc::clone(next_handle));
+                let new_handle: Option<NodeRef<T>> = handle.borrow_mut().next.as_ref().cloned();
                 if let Some(new) = new_handle {
                     handle = new;
                 } else {
                     break;
                 }
             }
-            NodeReference { rc: handle }
+            handle
         })
     }
 
@@ -91,14 +90,14 @@ impl<T: Debug> List<T> {
 
     pub fn pop_front(&mut self) -> Result<T, PopError> {
         if let Some(old_front) = self.head.take() {
-            match Rc::try_unwrap(old_front) {
+            match Rc::try_unwrap(old_front.take_rc()) {
                 Ok(out) => {
                     let inner = out.into_inner();
                     self.head = inner.next;
                     Ok(inner.value)
                 }
                 Err(rc) => {
-                    self.head = Some(rc);
+                    self.head = Some(NodeRef(rc));
                     Err(PopError::SplitOwnership)
                 }
             }
@@ -111,28 +110,29 @@ impl<T: Debug> List<T> {
         let last_link_holder: Option<LinkReference<T>> = self.get_last_full_link();
         if let Some(node_ref) = last_link_holder {
             match node_ref {
-                LinkReference::First(_) => match Rc::try_unwrap(self.head.take().unwrap()) {
-                    Ok(out) => {
-                        self.head = None;
-                        Ok(out.into_inner().value)
-                    }
-                    Err(rc) => {
-                        self.head = Some(rc);
-                        Err(PopError::SplitOwnership)
-                    }
-                },
-                LinkReference::Other(node_ref) => {
-                    let mut borrow = node_ref.rc.borrow_mut();
-                    // We know we can do this because we got the last *full* link
-                    let last_link = borrow.next.take().unwrap();
-                    match Rc::try_unwrap(last_link) {
+                LinkReference::First(_) => {
+                    match Rc::try_unwrap(self.head.take().unwrap().take_rc()) {
                         Ok(out) => {
-                            let inner = out.into_inner();
-                            borrow.next = None;
-                            Ok(inner.value)
+                            self.head = None;
+                            Ok(out.into_inner().value)
                         }
                         Err(rc) => {
-                            borrow.next = Some(rc);
+                            self.head = Some(NodeRef(rc));
+                            Err(PopError::SplitOwnership)
+                        }
+                    }
+                }
+                LinkReference::Other(node_ref) => {
+                    let mut borrow = node_ref.borrow_mut();
+                    // We know we can do this because we got the last *full* link
+                    let last_link = borrow.next.take().unwrap();
+                    match Rc::try_unwrap(last_link.take_rc()) {
+                        Ok(out) => {
+                            borrow.next = None;
+                            Ok(out.into_inner().value)
+                        }
+                        Err(rc) => {
+                            borrow.next = Some(NodeRef(rc));
                             Err(PopError::SplitOwnership)
                         }
                     }
@@ -147,66 +147,51 @@ impl<T: Debug> List<T> {
         let new_link = Some(Self::make_new_node(val, None));
         let last_node = self.get_last_node();
         if let Some(node_ref) = last_node {
-            node_ref.rc.borrow_mut().next = new_link;
+            node_ref.borrow_mut().next = new_link;
         } else {
             self.head = new_link;
         }
     }
 
     fn make_new_node(val: T, next: Link<T>) -> NodeRef<T> {
-        Rc::new(RefCell::new(Node { value: val, next }))
+        NodeRef(Rc::new(RefCell::new(Node { value: val, next })))
     }
 
-    pub fn peek_front(&self) -> Option<ValueReference<T>> {
-        self.head.as_ref().map(|noderef| ValueReference {
-            rc: Rc::clone(noderef),
-        })
+    pub fn peek_front(&self) -> Option<NodeRef<T>> {
+        self.head.as_ref().cloned()
     }
 
-    pub fn peek_front_mut(&mut self) -> Option<MutableValueReference<T>> {
-        self.head.as_ref().map(|noderef| MutableValueReference {
-            rc: Rc::clone(noderef),
-        })
-    }
-
-    pub fn peek_back(&self) -> Option<ValueReference<T>> {
+    pub fn peek_back(&self) -> Option<NodeRef<T>> {
         let last = self.get_last_node();
-        last.map(|last_noderef| ValueReference {
-            rc: last_noderef.rc,
-        })
-    }
-
-    pub fn peek_back_mut(&mut self) -> Option<MutableValueReference<T>> {
-        self.head.as_ref().map(|noderef| MutableValueReference {
-            rc: Rc::clone(noderef),
-        })
+        last.map(|last_noderef| last_noderef)
     }
 
     fn get_last_full_link(&self) -> Option<LinkReference<T>> {
-        let is_this_the_node_we_want =
-            |node: &Node<T>| node.next.is_some() && node.next.as_ref().unwrap().borrow().next.is_none();
+        let is_this_the_node_we_want = |node: &Node<T>| {
+            node.next.is_some() && node.next.as_ref().unwrap().borrow().next.is_none()
+        };
 
         self.head.as_ref().map(|first| {
-                if first.borrow().next.is_none() {
-                    return LinkReference::First(self);
-                }
+            if first.borrow().next.is_none() {
+                return LinkReference::First(self);
+            }
 
-                let mut handle: NodeRef<T> = Rc::clone(first);
-                loop {
-                    let new_handle: Option<NodeRef<T>> = {
-                        if !is_this_the_node_we_want(&handle.borrow()) {
-                            Some(Rc::clone(handle.borrow().next.as_ref().unwrap()))
-                        } else {
-                            None
-                        }
-                    };
-                    if let Some(new) = new_handle {
-                        handle = new;
+            let mut handle: NodeRef<T> = first.clone();
+            loop {
+                let new_handle: Option<NodeRef<T>> = {
+                    if !is_this_the_node_we_want(&handle.borrow()) {
+                        Some(handle.borrow().next.as_ref().unwrap().clone())
                     } else {
-                        break;
+                        None
                     }
+                };
+                if let Some(new) = new_handle {
+                    handle = new;
+                } else {
+                    break;
                 }
-                LinkReference::Other(NodeReference {rc: handle})
+            }
+            LinkReference::Other(handle)
         })
     }
 
@@ -214,8 +199,8 @@ impl<T: Debug> List<T> {
         let last = self.get_last_node();
         if let Some(ref tail) = other.head {
             match last {
-                Some(last_ref) => last_ref.rc.borrow_mut().next = Some(Rc::clone(tail)),
-                None => self.head = Some(Rc::clone(tail)),
+                Some(last_ref) => last_ref.borrow_mut().next = Some(tail.clone()),
+                None => self.head = Some(tail.clone()),
             }
         }
     }
