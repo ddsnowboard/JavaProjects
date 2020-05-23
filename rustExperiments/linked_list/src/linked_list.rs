@@ -204,4 +204,19 @@ impl<T: Debug> List<T> {
             }
         }
     }
+
+    pub fn from_nth(&self, n: usize) -> List<T> {
+        let mut curr_node: Link<T> = self.head.as_ref().map(|lr| lr.clone());
+        for _ in 0..n {
+            curr_node = curr_node
+                .map(|node| {
+                    node.borrow()
+                        .next
+                        .as_ref()
+                        .map(|next_node| next_node.clone())
+                })
+                .flatten();
+        }
+        List { head: curr_node }
+    }
 }

@@ -3,6 +3,8 @@ mod test {
     use super::super::linked_list;
     use super::super::linked_list::List;
 
+    use std::fmt::Debug;
+
     #[test]
     fn basic() {
         let mut l = List::default();
@@ -181,5 +183,72 @@ mod test {
             Ok(s) => assert_eq!(s, "pears".to_owned()),
             Err(e) => panic!("Got error: {:?}", e),
         }
+    }
+
+    #[test]
+    fn test_from_nth_peek() {
+        let mut list = list_from_slice_vec(vec!["apples", "are", "bad", "at", "coding"]);
+        let new_list = list.from_nth(1);
+        assert_eq!(*new_list.peek_front().unwrap().get_ref(), "are".to_owned());
+    }
+
+    #[test]
+    fn test_from_nth_change() {
+        let mut list = List::default();
+        list.push_back("apples".to_owned());
+        list.push_back("are".to_owned());
+        list.push_back("bad".to_owned());
+        list.push_back("at".to_owned());
+        list.push_back("coding".to_owned());
+
+        {
+            let new_list = list.from_nth(1);
+            *new_list.peek_front().unwrap().get_ref_mut() = "were".to_owned();
+        }
+
+        assert_eq!(list.pop_front().unwrap(), "apples".to_owned());
+        assert_eq!(list.pop_front().unwrap(), "were".to_owned());
+    }
+
+    #[test]
+    fn test_from_nth_push_front() {
+        let mut list = list_from_slice_vec(vec!["apples", "are", "bad", "at", "coding"]);
+
+        let mut new_list = list.from_nth(1);
+        new_list.push_front("yams".to_owned());
+        assert_eq!(*new_list.peek_front().unwrap().get_ref(), "yams".to_owned());
+
+        assert_eq!(list.pop_front().unwrap(), "apples".to_owned());
+        assert_eq!(list.pop_front(), Err(linked_list::PopError::SplitOwnership));
+        assert_eq!(*list.peek_front().unwrap().get_ref(), "are".to_owned());
+        std::mem::drop(new_list);
+        assert_eq!(list.pop_front(), Ok("are".to_owned()));
+    }
+
+    #[test]
+    fn test_from_nth_singleton() {
+        let mut list: List<String> = list_from_slice_vec(vec!["pears"]);
+        {
+            let new_list = list.from_nth(0);
+            assert_eq!(
+                *new_list.peek_front().unwrap().get_ref(),
+                "pears".to_owned()
+            );
+            *new_list.peek_front().unwrap().get_ref_mut() = "were".to_owned();
+        }
+
+        assert_eq!(list.pop_front().unwrap(), "were".to_owned());
+    }
+
+    fn list_from_slice_vec(v: Vec<&str>) -> List<String> {
+        list_from_vec(v.into_iter().map(|s| s.to_owned()).collect())
+    }
+
+    fn list_from_vec<T: Debug + Default>(v: Vec<T>) -> List<T> {
+        let mut out = List::default();
+        for val in v.into_iter() {
+            out.push_back(val);
+        }
+        out
     }
 }
