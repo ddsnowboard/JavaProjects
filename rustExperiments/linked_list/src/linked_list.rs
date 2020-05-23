@@ -5,53 +5,6 @@ use std::rc::Rc;
 
 use std::fmt::Debug;
 
-macro_rules! with_last_full_link {
-    ($head: expr, $name: ident, $code: block) => {{
-        {
-            let _: &Link<T> = &$head;
-        }
-        match $head {
-            Some(ref first) => {
-                let mut handle: NodeRef<T> = Rc::clone(first);
-                if handle.borrow().next.is_none() {
-                    // If we want to take the value out of the RC, we need to drop it here
-                    // otherwise it will look like many people hold the value.
-                    std::mem::drop(handle);
-                    #[allow(unused_mut)]
-                    let mut $name: Option<&mut Link<T>> = Some(&mut $head);
-                    $code
-                } else {
-                    loop {
-                        let new_handle: Option<NodeRef<T>> = {
-                            let borrow = handle.borrow_mut();
-                            let next_borrow = borrow.next.as_ref().unwrap().borrow_mut();
-                            if next_borrow.next.is_some() {
-                                Some(Rc::clone(borrow.next.as_ref().unwrap()))
-                            } else {
-                                None
-                            }
-                        };
-                        if let Some(new) = new_handle {
-                            handle = new;
-                        } else {
-                            break;
-                        }
-                    }
-                    let mut last_handle = handle.borrow_mut();
-                    #[allow(unused_mut)]
-                    let mut $name: Option<&mut Link<T>> = Some(&mut last_handle.next);
-                    $code
-                }
-            }
-            None => {
-                #[allow(unused_mut)]
-                let mut $name: Option<&mut Link<T>> = None;
-                $code
-            }
-        }
-    }};
-}
-
 struct NodeReference<T: Debug> {
     rc: NodeRef<T>,
 }
@@ -90,7 +43,7 @@ impl<T: Debug> ValueReference<T> {
 }
 
 pub struct MutableValueReference<T: Debug> {
-    rc: Rc<RefCell<Node<T>>>,
+    rc: NodeRef<T>
 }
 
 impl<T: Debug> MutableValueReference<T> {
@@ -155,24 +108,39 @@ impl<T: Debug> List<T> {
     }
 
     pub fn pop_back(&mut self) -> Result<T, PopError> {
-        with_last_full_link!(self.head, last_link, {
-            if let Some(link) = last_link {
-                let node_ref = link.take().unwrap();
-                match Rc::try_unwrap(node_ref) {
+        let last_link_holder: Option<LinkReference<T>> = self.get_last_full_link();
+        if let Some(node_ref) = last_link_holder {
+            match node_ref {
+                LinkReference::First(_) => match Rc::try_unwrap(self.head.take().unwrap()) {
                     Ok(out) => {
-                        let inner = out.into_inner();
-                        *link = None;
-                        Ok(inner.value)
+                        self.head = None;
+                        Ok(out.into_inner().value)
                     }
                     Err(rc) => {
-                        *link = Some(rc);
+                        self.head = Some(rc);
                         Err(PopError::SplitOwnership)
                     }
+                },
+                LinkReference::Other(node_ref) => {
+                    let mut borrow = node_ref.rc.borrow_mut();
+                    // We know we can do this because we got the last *full* link
+                    let last_link = borrow.next.take().unwrap();
+                    match Rc::try_unwrap(last_link) {
+                        Ok(out) => {
+                            let inner = out.into_inner();
+                            borrow.next = None;
+                            Ok(inner.value)
+                        }
+                        Err(rc) => {
+                            borrow.next = Some(rc);
+                            Err(PopError::SplitOwnership)
+                        }
+                    }
                 }
-            } else {
-                Err(PopError::EmptyList)
             }
-        })
+        } else {
+            Err(PopError::EmptyList)
+        }
     }
 
     pub fn push_back(&mut self, val: T) {
@@ -214,12 +182,40 @@ impl<T: Debug> List<T> {
         })
     }
 
+    fn get_last_full_link(&self) -> Option<LinkReference<T>> {
+        let is_this_the_node_we_want =
+            |node: &Node<T>| node.next.is_some() && node.next.as_ref().unwrap().borrow().next.is_none();
+
+        self.head.as_ref().map(|first| {
+                if first.borrow().next.is_none() {
+                    return LinkReference::First(self);
+                }
+
+                let mut handle: NodeRef<T> = Rc::clone(first);
+                loop {
+                    let new_handle: Option<NodeRef<T>> = {
+                        if !is_this_the_node_we_want(&handle.borrow()) {
+                            Some(Rc::clone(handle.borrow().next.as_ref().unwrap()))
+                        } else {
+                            None
+                        }
+                    };
+                    if let Some(new) = new_handle {
+                        handle = new;
+                    } else {
+                        break;
+                    }
+                }
+                LinkReference::Other(NodeReference {rc: handle})
+        })
+    }
+
     pub fn extend(&mut self, other: &List<T>) {
         let last = self.get_last_node();
         if let Some(ref tail) = other.head {
             match last {
                 Some(last_ref) => last_ref.rc.borrow_mut().next = Some(Rc::clone(tail)),
-                None => self.head = Some(Rc::clone(tail))
+                None => self.head = Some(Rc::clone(tail)),
             }
         }
     }
