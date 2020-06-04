@@ -187,7 +187,7 @@ mod test {
 
     #[test]
     fn test_from_nth_peek() {
-        let mut list = list_from_slice_vec(vec!["apples", "are", "bad", "at", "coding"]);
+        let list = list_from_slice_vec(vec!["apples", "are", "bad", "at", "coding"]);
         let new_list = list.from_nth(1);
         assert_eq!(*new_list.peek_front().unwrap().get_ref(), "are".to_owned());
     }
@@ -229,7 +229,7 @@ mod test {
     fn test_from_nth_puah_back() {
         let mut list = list_from_slice_vec(vec!["apples", "are", "bad", "at", "coding"]);
 
-        let mut new_list = list.from_nth(4);
+        let new_list = list.from_nth(4);
         assert_eq!(
             *new_list.peek_front().unwrap().get_ref(),
             "coding".to_owned()

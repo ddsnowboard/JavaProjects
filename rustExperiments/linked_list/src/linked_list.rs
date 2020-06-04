@@ -24,25 +24,12 @@ pub struct Node<T: Debug> {
     next: Link<T>,
 }
 
-pub struct MutableValueHandle<'a, T: Debug> {
-    nr: NodeRef<T>,
-    rm: Option<MutableValueRef<'a, T>>,
-}
+pub struct ValueRef<'a, T: Debug>(Ref<'a, T>);
 
-impl<'a, T: Debug> Deref for MutableValueHandle<'a, T> {
+impl<'a, T: Debug> Deref for ValueRef<'a, T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
-        self.rm.get_or_insert_with(|| {
-            MutableValueRef::<'a, T>(RefMut::map(self.nr.borrow_mut(), |node| &mut node.value))
-        })
-    }
-}
-
-impl<'a, T: Debug> DerefMut for MutableValueHandle<'a, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        let out: &mut Self::Target =
-            &mut MutableValueRef(RefMut::map(self.nr.borrow_mut(), |node| &mut node.value));
-        out
+        &*self.0
     }
 }
 
@@ -66,16 +53,16 @@ type Link<T> = Option<NodeRef<T>>;
 pub struct NodeRef<T: Debug>(Rc<RefCell<Node<T>>>);
 
 impl<T: Debug> NodeRef<T> {
-    pub fn get_ref(&self) -> Ref<T> {
-        Ref::map(self.borrow(), |node| &node.value)
+    pub fn get_ref(&self) -> ValueRef<'_, T> {
+        ValueRef(Ref::map(self.borrow(), |node| &node.value))
+    }
+
+    pub fn get_ref_mut(&self) -> MutableValueRef<'_, T> {
+        MutableValueRef(RefMut::map(self.borrow_mut(), |node| &mut node.value))
     }
 
     fn get_node(&self) -> Ref<Node<T>> {
         self.borrow()
-    }
-
-    pub fn get_ref_mut(&self) -> RefMut<T> {
-        RefMut::map(self.borrow_mut(), |node| &mut node.value)
     }
 
     fn get_node_mut(&self) -> RefMut<Node<T>> {
