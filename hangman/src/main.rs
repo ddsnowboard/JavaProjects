@@ -1,5 +1,3 @@
-use hangman;
-
 use rayon::prelude::*;
 use std::io::{stdin, BufRead, BufReader};
 

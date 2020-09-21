@@ -1,6 +1,7 @@
 use counter::Counter;
 use lazy_static::lazy_static;
 use rand::{thread_rng, Rng};
+use rayon::prelude::*;
 use std::collections::HashSet;
 use std::fmt;
 use std::fs::File;
@@ -184,7 +185,7 @@ impl HangmanStrategy for DictionaryStrategy {
         } else {
             self.current_word_set.get_or_insert(
                 DICTIONARY
-                    .iter()
+                    .par_iter()
                     .filter(|word| word.len() == problem.slots.len())
                     .filter(|w| Self::word_matches_slots(w, &problem.slots))
                     .cloned()
