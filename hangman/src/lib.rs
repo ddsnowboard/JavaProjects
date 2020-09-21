@@ -41,13 +41,16 @@ pub trait HangmanStrategy {
 
 pub struct GameState {
     pub word: String,
+    word_set: HashSet<char>,
     pub guessed: HashSet<char>,
 }
 
 impl GameState {
     pub fn new(word: String) -> GameState {
+        let word_set = (&word).clone().chars().collect();
         GameState {
             word,
+            word_set,
             guessed: HashSet::new(),
         }
     }
@@ -77,11 +80,11 @@ impl GameState {
     }
 
     pub fn whole_word_guessed(&self) -> bool {
-        self.guessed.is_superset(&(self.word.chars().collect()))
+        self.guessed.is_superset(&self.word_set)
     }
 
     pub fn is_hanged(&self) -> bool {
-        let wrong_letters = &self.guessed - &(self.word.chars().collect());
+        let wrong_letters = &self.guessed - &self.word_set;
         wrong_letters.len() > MAX_MISSES
     }
 
@@ -136,17 +139,9 @@ pub struct MediumStrategy {}
 
 impl HangmanStrategy for MediumStrategy {
     fn guess(&mut self, problem: &ProblemState) -> char {
-        let all_guesses = &problem
-            .slots
-            .iter()
-            .filter(|w| w.is_some())
-            .map(|w| w.unwrap())
-            .collect()
-            | &problem.wrong_letters;
-
         if let Some(out) = MOST_COMMON_LETTERS
             .iter()
-            .find(|c| !all_guesses.contains(c))
+            .find(|c| !problem.all_guessed_letters().contains(c))
         {
             *out
         } else {
