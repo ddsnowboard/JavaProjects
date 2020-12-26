@@ -9,7 +9,7 @@ fn main() {
         "{}",
         hangman::run_game(read_input(), &mut hangman::DictionaryStrategy::default())
     )
-    */
+        */
 
     let words: Vec<String> = hangman::DICTIONARY.iter().take(COUNT).cloned().collect();
     let wins = words
