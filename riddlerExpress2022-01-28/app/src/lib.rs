@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use std::collections::HashSet;
 use std::fmt;
+use std::time::Instant;
 
 pub fn run_generations(generations: usize, print: bool) {
     let starting_grid = {
@@ -41,7 +42,10 @@ impl Grid {
     }
 
     fn is_alive(&self, x: Coordinate, y: Coordinate) -> bool {
-        self.live_squares.contains(&(x, y))
+        let start = Instant::now();
+        let out = self.live_squares.contains(&(x, y));
+        println!("{}", start.elapsed().as_nanos());
+        out
     }
 
     fn neighbors(&self, x: Coordinate, y: Coordinate) -> HashSet<Square> {
