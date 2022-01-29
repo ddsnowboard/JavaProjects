@@ -16,7 +16,7 @@ pub fn run_generations(generations: usize, print: bool) {
     let mut curr = starting_grid;
     for generation in 1..=generations {
         curr = curr.next_grid();
-        if (print) {
+        if print {
             println!(
                 "On generation {}, there are {} live cells",
                 generation,
@@ -40,12 +40,12 @@ impl Grid {
         }
     }
 
-    fn is_alive(&self, x: i32, y: i32) -> bool {
+    fn is_alive(&self, x: Coordinate, y: Coordinate) -> bool {
         self.live_squares.contains(&(x, y))
     }
 
-    fn neighbors(&self, x: i32, y: i32) -> HashSet<Square> {
-        let mut out = HashSet::new();
+    fn neighbors(&self, x: Coordinate, y: Coordinate) -> HashSet<Square> {
+        let mut out = HashSet::with_capacity(8);
         out.insert((x, y + 1));
         out.insert((x, y - 1));
         out.insert((x + 1, y));
@@ -59,7 +59,7 @@ impl Grid {
         out
     }
 
-    fn should_be_alive_next(&self, x: i32, y: i32) -> bool {
+    fn should_be_alive_next(&self, x: Coordinate, y: Coordinate) -> bool {
         self.neighbors(x, y)
             .iter()
             .map(|(x, y)| self.is_alive(*x, *y))
@@ -81,7 +81,7 @@ impl Grid {
             .filter(|(x, y)| self.should_be_alive_next(*x, *y))
             .collect();
 
-        let new_live_squares = self.live_squares.union(&squares_coming_alive).map(|p| *p);
+        let new_live_squares = self.live_squares.union(&squares_coming_alive).copied();
         Self {
             live_squares: new_live_squares.collect(),
         }
@@ -110,6 +110,7 @@ impl fmt::Display for Grid {
     }
 }
 
-type Square = (i32, i32);
+type Coordinate = i16;
+type Square = (Coordinate, Coordinate);
 
 const MIN_LIVE_NEIGHBORS_TO_LIVE_NEXT_ROUND: usize = 3;
