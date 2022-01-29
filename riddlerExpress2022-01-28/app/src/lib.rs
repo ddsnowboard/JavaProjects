@@ -1,9 +1,6 @@
 use itertools::Itertools;
-use std::cell::RefCell;
-use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt;
-use std::rc::Rc;
 
 pub fn run_generations(generations: usize, print: bool) {
     let starting_grid = {
@@ -19,7 +16,7 @@ pub fn run_generations(generations: usize, print: bool) {
     let mut curr = starting_grid;
     for generation in 1..=generations {
         curr = curr.next_grid();
-        if print {
+        if (print) {
             println!(
                 "On generation {}, there are {} live cells",
                 generation,
@@ -34,14 +31,12 @@ pub fn run_generations(generations: usize, print: bool) {
 /// could use for this, but I'll save that for later.
 struct Grid {
     live_squares: HashSet<Square>,
-    neighbor_cache: RefCell<HashMap<Square, Rc<HashSet<Square>>>>,
 }
 
 impl Grid {
     fn new(starting_squares: HashSet<Square>) -> Self {
         Self {
             live_squares: starting_squares,
-            neighbor_cache: RefCell::new(HashMap::new()),
         }
     }
 
@@ -49,25 +44,19 @@ impl Grid {
         self.live_squares.contains(&(x, y))
     }
 
-    fn neighbors(&self, x: i32, y: i32) -> Rc<HashSet<Square>> {
-        let mut cache = self.neighbor_cache.borrow_mut();
-        cache
-            .entry((x, y))
-            .or_insert({
-                let mut out = HashSet::new();
-                out.insert((x, y + 1));
-                out.insert((x, y - 1));
-                out.insert((x + 1, y));
-                out.insert((x - 1, y));
+    fn neighbors(&self, x: i32, y: i32) -> HashSet<Square> {
+        let mut out = HashSet::new();
+        out.insert((x, y + 1));
+        out.insert((x, y - 1));
+        out.insert((x + 1, y));
+        out.insert((x - 1, y));
 
-                out.insert((x + 1, y + 1));
-                out.insert((x - 1, y - 1));
-                out.insert((x + 1, y - 1));
-                out.insert((x - 1, y + 1));
-                assert!(out.len() == 8);
-                Rc::new(out)
-            })
-            .clone()
+        out.insert((x + 1, y + 1));
+        out.insert((x - 1, y - 1));
+        out.insert((x + 1, y - 1));
+        out.insert((x - 1, y + 1));
+        assert!(out.len() == 8);
+        out
     }
 
     fn should_be_alive_next(&self, x: i32, y: i32) -> bool {
@@ -83,14 +72,8 @@ impl Grid {
         let potential_live_squares: HashSet<Square> = self
             .live_squares
             .iter()
-            .flat_map(|(x, y)| {
-                self.neighbors(*x, *y)
-                    .iter()
-                    .filter(|(x, y)| !self.is_alive(*x, *y))
-                    .copied()
-                    .collect::<HashSet<_>>()
-            })
-            .map(|(x, y)| (x, y))
+            .flat_map(|(x, y)| self.neighbors(*x, *y))
+            .filter(|(x, y)| !self.is_alive(*x, *y))
             .collect();
 
         let squares_coming_alive = potential_live_squares
@@ -101,7 +84,6 @@ impl Grid {
         let new_live_squares = self.live_squares.union(&squares_coming_alive).map(|p| *p);
         Self {
             live_squares: new_live_squares.collect(),
-            neighbor_cache: self.neighbor_cache.clone(),
         }
     }
 }
