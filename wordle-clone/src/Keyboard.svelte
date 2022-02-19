@@ -1,9 +1,9 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
 
-    export let correctLetters;
-    export let misplacedLetters;
-    export let wrongLetters;
+    export let correctLetters: string[];
+    export let misplacedLetters: string[];
+    export let wrongLetters: string[];
 
     const dispatch = createEventDispatcher();
 
@@ -19,10 +19,10 @@
         return wrongLetters.includes(letter);
     };
 
+
     const rows = [
-        "QWERTYUIOP".split(""),
-        "ASDFGHJKL".split(""),
-        "ZXCVBNM".split("")
+        "0123456789".split(""),
+        "ABCDEF".split(""),
     ]
 </script>
 
