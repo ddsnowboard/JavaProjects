@@ -44,7 +44,7 @@ impl Grid {
     fn is_alive(&self, x: Coordinate, y: Coordinate) -> bool {
         let start = Instant::now();
         let out = self.live_squares.contains(&(x, y));
-        println!("{}", start.elapsed().as_nanos());
+        // println!("{}", start.elapsed().as_nanos());
         out
     }
 
