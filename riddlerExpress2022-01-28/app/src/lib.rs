@@ -15,7 +15,7 @@ pub fn run_generations(generations: usize, print: bool) {
     };
 
     let mut curr = starting_grid;
-    for generation in 1..=generations {
+    for generation in 2..=generations {
         curr = curr.next_grid();
         if print {
             println!(
