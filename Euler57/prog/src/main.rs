@@ -1,5 +1,4 @@
 use lazy_static::lazy_static;
-use num_traits::Num;
 use regex::Regex;
 use std::cmp::Ord;
 use std::cmp::Ordering;
@@ -11,7 +10,6 @@ use std::ops::Div;
 use std::ops::Mul;
 use std::ops::Neg;
 use std::ops::Sub;
-use std::str::FromStr;
 
 lazy_static! {
     static ref FRACTION_REGEX: Regex =
@@ -21,7 +19,7 @@ lazy_static! {
 fn main() {
     let fs = (1..=8).map(|depth| {
         (
-            (Rational::from_string("1").unwrap() + sqrt_expansion_minus_1(depth)).reduced(),
+            (Fraction::from_string("1").unwrap() + sqrt_expansion_minus_1(depth)).reduce(),
             depth,
         )
     });
@@ -30,50 +28,47 @@ fn main() {
     }
 }
 
-fn sqrt_expansion_minus_1(depth: usize) -> Rational {
+fn sqrt_expansion_minus_1(depth: usize) -> Fraction {
     match depth {
-        1 => Rational::new(1, 2),
-        _ => (Rational::new(1, 1) / (Rational::new(2, 1) + sqrt_expansion_minus_1(depth - 1)))
-            .reduced(),
+        1 => Fraction::new(1, 2),
+        _ => (Fraction::new(1, 1) / (Fraction::new(2, 1) + sqrt_expansion_minus_1(depth - 1)))
+            .reduce(),
     }
 }
 
-type Rational = Fraction<u128>;
+type Int = u128;
 
-#[derive(Debug)]
-struct Fraction<T>
-where
-    T: Num + FromStr,
-{
-    numerator: T,
-    denominator: T,
+#[derive(Debug, Clone, Copy)]
+struct Fraction {
+    numerator: Int,
+    denominator: Int,
     sign: bool,
 }
 
-impl<T: Num + FromStr + PartialOrd> PartialEq for Fraction<T> {
+impl PartialEq for Fraction {
     fn eq(&self, other: &Self) -> bool {
-        let reduced_self = self.reduced();
-        let reduced_other = other.reduced();
+        let reduced_self = self.reduce();
+        let reduced_other = other.reduce();
         reduced_self.numerator == reduced_other.numerator
             && reduced_self.denominator == reduced_other.denominator
             && reduced_self.sign == reduced_other.sign
     }
 }
 
-impl<T: Num + FromStr + PartialOrd> Eq for Fraction<T> {}
+impl Eq for Fraction {}
 
-impl<T: Num + FromStr + PartialOrd + Hash> Hash for Fraction<T> {
+impl Hash for Fraction {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let reduced = self.reduced();
+        let reduced = self.reduce();
         reduced.numerator.hash(state);
         reduced.denominator.hash(state);
         reduced.sign.hash(state);
     }
 }
 
-impl<T: Num + FromStr + PartialOrd> Fraction<T> {
-    fn new(numerator: T, denominator: T) -> Self {
-        if denominator.is_zero() {
+impl Fraction {
+    fn new(numerator: Int, denominator: Int) -> Self {
+        if denominator == 0 {
             panic!("Can't divide by zero!");
         }
         Self {
@@ -83,7 +78,7 @@ impl<T: Num + FromStr + PartialOrd> Fraction<T> {
         }
     }
 
-    fn reduced(&self) -> Self {
+    fn reduce(&self) -> Self {
         let gcd = Self::gcd(self.numerator, self.denominator);
         Self {
             numerator: self.numerator / gcd,
@@ -92,15 +87,15 @@ impl<T: Num + FromStr + PartialOrd> Fraction<T> {
         }
     }
 
-    fn gcd(a: T, b: T) -> T {
+    fn gcd(a: Int, b: Int) -> Int {
         if a < b {
             return Self::gcd(b, a);
         }
         let mut r = a - b;
         while r > b {
-            r = r - b;
+            r -= b;
         }
-        if r.is_zero() {
+        if r == 0 {
             b
         } else {
             Self::gcd(b, r)
@@ -115,19 +110,19 @@ impl<T: Num + FromStr + PartialOrd> Fraction<T> {
 
     pub fn from_string(s: &str) -> Result<Self, FractionParseError> {
         if let Some(m) = FRACTION_REGEX.captures(s) {
-            let numerator: T = m
+            let numerator: Int = m
                 .name("numerator")
                 .unwrap()
                 .as_str()
                 .parse()
                 .map_err(|_| FractionParseError(s))?;
-            let denominator: T = match m.name("denominator").map(|m| m.as_str()) {
+            let denominator: Int = match m.name("denominator").map(|m| m.as_str()) {
                 Some(s) => s.parse().map_err(|_| FractionParseError(s))?,
-                None => T::one().into(),
+                None => 1,
             };
             let sign: bool = m.name("sign").map(|m| m.as_str()) != Some("-");
 
-            Ok(Self::reduced(&Self {
+            Ok(Self::reduce(&Self {
                 numerator,
                 denominator,
                 sign,
@@ -137,9 +132,9 @@ impl<T: Num + FromStr + PartialOrd> Fraction<T> {
         }
     }
 
-    fn lcm(a: T, b: T) -> T {
-        if a.is_zero() && b.is_zero() {
-            T::zero()
+    fn lcm(a: Int, b: Int) -> Int {
+        if a == 0 && b == 0 {
+            0
         } else {
             (a * b) / Self::gcd(a, b)
         }
@@ -162,7 +157,7 @@ impl<T: Num + FromStr + PartialOrd> Fraction<T> {
     }
 }
 
-impl<T: Num + FromStr + PartialOrd> PartialOrd for Fraction<T> {
+impl PartialOrd for Fraction {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         if self.sign && !other.sign {
             Some(Ordering::Greater)
@@ -180,13 +175,13 @@ impl<T: Num + FromStr + PartialOrd> PartialOrd for Fraction<T> {
     }
 }
 
-impl<T: Num + FromStr + PartialOrd> Ord for Fraction<T> {
+impl Ord for Fraction {
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(other).unwrap()
     }
 }
 
-impl<T: Num + FromStr + PartialOrd> Add for Fraction<T> {
+impl Add for Fraction {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
@@ -199,12 +194,12 @@ impl<T: Num + FromStr + PartialOrd> Add for Fraction<T> {
                     + (other.numerator * self.denominator),
                 denominator: self.denominator * other.denominator,
             }
-            .reduced(),
+            .reduce(),
         }
     }
 }
 
-impl<T: Num + FromStr + PartialOrd> Sub for Fraction<T> {
+impl Sub for Fraction {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
@@ -224,7 +219,7 @@ impl<T: Num + FromStr + PartialOrd> Sub for Fraction<T> {
     }
 }
 
-impl<T: Num + FromStr + PartialOrd> Neg for Fraction<T> {
+impl Neg for Fraction {
     type Output = Self;
 
     fn neg(self) -> Self {
@@ -236,7 +231,7 @@ impl<T: Num + FromStr + PartialOrd> Neg for Fraction<T> {
     }
 }
 
-impl <T:Num+FromStr+PartialOrd> Mul for Fraction<T> {
+impl Mul for Fraction {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self {
@@ -250,7 +245,7 @@ impl <T:Num+FromStr+PartialOrd> Mul for Fraction<T> {
     }
 }
 
-impl <T:Num+FromStr+PartialOrd>Div for Fraction<T> {
+impl Div for Fraction {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self {
