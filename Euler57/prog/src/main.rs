@@ -3,7 +3,6 @@ use num_bigint::BigUint;
 use num_traits::int::PrimInt;
 use num_traits::One;
 use num_traits::Zero;
-use rayon::prelude::*;
 use regex::Regex;
 use std::cmp::Ord;
 use std::cmp::Ordering;
@@ -22,16 +21,17 @@ lazy_static! {
 }
 
 fn main() {
-    let fs = (1..=1000)
-        .into_par_iter()
-        .map(|depth| {
-            (
-                (Fraction::from_string("1").unwrap() + sqrt_expansion_minus_1(depth)).reduce(),
-                depth,
-            )
-        })
-        .filter(|(f, _)| f.numerator.to_str_radix(10).len() > f.denominator.to_str_radix(10).len());
-    println!("There were {} total", fs.count());
+    let mut last = sqrt_expansion_minus_1(1);
+    let mut count = 0;
+    for _ in 1..=1000 {
+        let curr = Fraction::from_string("1").unwrap() + last.clone();
+        if curr.numerator.to_str_radix(10).len() > curr.denominator.to_str_radix(10).len() {
+            count += 1;
+        }
+
+        last = Fraction::from_prim(1_u32, 1) / (Fraction::from_prim(2_u32, 1) + last)
+    }
+    println!("There were {} total", count);
 }
 
 fn sqrt_expansion_minus_1(depth: usize) -> Fraction {
