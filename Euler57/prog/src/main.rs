@@ -1,4 +1,9 @@
 use lazy_static::lazy_static;
+use num_bigint::BigUint;
+use num_traits::int::PrimInt;
+use num_traits::One;
+use num_traits::Zero;
+use rayon::prelude::*;
 use regex::Regex;
 use std::cmp::Ord;
 use std::cmp::Ordering;
@@ -17,28 +22,30 @@ lazy_static! {
 }
 
 fn main() {
-    let fs = (1..=8).map(|depth| {
-        (
-            (Fraction::from_string("1").unwrap() + sqrt_expansion_minus_1(depth)).reduce(),
-            depth,
-        )
-    });
-    for (f, depth) in fs {
-        println!("At depth {} we got {:?}", depth, f);
-    }
+    let fs = (1..=1000)
+        .into_par_iter()
+        .map(|depth| {
+            (
+                (Fraction::from_string("1").unwrap() + sqrt_expansion_minus_1(depth)).reduce(),
+                depth,
+            )
+        })
+        .filter(|(f, _)| f.numerator.to_str_radix(10).len() > f.denominator.to_str_radix(10).len());
+    println!("There were {} total", fs.count());
 }
 
 fn sqrt_expansion_minus_1(depth: usize) -> Fraction {
     match depth {
-        1 => Fraction::new(1, 2),
-        _ => (Fraction::new(1, 1) / (Fraction::new(2, 1) + sqrt_expansion_minus_1(depth - 1)))
-            .reduce(),
+        1 => Fraction::from_prim(1_u32, 2),
+        _ => (Fraction::from_prim(1_u32, 1)
+            / (Fraction::from_prim(2_u32, 1) + sqrt_expansion_minus_1(depth - 1)))
+        .reduce(),
     }
 }
 
-type Int = u128;
+type Int = BigUint;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 struct Fraction {
     numerator: Int,
     denominator: Int,
@@ -47,8 +54,8 @@ struct Fraction {
 
 impl PartialEq for Fraction {
     fn eq(&self, other: &Self) -> bool {
-        let reduced_self = self.reduce();
-        let reduced_other = other.reduce();
+        let reduced_self = self.clone().reduce();
+        let reduced_other = other.clone().reduce();
         reduced_self.numerator == reduced_other.numerator
             && reduced_self.denominator == reduced_other.denominator
             && reduced_self.sign == reduced_other.sign
@@ -59,7 +66,7 @@ impl Eq for Fraction {}
 
 impl Hash for Fraction {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let reduced = self.reduce();
+        let reduced = self.clone().reduce();
         reduced.numerator.hash(state);
         reduced.denominator.hash(state);
         reduced.sign.hash(state);
@@ -68,7 +75,7 @@ impl Hash for Fraction {
 
 impl Fraction {
     fn new(numerator: Int, denominator: Int) -> Self {
-        if denominator == 0 {
+        if denominator.is_zero() {
             panic!("Can't divide by zero!");
         }
         Self {
@@ -78,10 +85,22 @@ impl Fraction {
         }
     }
 
-    fn reduce(&self) -> Self {
-        let gcd = Self::gcd(self.numerator, self.denominator);
+    fn from_prim<I>(numerator: I, denominator: I) -> Self
+    where
+        I: PrimInt,
+        Int: From<I>,
+    {
         Self {
-            numerator: self.numerator / gcd,
+            numerator: numerator.into(),
+            denominator: denominator.into(),
+            sign: true,
+        }
+    }
+
+    fn reduce(self) -> Self {
+        let gcd = Self::gcd(self.numerator.clone(), self.denominator.clone());
+        Self {
+            numerator: self.numerator / gcd.clone(),
             denominator: self.denominator / gcd,
             sign: self.sign,
         }
@@ -91,11 +110,11 @@ impl Fraction {
         if a < b {
             return Self::gcd(b, a);
         }
-        let mut r = a - b;
+        let mut r = a - b.clone();
         while r > b {
-            r -= b;
+            r -= b.clone();
         }
-        if r == 0 {
+        if r.is_zero() {
             b
         } else {
             Self::gcd(b, r)
@@ -118,11 +137,11 @@ impl Fraction {
                 .map_err(|_| FractionParseError(s))?;
             let denominator: Int = match m.name("denominator").map(|m| m.as_str()) {
                 Some(s) => s.parse().map_err(|_| FractionParseError(s))?,
-                None => 1,
+                None => One::one(),
             };
             let sign: bool = m.name("sign").map(|m| m.as_str()) != Some("-");
 
-            Ok(Self::reduce(&Self {
+            Ok(Self::reduce(Self {
                 numerator,
                 denominator,
                 sign,
@@ -133,25 +152,23 @@ impl Fraction {
     }
 
     fn lcm(a: Int, b: Int) -> Int {
-        if a == 0 && b == 0 {
-            0
+        if a.is_zero() && b.is_zero() {
+            Zero::zero()
         } else {
-            (a * b) / Self::gcd(a, b)
+            let gcd = Self::gcd(a.clone(), b.clone());
+            (a * b) / gcd
         }
     }
 
-    pub fn abs(&self) -> Self {
-        Self {
-            numerator: self.numerator,
-            denominator: self.denominator,
-            sign: true,
-        }
+    pub fn cmp_magnitude(&self, other: &Self) -> Ordering {
+        (self.numerator.clone() * other.denominator.clone())
+            .cmp(&(other.numerator.clone() * self.denominator.clone()))
     }
 
     pub fn reciprocal(&self) -> Self {
         Self {
-            numerator: self.denominator,
-            denominator: self.numerator,
+            numerator: self.denominator.clone(),
+            denominator: self.numerator.clone(),
             sign: self.sign,
         }
     }
@@ -164,8 +181,7 @@ impl PartialOrd for Fraction {
         } else if !self.sign && other.sign {
             Some(Ordering::Less)
         } else {
-            let abs_cmp =
-                (self.numerator * other.denominator).cmp(&(other.numerator * self.denominator));
+            let abs_cmp = self.cmp_magnitude(other);
             Some(if self.sign {
                 abs_cmp
             } else {
@@ -190,8 +206,8 @@ impl Add for Fraction {
             (false, true) => -(-self - other),
             (s1, _) => Self {
                 sign: s1,
-                numerator: (self.numerator * other.denominator)
-                    + (other.numerator * self.denominator),
+                numerator: (self.numerator.clone() * other.denominator.clone())
+                    + (other.numerator.clone() * self.denominator.clone()),
                 denominator: self.denominator * other.denominator,
             }
             .reduce(),
@@ -203,7 +219,7 @@ impl Sub for Fraction {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        if other.abs() > self.abs() {
+        if self.cmp_magnitude(&other).is_gt() {
             return -(other - self);
         }
         match (self.sign, other.sign) {
@@ -211,8 +227,8 @@ impl Sub for Fraction {
             (false, true) => -(-self + other),
             (s1, _) => Self {
                 sign: s1,
-                numerator: (self.numerator * other.denominator)
-                    - (other.numerator * self.denominator),
+                numerator: (self.numerator * other.denominator.clone())
+                    - (other.numerator * self.denominator.clone()),
                 denominator: self.denominator * other.denominator,
             },
         }
