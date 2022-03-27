@@ -2,7 +2,10 @@ use crate::HandSum::Hard;
 use crate::HandSum::Soft;
 use crate::Suit::*;
 use crate::Value::*;
+use rand::distributions::Uniform;
+use rand::prelude::*;
 use std::collections::HashSet;
+use std::iter::from_fn;
 use std::ops::Add;
 
 const TWENTY_ONE: ValueType = 21;
@@ -68,8 +71,33 @@ impl HandSum {
     }
 }
 
+trait SingleDeck {
+    fn cards(&self) -> &Vec<Card>;
+    fn cards_mut(&mut self) -> &mut Vec<Card>;
+}
+
 trait Deck {
-    fn draw(&mut self) -> Option<&Card>;
+    fn draw(&mut self) -> Option<Card>;
+    fn is_empty(&self) -> bool;
+}
+
+impl<T: SingleDeck> Deck for T {
+    fn draw(&mut self) -> Option<Card> {
+        let cards = self.cards_mut();
+        if cards.is_empty() {
+            None
+        } else {
+            let between = Uniform::from(0..cards.len());
+            let mut rng = thread_rng();
+
+            let index = between.sample(&mut rng);
+            Some(cards.swap_remove(index))
+        }
+    }
+
+    fn is_empty(&self) -> bool {
+        self.cards().len() == 0
+    }
 }
 
 struct FrenchDeck {
@@ -104,33 +132,62 @@ impl FrenchDeck {
     }
 }
 
-impl Deck for FrenchDeck {
-    fn draw(&mut self) -> Option<&Card> {
-        // Draw something random, which I can't do because I need the random crate
-        None
+impl SingleDeck for FrenchDeck {
+    fn cards(&self) -> &Vec<Card> {
+        &self.cards
+    }
+    fn cards_mut(&mut self) -> &mut Vec<Card> {
+        &mut self.cards
     }
 }
 
 struct Shoe {
-    decks:Vec<Box<dyn Deck>>
+    decks: Vec<Box<dyn Deck>>,
 }
 
 impl Deck for Shoe {
-    fn draw(&mut self)->Option<&Card> {
-        // Draw something random, which I can't do because I need the random crate
-        None
+    fn draw(&mut self) -> Option<Card> {
+        let mut non_empty_decks: Vec<_> = self.decks.iter_mut().filter(|d| !d.is_empty()).collect();
+        if non_empty_decks.is_empty() {
+            None
+        } else {
+            let between = Uniform::from(0..non_empty_decks.len());
+            let mut rng = thread_rng();
+
+            let index = between.sample(&mut rng);
+            non_empty_decks[index].draw()
+        }
+    }
+
+    fn is_empty(&self) -> bool {
+        self.decks.iter().all(|d| d.is_empty())
     }
 }
 
 impl Shoe {
-    fn new(decks:Vec<Box<dyn Deck>>) -> Self {
-Self{decks}
+    fn new(decks: Vec<Box<dyn Deck>>) -> Self {
+        Self { decks }
     }
 
-    fn new_with(count:usize, deckBuilder:Fn<() => dyn Deck>)-> Self {
-        let decks = (0..count).map(|_| deckBuilder()).collect();
+    // This is 'static just to mean that it can't be a short-lived pointer
+    fn new_with<T: Deck + 'static>(count: usize, deck_builder: fn() -> T) -> Self {
+        let decks = (0..count)
+            .map(|_| Box::new(deck_builder()) as Box<dyn Deck>)
+            .collect();
         Self::new(decks)
     }
+}
+
+#[test]
+fn test_building_shoe() {
+    let decks: Vec<Box<dyn Deck>> = vec![Box::new(FrenchDeck::new()), Box::new(FrenchDeck::new())];
+    let mut shoe = Shoe::new(decks);
+    assert_eq!(shoe.decks.len(), 2);
+    assert_eq!(shoe.is_empty(), false);
+    let cards: Vec<Card> = from_fn(|| shoe.draw()).collect();
+    assert!(shoe.is_empty());
+    assert_eq!(cards.len(), 52 * 2);
+    assert_eq!(cards.into_iter().collect::<HashSet<_>>().len(), 52);
 }
 
 impl Add for HandSum {
@@ -156,6 +213,10 @@ fn sum_hand(cards: &HashSet<Card>) -> HandSum {
         .iter()
         .map(|c| c.as_sum())
         .fold(Hard(0), |acc, new| acc + new)
+}
+
+trait BlackjackStrategy{
+    fn play(hand:Vec<&// I can't decide what exactly to give the players. Hmm.
 }
 
 #[test]
