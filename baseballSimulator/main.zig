@@ -1,58 +1,59 @@
 const std = @import("std");
 const expect = std.testing.expect;
+const RndGen = std.rand.DefaultPrng;
+var random = RndGen.init(82297);
 
-struct Player {
-atBats: u32,
-            hits: u32,
-            doubles: u32, 
-            triples: u32,
-            homeRuns:u32,
-            pub fn singles(self: Player) u32 {
-                return self.hits - self.doubles - self.triples - self.homeRuns;
-            }
-}
+const Player = struct {
+    atBats: u32,
+    doubles: u32,
+    triples: u32,
+    homeRuns: u32,
+    singles: u32,
 
-const batters = [_]Player{
-    Player { .atBats = 135, .hits = 24, .doubles = 4, .triples = 0, .homeRuns = 1},
-           Player { .atBats = 315, .hits = 107, .doubles = 28, .triples = 0, .homeRuns = 19},
-           Player { .atBats = 331, .hits = 85, .doubles = 12, .triples = 3, .homeRuns = 7},
-           Player { .atBats = 77, .hits = 10, .doubles = 3, .triples = 0, .homeRuns = 1},
-           Player { .atBats = 316, .hits = 92, .doubles = 20, .triples = 1, .homeRuns = 17},
-           Player { .atBats = 166, .hits = 40, .doubles = 6, .triples = 1, .homeRuns = 4},
-           Player { .atBats = 246, .hits = 63, .doubles = 7, .triples = 3, .homeRuns = 5},
-           Player { .atBats = 238, .hits = 60, .doubles = 17, .triples = 2, .homeRuns = 5},
-           Player { .atBats = 126, .hits = 25, .doubles = 5, .triples = 0, .homeRuns = 4}
+    fn bat(self: Player) AtBat {
+        const roll = random.random().intRangeAtMost(u32, 0, self.atBats);
+        return if (roll < self.singles)
+            AtBat.Single
+        else if (roll < self.singles + self.doubles)
+            AtBat.Double
+        else if (roll < self.singles + self.doubles + self.triples)
+            AtBat.Triple
+        else if (roll < self.singles + self.doubles + self.triples + self.homeRuns)
+            AtBat.HomeRun
+        else
+            AtBat.Out;
+    }
 };
 
-pub fn main() void {
-    var iter = circularIterator(batters[0..]);
-    var counter: u32 = 0;
-    while (counter < 25) {
-        std.debug.print("Val is {d}\n", .{iter.next()});
-        counter += 1;
-    }
+fn buildPlayer(atBats: u32, hits: u32, doubles: u32, triples: u32, homeRuns: u32) Player {
+    return Player{ .atBats = atBats, .doubles = doubles, .triples = triples, .homeRuns = homeRuns, .singles = hits - doubles - triples - homeRuns };
 }
 
-test "if statement" {
-    const a = true;
-    var x = @as(u16, 0);
-    if (a) {
-        x += 1;
-    } else {
-        x += 2;
+const AtBat = enum { Out, Single, Double, Triple, HomeRun };
+
+const batters = [_]Player{ buildPlayer(135, 24, 4, 0, 1), buildPlayer(315, 107, 28, 0, 19), buildPlayer(331, 85, 12, 3, 7), buildPlayer(77, 10, 3, 0, 1), buildPlayer(316, 92, 20, 1, 17), buildPlayer(166, 40, 6, 1, 4), buildPlayer(246, 63, 7, 3, 5), buildPlayer(238, 60, 17, 2, 5), buildPlayer(126, 25, 5, 0, 4) };
+
+pub fn main() void {
+    const totalInnings: u32 = 5000000;
+    var iter = circularIterator(batters[0..]);
+    var counter: u32 = 0;
+    var totalScore: u32 = 0;
+    while (counter < totalInnings) {
+        totalScore += runInning(&iter);
+        counter += 1;
     }
-    try expect(x == 1);
+    std.debug.print("Scored {d} in {d} innings", .{ totalScore, totalInnings });
 }
 
 fn CircularIterator(comptime T: type) type {
     return struct {
-slice: []const T,
-           index: usize = 0,
-           pub fn next(self: *@This()) T {
-               const out = self.slice[self.index];
-               self.index = (self.index + 1) % self.slice.len;
-               return out;
-           }
+        slice: []const T,
+        index: usize = 0,
+        pub fn next(self: *@This()) T {
+            const out = self.slice[self.index];
+            self.index = (self.index + 1) % self.slice.len;
+            return out;
+        }
     };
 }
 
@@ -62,4 +63,69 @@ fn TypeOfSlice(comptime sliceType: type) type {
 
 fn circularIterator(slice: anytype) CircularIterator(TypeOfSlice(@TypeOf(slice))) {
     return CircularIterator(TypeOfSlice(@TypeOf(slice))){ .slice = slice };
+}
+
+fn runInning(playerIterator: *CircularIterator(Player)) u32 {
+    var first = false;
+    var second = false;
+    var third = false;
+    var score: u32 = 0;
+    var outs: u32 = 0;
+    while (outs < 3) {
+        const atBat = playerIterator.next().bat();
+        switch (atBat) {
+            .Out => {
+                outs += 1;
+            },
+            .Single => {
+                if (third) {
+                    score += 1;
+                }
+                third = second;
+                second = first;
+                first = true;
+            },
+            .Double => {
+                if (third) {
+                    score += 1;
+                }
+                if (second) {
+                    score += 1;
+                }
+                third = first;
+                second = true;
+                first = false;
+            },
+            .Triple => {
+                if (third) {
+                    score += 1;
+                }
+                if (second) {
+                    score += 1;
+                }
+                if (first) {
+                    score += 1;
+                }
+                third = true;
+                first = false;
+                second = false;
+            },
+            .HomeRun => {
+                score += 1;
+                if (third) {
+                    score += 1;
+                }
+                if (second) {
+                    score += 1;
+                }
+                if (first) {
+                    score += 1;
+                }
+                first = false;
+                third = false;
+                second = false;
+            },
+        }
+    }
+    return score;
 }
