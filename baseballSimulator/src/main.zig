@@ -1,7 +1,7 @@
 const std = @import("std");
 const expect = std.testing.expect;
 const RndGen = std.rand.DefaultPrng;
-var random = RndGen.init(82297);
+var random = RndGen.init(1000);
 
 const Player = struct {
     atBats: u32,
@@ -11,14 +11,14 @@ const Player = struct {
     singles: u32,
 
     fn bat(self: Player) AtBat {
-        const roll = random.random().intRangeAtMost(u32, 0, self.atBats);
-        return if (roll < self.singles)
+        const luckRoll = random.random().intRangeAtMost(u32, 0, self.atBats);
+        return if (luckRoll < self.singles)
             AtBat.Single
-        else if (roll < self.singles + self.doubles)
+        else if (luckRoll < self.singles + self.doubles)
             AtBat.Double
-        else if (roll < self.singles + self.doubles + self.triples)
+        else if (luckRoll < self.singles + self.doubles + self.triples)
             AtBat.Triple
-        else if (roll < self.singles + self.doubles + self.triples + self.homeRuns)
+        else if (luckRoll < self.singles + self.doubles + self.triples + self.homeRuns)
             AtBat.HomeRun
         else
             AtBat.Out;
@@ -38,11 +38,14 @@ pub fn main() void {
     var iter = circularIterator(batters[0..]);
     var counter: u32 = 0;
     var totalScore: u32 = 0;
+    var totalLOB: u32 = 0;
     while (counter < totalInnings) {
-        totalScore += runInning(&iter);
+        const inning = runInning(&iter);
+        totalScore += inning.score;
+        totalLOB += inning.leftOnBase;
         counter += 1;
     }
-    std.debug.print("Scored {d} in {d} innings", .{ totalScore, totalInnings });
+    std.debug.print("Scored {d} in {d} innings, leaving {d} on\n", .{ totalScore, totalInnings, totalLOB });
 }
 
 fn CircularIterator(comptime T: type) type {
@@ -65,7 +68,7 @@ fn circularIterator(slice: anytype) CircularIterator(TypeOfSlice(@TypeOf(slice))
     return CircularIterator(TypeOfSlice(@TypeOf(slice))){ .slice = slice };
 }
 
-fn runInning(playerIterator: *CircularIterator(Player)) u32 {
+fn runInning(playerIterator: *CircularIterator(Player)) Inning {
     var first = false;
     var second = false;
     var third = false;
@@ -86,24 +89,31 @@ fn runInning(playerIterator: *CircularIterator(Player)) u32 {
                 first = true;
             },
             .Double => {
-                if (third) {
-                    score += 1;
-                }
                 if (second) {
                     score += 1;
                 }
-                third = first;
+                if (third) {
+                    score += 1;
+                }
+                if (first) {
+                    if (roll(50)) {
+                        third = false;
+                        score += 1;
+                    } else {
+                        third = true;
+                    }
+                }
                 second = true;
                 first = false;
             },
             .Triple => {
-                if (third) {
+                if (first) {
                     score += 1;
                 }
                 if (second) {
                     score += 1;
                 }
-                if (first) {
+                if (third) {
                     score += 1;
                 }
                 third = true;
@@ -112,13 +122,13 @@ fn runInning(playerIterator: *CircularIterator(Player)) u32 {
             },
             .HomeRun => {
                 score += 1;
-                if (third) {
+                if (first) {
                     score += 1;
                 }
                 if (second) {
                     score += 1;
                 }
-                if (first) {
+                if (third) {
                     score += 1;
                 }
                 first = false;
@@ -127,5 +137,11 @@ fn runInning(playerIterator: *CircularIterator(Player)) u32 {
             },
         }
     }
-    return score;
+    return Inning{ .score = score, .leftOnBase = (if (first) @as(u32, 1) else 0) + (if (second) @as(u32, 1) else 0) + (if (third) @as(u32, 1) else 0) };
 }
+
+fn roll(prb: u32) bool {
+    return random.random().intRangeAtMost(u32, 0, 100) <= prb;
+}
+
+const Inning = struct { score: u32, leftOnBase: u32 };
