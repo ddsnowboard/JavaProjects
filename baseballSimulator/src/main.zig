@@ -84,8 +84,30 @@ fn runInning(playerIterator: *CircularIterator(Player)) Inning {
                 if (third) {
                     score += 1;
                 }
-                third = second;
-                second = first;
+                if (second) {
+                    if (roll(50)) {
+                        third = false;
+                        score += 1;
+                    } else {
+                        third = true;
+                    }
+                }
+                if (first and !third) {
+                    // Goes from second
+                    if (roll(60)) {
+                        // Goes from third
+                        if (roll(30)) {
+                            score += 1;
+                            second = false;
+                            third = false;
+                        } else {
+                            second = false;
+                            third = true;
+                        }
+                    } else {
+                        second = true;
+                    }
+                }
                 first = true;
             },
             .Double => {
@@ -96,7 +118,7 @@ fn runInning(playerIterator: *CircularIterator(Player)) Inning {
                     score += 1;
                 }
                 if (first) {
-                    if (roll(50)) {
+                    if (roll(80)) {
                         third = false;
                         score += 1;
                     } else {
