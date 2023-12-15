@@ -1,1 +1,1 @@
-select c.name, c.phone from customers c inner join orders o on o.customerid = c.customerid inner join orders_items oi on oi.orderid = o.orderid where c.name like 'J%P%' and o.ordered between '2017-01-01' and '2017-12-31' and oi.sku = 'HOM2761';
+select c.name, c.phone, c.lat, c.long from customers c inner join orders o on o.customerid = c.customerid inner join orders_items oi on oi.orderid = o.orderid where c.name like 'D%S%' and o.ordered between '2017-01-01' and '2017-12-31' and oi.sku = 'HOM6863';

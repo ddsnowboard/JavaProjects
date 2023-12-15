@@ -6,5 +6,5 @@ where oi.sku IN (Select sku from senior_cat_food) group by 1;
 
 select c.name, c.phone, scf.n_orders from customers c 
 inner join senior_cat_food_buyers scf on scf.customerid = c.customerid 
-where c.customerid IN (select customerid from staten_islanders)
-order by scf.n_orders desc limit 30;
+where (c.customerid IN (select customerid from staten_islanders) or 1=1)
+order by scf.n_orders desc limit 1;
