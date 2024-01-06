@@ -1,7 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
-use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufRead;
@@ -9,10 +5,6 @@ use std::io::BufReader;
 use std::io::BufWriter;
 use std::io::Lines;
 use std::io::Write;
-
-lazy_static! {
-    static ref LINE_REGEX: Regex = Regex::new(r"^([\p{L},.'() -]+);([0-9.-]+)$").unwrap();
-}
 
 const FILENAME: &str = "measurements.txt";
 
@@ -89,10 +81,22 @@ fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
 }
 
 fn read_row(row: String) -> Row {
-    let captures = LINE_REGEX.captures(&row).unwrap();
+    let mut city = String::with_capacity(128);
+    let mut temp = String::with_capacity(128);
+    let mut it = row.chars();
+    for c in it.by_ref() {
+        if c != ';' {
+            city.push(c);
+        } else {
+            break;
+        }
+    }
+    for c in it {
+        temp.push(c);
+    }
     Row {
-        city: captures.get(1).unwrap().as_str().to_owned(),
-        temp: captures.get(2).unwrap().as_str().parse().unwrap(),
+        city,
+        temp: temp.parse().unwrap(),
     }
 }
 
