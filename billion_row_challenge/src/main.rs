@@ -51,7 +51,7 @@ impl City {
 }
 
 fn main() {
-    let output = File::create("output.txt").unwrap();
+    let output = File::create("/dev/null").unwrap();
     let writer = BufWriter::new(output);
     write_cities(writer);
 }
