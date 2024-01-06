@@ -3,7 +3,6 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::BufWriter;
-use std::io::Lines;
 use std::io::Write;
 
 const FILENAME: &str = "measurements.txt";
@@ -59,11 +58,19 @@ fn main() {
 
 fn get_cities() -> Vec<(String, City)> {
     let mut cities: HashMap<String, City> = HashMap::new();
-    let rows = read_file().map(|r| r.unwrap()).map(read_row);
-    rows.for_each(|row| {
-        let city = cities.entry(row.city).or_insert_with(City::new);
-        city.process_temp(row.temp);
-    });
+    let mut file = read_file();
+    let mut row_holder = String::with_capacity(128);
+    loop {
+        row_holder.clear();
+        match file.read_line(&mut row_holder).unwrap() {
+            0 => break,
+            _ => {
+                let row = read_row(&row_holder);
+                let city = cities.entry(row.city).or_insert_with(City::new);
+                city.process_temp(row.temp);
+            }
+        }
+    }
     let mut cities: Vec<_> = cities.into_iter().collect();
     cities.sort_unstable_by_key(|(c, _)| c.clone());
     cities
@@ -80,7 +87,7 @@ fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
     writer.write_all(b"}\n").unwrap();
 }
 
-fn read_row(row: String) -> Row {
+fn read_row(row: &str) -> Row {
     let mut city = String::with_capacity(128);
     let mut temp = String::with_capacity(128);
     let mut it = row.chars();
@@ -92,7 +99,11 @@ fn read_row(row: String) -> Row {
         }
     }
     for c in it {
-        temp.push(c);
+        if c != '\n' {
+            temp.push(c);
+        } else {
+            break;
+        }
     }
     Row {
         city,
@@ -100,8 +111,7 @@ fn read_row(row: String) -> Row {
     }
 }
 
-fn read_file() -> Lines<BufReader<File>> {
+fn read_file() -> BufReader<File> {
     let file = File::open(FILENAME).unwrap();
-    let reader = BufReader::new(file);
-    reader.lines()
+    BufReader::new(file)
 }
