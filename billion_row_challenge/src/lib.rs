@@ -107,7 +107,7 @@ fn read_row(row: &str) -> Row {
     }
     Row {
         city,
-        temp: temp.parse().unwrap(),
+        temp: dumb_parse_number(&temp),
     }
 }
 
