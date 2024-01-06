@@ -87,6 +87,9 @@ fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
     writer.write_all(b"}\n").unwrap();
 }
 
+// This is taking 40% of the time. I can easily parallelize this.
+// I can send the output Rows through a channel and add them to the HashMap sequentially,
+// or I can figure out how to add stuff to the HashMap in parallel too.
 fn read_row(row: &str) -> Row {
     let mut city = String::with_capacity(128);
     let mut temp = String::with_capacity(128);
