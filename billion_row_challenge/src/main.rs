@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use fxhash::FxHashMap;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
@@ -57,7 +57,7 @@ fn main() {
 }
 
 fn get_cities() -> Vec<(String, City)> {
-    let mut cities: HashMap<String, City> = HashMap::new();
+    let mut cities = FxHashMap::default();
     let mut file = read_file();
     let mut row_holder = String::with_capacity(128);
     loop {
