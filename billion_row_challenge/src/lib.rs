@@ -1,9 +1,12 @@
 use fxhash::FxHashMap;
+use rayon::prelude::*;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::BufWriter;
 use std::io::Read;
+use std::io::Seek;
+use std::io::SeekFrom;
 use std::io::Write;
 
 const FILENAME: &str = "measurements.txt";
@@ -71,14 +74,19 @@ fn get_cities(file: File) -> Vec<(String, City)> {
     cities
 }
 
-fn split_up_file(file: File, chunks: usize) -> Vec<FilePortion<BufReader<File>>> {
+fn split_up_file(
+    mut file: File,
+    chunk_index: u32,
+    total_chunks: u32,
+) -> FilePortion<BufReader<File>> {
+    file.rewind().unwrap();
     let n_lines = {
         let file = file.try_clone().unwrap();
         let mut reader = BufReader::new(file);
         let mut out: u32 = 0;
         loop {
             let buf = reader.fill_buf().unwrap();
-            if buf.len() == 0 {
+            if buf.is_empty() {
                 break;
             }
             for c in buf {
@@ -92,11 +100,28 @@ fn split_up_file(file: File, chunks: usize) -> Vec<FilePortion<BufReader<File>>>
         out
     };
 
-    println!("Found {} lines", n_lines);
-    HELLO! I don't know how to clone the file structs. So I don't know how this idea will work. Hmm.
+    let expected_lines_per_chunk = n_lines / total_chunks;
+    let lines_for_this_chunk = if chunk_index == total_chunks - 1 {
+        expected_lines_per_chunk + (n_lines % total_chunks)
+    } else {
+        expected_lines_per_chunk
+    };
+    println!(
+        "Found {} lines for chunk {}",
+        lines_for_this_chunk, chunk_index
+    );
+    let min_offset = chunk_index * expected_lines_per_chunk;
+    file.seek(SeekFrom::Start(min_offset.into())).unwrap();
+    FilePortion::new(BufReader::new(file), lines_for_this_chunk as u64)
 }
 
 pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
+    let n_threads = 8;
+    let file_handles: Vec<_> = (0..n_threads)
+        .collect::<Vec<u32>>()
+        .into_par_iter()
+        .map(|idx| split_up_file(get_file(), idx, n_threads))
+        .collect();
     let file = get_file();
     let cities = get_cities(file);
     let strings: Vec<_> = cities
@@ -180,23 +205,20 @@ pub fn dumb_parse_number(s: &str) -> Temp {
 
 struct FilePortion<T: BufRead> {
     reader: T,
-    max_offset_inclusive: u64,
+    max_offset_exclusive: u64,
     current_offset: u64,
 }
 
 impl<T: BufRead> FilePortion<T> {
-    fn remaining_bytes(&self) -> u64 {
-        self.max_offset_inclusive - self.current_offset
-    }
-}
-
-impl<T: BufRead> FilePortion<T> {
-    fn new(reader: T, min_offset: u64, max_offset_inclusive: u64) -> Self {
+    fn new(reader: T, max_offset_exclusive: u64) -> Self {
         FilePortion {
             reader,
-            current_offset: min_offset,
-            max_offset_inclusive,
+            current_offset: 0,
+            max_offset_exclusive,
         }
+    }
+    fn remaining_bytes(&self) -> u64 {
+        self.max_offset_exclusive - self.current_offset - 1
     }
 }
 
