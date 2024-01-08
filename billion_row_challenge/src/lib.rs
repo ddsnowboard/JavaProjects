@@ -4,6 +4,8 @@ use std::io::BufRead;
 use std::io::BufReader;
 use std::io::BufWriter;
 use std::io::Write;
+use std::sync::mpsc::sync_channel;
+use threadpool::ThreadPool;
 
 const FILENAME: &str = "measurements.txt";
 
@@ -52,20 +54,23 @@ impl City {
 
 fn get_cities() -> Vec<(String, City)> {
     let mut cities = FxHashMap::default();
-    let mut file = read_file();
-    let mut row_holder = String::with_capacity(128);
-    loop {
-        row_holder.clear();
-        match file.read_line(&mut row_holder).unwrap() {
-            0 => break,
-            _ => {
-                let row = read_row(&row_holder);
-                let city = cities.entry(row.city).or_insert_with(City::new);
-                city.process_temp(row.temp);
-            }
-        }
-    }
-    let mut cities: Vec<_> = cities.into_iter().collect();
+    let file = read_file();
+    let pool = ThreadPool::new(8);
+
+    let (sender, receiver) = sync_channel(100);
+    file.lines().for_each(|line| {
+        let sender = sender.clone();
+        pool.execute(move || {
+            let row = read_row(&line.unwrap());
+            sender.send(row).unwrap();
+        });
+    });
+    receiver.iter().for_each(|row| {
+        let city = cities.entry(row.city).or_insert_with(City::new);
+        city.process_temp(row.temp);
+            println!("Tock");
+    });
+    let mut cities = cities.into_iter().collect::<Vec<_>>();
     cities.sort_unstable_by_key(|(c, _)| c.clone());
     cities
 }
