@@ -1,7 +1,7 @@
+use fxhash::FxHashMap;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
-use fxhash::FxHashMap;
 use std::io::BufWriter;
 use std::io::Write;
 
