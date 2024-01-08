@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::BufWriter;
+use std::io::Read;
 use std::io::Write;
 
 const FILENAME: &str = "measurements.txt";
@@ -50,10 +51,10 @@ impl City {
     }
 }
 
-fn get_cities() -> Vec<(String, City)> {
+fn get_cities(file: File) -> Vec<(String, City)> {
     let mut cities = FxHashMap::default();
-    let mut file = read_file();
     let mut row_holder = String::with_capacity(128);
+    let mut file = BufReader::new(file);
     loop {
         row_holder.clear();
         match file.read_line(&mut row_holder).unwrap() {
@@ -70,8 +71,34 @@ fn get_cities() -> Vec<(String, City)> {
     cities
 }
 
+fn split_up_file(file: File, chunks: usize) -> Vec<FilePortion<BufReader<File>>> {
+    let n_lines = {
+        let file = file.try_clone().unwrap();
+        let mut reader = BufReader::new(file);
+        let mut out: u32 = 0;
+        loop {
+            let buf = reader.fill_buf().unwrap();
+            if buf.len() == 0 {
+                break;
+            }
+            for c in buf {
+                if *c == b'\n' {
+                    out += 1;
+                }
+            }
+            let bytes_processed = buf.len();
+            reader.consume(bytes_processed);
+        }
+        out
+    };
+
+    println!("Found {} lines", n_lines);
+    HELLO! I don't know how to clone the file structs. So I don't know how this idea will work. Hmm.
+}
+
 pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
-    let cities = get_cities();
+    let file = get_file();
+    let cities = get_cities(file);
     let strings: Vec<_> = cities
         .into_iter()
         .map(|(name, city)| city.to_str(&name))
@@ -111,9 +138,8 @@ fn read_row(row: &str) -> Row {
     }
 }
 
-fn read_file() -> BufReader<File> {
-    let file = File::open(FILENAME).unwrap();
-    BufReader::new(file)
+fn get_file() -> File {
+    File::open(FILENAME).unwrap()
 }
 
 pub fn dumb_parse_number(s: &str) -> Temp {
@@ -150,6 +176,56 @@ pub fn dumb_parse_number(s: &str) -> Temp {
         }
     }
     get_output(builder, sign)
+}
+
+struct FilePortion<T: BufRead> {
+    reader: T,
+    max_offset_inclusive: u64,
+    current_offset: u64,
+}
+
+impl<T: BufRead> FilePortion<T> {
+    fn remaining_bytes(&self) -> u64 {
+        self.max_offset_inclusive - self.current_offset
+    }
+}
+
+impl<T: BufRead> FilePortion<T> {
+    fn new(reader: T, min_offset: u64, max_offset_inclusive: u64) -> Self {
+        FilePortion {
+            reader,
+            current_offset: min_offset,
+            max_offset_inclusive,
+        }
+    }
+}
+
+impl<T: BufRead> Read for FilePortion<T> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        let remaining_bytes = self.remaining_bytes() as usize;
+        let writable_buffer = if remaining_bytes >= buf.len() {
+            &mut buf[..]
+        } else {
+            &mut buf[..remaining_bytes]
+        };
+        self.reader.read(writable_buffer)
+    }
+}
+
+impl<T: BufRead> BufRead for FilePortion<T> {
+    fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
+        let remaining_bytes = self.remaining_bytes() as usize;
+        let inner_buf = self.reader.fill_buf()?;
+        Ok(if inner_buf.len() < remaining_bytes {
+            &inner_buf[..remaining_bytes]
+        } else {
+            inner_buf
+        })
+    }
+
+    fn consume(&mut self, amt: usize) {
+        self.reader.consume(amt)
+    }
 }
 
 #[test]
