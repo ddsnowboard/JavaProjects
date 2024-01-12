@@ -54,13 +54,12 @@ impl City {
     }
 }
 
-fn get_cities(file: File) -> Vec<(String, City)> {
+fn get_cities(mut reader: impl BufRead) -> Vec<(String, City)> {
     let mut cities = FxHashMap::default();
     let mut row_holder = String::with_capacity(128);
-    let mut file = BufReader::new(file);
     loop {
         row_holder.clear();
-        match file.read_line(&mut row_holder).unwrap() {
+        match reader.read_line(&mut row_holder).unwrap() {
             0 => break,
             _ => {
                 let row = read_row(&row_holder);
@@ -106,10 +105,6 @@ fn split_up_file(
     } else {
         expected_lines_per_chunk
     };
-    println!(
-        "Found {} lines for chunk {}",
-        lines_for_this_chunk, chunk_index
-    );
     let min_offset = chunk_index * expected_lines_per_chunk;
     file.seek(SeekFrom::Start(min_offset.into())).unwrap();
     FilePortion::new(BufReader::new(file), lines_for_this_chunk as u64)
@@ -117,17 +112,12 @@ fn split_up_file(
 
 pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
     let n_threads = 8;
-    let file_handles: Vec<_> = (0..n_threads)
+    let file_handles = (0..n_threads)
         .collect::<Vec<u32>>()
-        .into_par_iter()
-        .map(|idx| split_up_file(get_file(), idx, n_threads))
-        .collect();
-    let file = get_file();
-    let cities = get_cities(file);
-    let strings: Vec<_> = cities
         .into_iter()
-        .map(|(name, city)| city.to_str(&name))
-        .collect();
+        .map(|idx| split_up_file(get_file(), idx, n_threads));
+    let cities = file_handles.flat_map(get_cities);
+    let strings: Vec<_> = cities.map(|(name, city)| city.to_str(&name)).collect();
     writer.write_all(b"{").unwrap();
     writer.write_all(strings.join(", ").as_bytes()).unwrap();
     writer.write_all(b"}\n").unwrap();
@@ -218,7 +208,10 @@ impl<T: BufRead> FilePortion<T> {
         }
     }
     fn remaining_bytes(&self) -> u64 {
-        self.max_offset_exclusive - self.current_offset - 1
+        self.max_offset_exclusive
+            .checked_sub(self.current_offset)
+            .and_then(|r| r.checked_sub(1))
+            .unwrap_or(0)
     }
 }
 
@@ -238,7 +231,7 @@ impl<T: BufRead> BufRead for FilePortion<T> {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         let remaining_bytes = self.remaining_bytes() as usize;
         let inner_buf = self.reader.fill_buf()?;
-        Ok(if inner_buf.len() < remaining_bytes {
+        Ok(if inner_buf.len() > remaining_bytes {
             &inner_buf[..remaining_bytes]
         } else {
             inner_buf
@@ -246,7 +239,8 @@ impl<T: BufRead> BufRead for FilePortion<T> {
     }
 
     fn consume(&mut self, amt: usize) {
-        self.reader.consume(amt)
+        self.reader.consume(amt);
+        self.current_offset += amt as u64;
     }
 }
 
