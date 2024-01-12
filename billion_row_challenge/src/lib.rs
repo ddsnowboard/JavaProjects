@@ -114,7 +114,7 @@ pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
     let n_threads = 8;
     let file_handles = (0..n_threads)
         .collect::<Vec<u32>>()
-        .into_iter()
+        .into_par_iter()
         .map(|idx| split_up_file(get_file(), idx, n_threads));
     let cities = file_handles.flat_map(get_cities);
     let strings: Vec<_> = cities.map(|(name, city)| city.to_str(&name)).collect();
