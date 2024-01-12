@@ -110,14 +110,40 @@ fn split_up_file(
     FilePortion::new(BufReader::new(file), lines_for_this_chunk as u64)
 }
 
+fn merge_maps(
+    mut m1: FxHashMap<String, City>,
+    m2: FxHashMap<String, City>,
+) -> FxHashMap<String, City> {
+    m2.into_iter().for_each(|(name, city)| {
+        let value = m1.entry(name).or_insert_with(City::new);
+        value.temps.extend(city.temps);
+    });
+    m1
+}
+
 pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
     let n_threads = 8;
     let file_handles = (0..n_threads)
         .collect::<Vec<u32>>()
         .into_par_iter()
         .map(|idx| split_up_file(get_file(), idx, n_threads));
-    let cities = file_handles.flat_map(get_cities);
-    let strings: Vec<_> = cities.map(|(name, city)| city.to_str(&name)).collect();
+    let mut cities: Vec<(String, City)> = file_handles
+        .flat_map(get_cities)
+        .fold(FxHashMap::default, |mut hm, (name, city)| {
+            let val = hm.entry(name).or_insert_with(City::new);
+            val.temps.extend(city.temps);
+            hm
+        })
+        .reduce_with(merge_maps)
+        .unwrap()
+        .into_iter()
+        .collect();
+    cities.par_sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
+
+    let strings: Vec<_> = cities
+        .into_iter()
+        .map(|(name, city)| city.to_str(&name))
+        .collect();
     writer.write_all(b"{").unwrap();
     writer.write_all(strings.join(", ").as_bytes()).unwrap();
     writer.write_all(b"}\n").unwrap();

@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::BufWriter;
 
 fn main() {
-    let output = File::create("/dev/null").unwrap();
+    let output = File::create("output.txt").unwrap();
     let writer = BufWriter::new(output);
     write_cities(writer);
 }
