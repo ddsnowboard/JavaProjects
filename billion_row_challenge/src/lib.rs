@@ -289,3 +289,44 @@ fn many_decimals() {
 fn negative() {
     assert_eq!(dumb_parse_number("-9.92"), -9.92);
 }
+
+#[cfg(test)]
+mod reader_tests {
+    use crate::FilePortion;
+    use std::fs::File;
+    use std::io::BufRead;
+    use std::io::BufReader;
+    use std::io::Seek;
+    use std::io::SeekFrom;
+    use std::io::Write;
+    use tempfile::tempfile;
+    const LINE_LENGTH: u64 = 10;
+    fn generate_test_file(n_lines: u64) -> File {
+        let mut file = tempfile().unwrap();
+        for idx in 0..n_lines {
+            write!(file, "{}\n", format_number(idx)).unwrap();
+        }
+        file.rewind().unwrap();
+        file
+    }
+    fn format_number(n: u64) -> String {
+        format!("{:09}", n)
+    }
+
+    #[test]
+    fn read_big_file() {
+        let n_lines = 10_000;
+        let start_line: u64 = 440;
+        let length_lines = 2000;
+        let mut file = generate_test_file(n_lines);
+        file.seek(SeekFrom::Start((start_line * LINE_LENGTH).into()))
+            .unwrap();
+        let reader = BufReader::new(file);
+        let reader = FilePortion::new(reader, length_lines * LINE_LENGTH);
+        let expected: Vec<String> = (start_line..(start_line + length_lines))
+            .map(format_number)
+            .collect();
+        let actual: Vec<String> = reader.lines().map(|r| r.unwrap()).collect();
+        assert_eq!(expected, actual);
+    }
+}
