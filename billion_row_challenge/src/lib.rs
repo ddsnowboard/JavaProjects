@@ -106,7 +106,7 @@ fn split_up_file(
         expected_lines_per_chunk
     };
     let min_line_index = chunk_index * expected_lines_per_chunk;
-    let last_line_index = min_line_index + lines_for_this_chunk - 1;
+    let last_line_index = min_line_index + lines_for_this_chunk;
     let (start_offset, end_offset) = {
         file.rewind().unwrap();
         let file = file.try_clone().unwrap();
@@ -114,7 +114,7 @@ fn split_up_file(
             .skip(min_line_index as usize)
             .take((last_line_index - min_line_index) as usize)
             .collect();
-        (offsets[0].0, offsets.last().unwrap().1)
+        (offsets[0].0, offsets.last().unwrap().1 + 1)
     };
     file.seek(SeekFrom::Start(start_offset)).unwrap();
     FilePortion::new(BufReader::new(file), end_offset - start_offset)
