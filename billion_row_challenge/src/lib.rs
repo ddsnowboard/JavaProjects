@@ -292,6 +292,7 @@ fn negative() {
 
 #[cfg(test)]
 mod reader_tests {
+    use crate::split_up_file;
     use crate::FilePortion;
     use std::fs::File;
     use std::io::BufRead;
@@ -328,5 +329,25 @@ mod reader_tests {
             .collect();
         let actual: Vec<String> = reader.lines().map(|r| r.unwrap()).collect();
         assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_split_up_file() {
+        let n_lines = 5000;
+        let file = generate_test_file(n_lines);
+        let n_chunks = 7;
+        let this_chunk = 4;
+        let expected_chunk_size = n_lines / n_chunks;
+        let reader = split_up_file(
+            file,
+            this_chunk.try_into().unwrap(),
+            n_chunks.try_into().unwrap(),
+        );
+        let expected_lines: Vec<String> = ((this_chunk * expected_chunk_size)
+            ..((this_chunk + 1) * expected_chunk_size))
+            .map(format_number)
+            .collect();
+        let actual_lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
+        assert_eq!(actual_lines, expected_lines);
     }
 }
