@@ -105,9 +105,33 @@ fn split_up_file(
     } else {
         expected_lines_per_chunk
     };
-    let min_offset = chunk_index * expected_lines_per_chunk;
-    file.seek(SeekFrom::Start(min_offset.into())).unwrap();
-    FilePortion::new(BufReader::new(file), lines_for_this_chunk as u64)
+    let min_line_index = chunk_index * expected_lines_per_chunk;
+    let last_line_index = min_line_index + lines_for_this_chunk - 1;
+    let (start_offset, end_offset) = {
+        file.rewind().unwrap();
+        let file = file.try_clone().unwrap();
+        let offsets: Vec<(u64, u64)> = line_offsets(file)
+            .skip(min_line_index as usize)
+            .take((last_line_index - min_line_index) as usize)
+            .collect();
+        (offsets[0].0, offsets.last().unwrap().1)
+    };
+    file.seek(SeekFrom::Start(start_offset)).unwrap();
+    FilePortion::new(BufReader::new(file), end_offset - start_offset)
+}
+
+fn line_offsets(file: File) -> Box<dyn Iterator<Item = (u64, u64)>> {
+    let reader = BufReader::new(file);
+    let mut current_offset: u64 = 0;
+    let mut line_reader = reader.lines();
+    Box::new(std::iter::from_fn(move || {
+        line_reader.next().map(|next_line| {
+            let next_line = next_line.unwrap();
+            let start = current_offset;
+            current_offset += (next_line.len() as u64) + 1;
+            (start, start + (next_line.len() as u64))
+        })
+    }))
 }
 
 fn merge_maps(
@@ -292,6 +316,7 @@ fn negative() {
 
 #[cfg(test)]
 mod reader_tests {
+    use crate::line_offsets;
     use crate::split_up_file;
     use crate::FilePortion;
     use std::fs::File;
@@ -349,5 +374,17 @@ mod reader_tests {
             .collect();
         let actual_lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
         assert_eq!(actual_lines, expected_lines);
+    }
+
+    #[test]
+    fn test_get_line_start_indexes() {
+        let n_lines = 100;
+        let file = generate_test_file(n_lines);
+        let expected_line_offsets: Vec<_> = (0..n_lines)
+            .map(|l| (LINE_LENGTH * l, LINE_LENGTH * (l + 1) - 1))
+            .collect();
+        let actual_line_offsets: Vec<_> = line_offsets(file).collect();
+        assert_eq!(n_lines as usize, actual_line_offsets.len());
+        assert_eq!(expected_line_offsets, actual_line_offsets);
     }
 }
