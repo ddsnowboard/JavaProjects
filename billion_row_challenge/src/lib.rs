@@ -146,7 +146,7 @@ fn merge_maps(
 }
 
 pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
-    let n_threads = 8;
+    let n_threads = 2;
     let file_handles = (0..n_threads)
         .collect::<Vec<u32>>()
         .into_par_iter()
