@@ -4,3 +4,4 @@ measurements.txt
 output.txt
 perf.data
 perf.data.old
+*.swp
