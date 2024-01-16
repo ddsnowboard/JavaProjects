@@ -79,6 +79,8 @@ fn split_up_file(
     chunk_index: u32,
     total_chunks: u32,
 ) -> FilePortion<BufReader<File>> {
+    // Instead of getting the lines first and then finding the offsets we want, let's just guess
+    // some offsets and then find the nearest lines. We can use mmap. That could work.
     file.rewind().unwrap();
     let n_lines = {
         let file = file.try_clone().unwrap();
