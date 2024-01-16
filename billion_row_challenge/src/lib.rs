@@ -114,23 +114,27 @@ fn split_up_file(
             .skip(min_line_index as usize)
             .take((last_line_index - min_line_index) as usize)
             .collect();
-        (offsets[0].0, offsets.last().unwrap().1 + 1)
+        (offsets[0].0, offsets.last().unwrap().1)
     };
     file.seek(SeekFrom::Start(start_offset)).unwrap();
     FilePortion::new(BufReader::new(file), end_offset - start_offset)
 }
 
 fn line_offsets(file: File) -> Box<dyn Iterator<Item = (u64, u64)>> {
-    let reader = BufReader::new(file);
-    let mut current_offset: u64 = 0;
-    let mut line_reader = reader.lines();
+    let mut reader = BufReader::new(file);
+    let mut next_start_offset: u64 = 0;
+    let mut buf: Vec<u8> = Vec::new();
     Box::new(std::iter::from_fn(move || {
-        line_reader.next().map(|next_line| {
-            let next_line = next_line.unwrap();
-            let start = current_offset;
-            current_offset += (next_line.len() as u64) + 1;
-            (start, start + (next_line.len() as u64))
-        })
+        let start = next_start_offset;
+        buf.clear();
+        reader.read_until(b'\n', &mut buf).unwrap();
+        if *buf.last().unwrap() == b'\n' {
+            let end_offset = start + (buf.len() as u64);
+            next_start_offset = end_offset;
+            Some((start, end_offset))
+        } else {
+            None
+        }
     }))
 }
 
