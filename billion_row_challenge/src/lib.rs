@@ -204,23 +204,13 @@ pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
 // Also I could just split the whole file into pieces and then give each piece to a thread.
 // Got options.
 fn read_row(row: &str) -> Row {
-    let mut city = String::with_capacity(128);
-    let mut temp = String::with_capacity(128);
-    let mut it = row.chars();
-    for c in it.by_ref() {
-        if c != ';' {
-            city.push(c);
-        } else {
-            break;
-        }
-    }
-    for c in it {
-        if c != '\n' {
-            temp.push(c);
-        } else {
-            break;
-        }
-    }
+    let semicolon_idx = memchr(b';', row.as_bytes()).unwrap();
+    let city = String::from(&row[..semicolon_idx]);
+    let temp = String::from(if *row.as_bytes().last().unwrap() == b'\n' {
+        &row[(semicolon_idx + 1)..(row.len() - 1)]
+    } else {
+        &row[(semicolon_idx + 1)..]
+    });
     Row {
         city,
         temp: dumb_parse_number(&temp),
