@@ -1,4 +1,5 @@
 use fxhash::FxHashMap;
+use memchr::memchr;
 use rayon::prelude::*;
 use std::fs::File;
 use std::io::BufRead;
@@ -123,19 +124,37 @@ fn split_up_file(
 fn line_offsets(file: File) -> Box<dyn Iterator<Item = (u64, u64)>> {
     let mut reader = BufReader::new(file);
     let mut next_start_offset: u64 = 0;
-    let mut buf: Vec<u8> = Vec::new();
     Box::new(std::iter::from_fn(move || {
         let start = next_start_offset;
-        buf.clear();
-        reader.read_until(b'\n', &mut buf).unwrap();
-        if *buf.last().unwrap() == b'\n' {
-            let end_offset = start + (buf.len() as u64);
+        if let Some(n_bytes) = bytes_until(&mut reader, b'\n') {
+            let end_offset = start + (n_bytes as u64);
             next_start_offset = end_offset;
             Some((start, end_offset))
         } else {
             None
         }
     }))
+}
+
+/// Stolen from the BufRead code
+fn bytes_until<R: BufRead + ?Sized>(r: &mut R, delim: u8) -> Option<usize> {
+    let mut read = 0;
+    loop {
+        let (done, used) = {
+            let available = r.fill_buf().unwrap();
+            match memchr(delim, available) {
+                Some(i) => (true, i + 1),
+                None => (false, available.len()),
+            }
+        };
+        r.consume(used);
+        read += used;
+        if done {
+            return Some(read);
+        } else if used == 0 {
+            return None;
+        }
+    }
 }
 
 fn merge_maps(
@@ -386,7 +405,7 @@ mod reader_tests {
         let n_lines = 100;
         let file = generate_test_file(n_lines);
         let expected_line_offsets: Vec<_> = (0..n_lines)
-            .map(|l| (LINE_LENGTH * l, LINE_LENGTH * (l + 1) - 1))
+            .map(|l| (LINE_LENGTH * l, LINE_LENGTH * (l + 1)))
             .collect();
         let actual_line_offsets: Vec<_> = line_offsets(file).collect();
         assert_eq!(n_lines as usize, actual_line_offsets.len());
