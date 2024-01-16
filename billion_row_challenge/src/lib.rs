@@ -146,6 +146,7 @@ fn merge_maps(
 }
 
 pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
+    // 8 threads is best for the desktop, 2 for the laptop
     let n_threads = 2;
     let file_handles = (0..n_threads)
         .collect::<Vec<u32>>()
