@@ -66,9 +66,7 @@ fn get_cities(file: &[u8]) -> Vec<(&str, City)> {
         let city = cities.entry(row.city).or_insert_with(City::new);
         city.process_temp(row.temp);
     }
-    let mut cities: Vec<_> = cities.into_iter().collect();
-    cities.sort_unstable_by_key(|(c, _)| *c);
-    cities
+    cities.into_iter().collect()
 }
 
 fn split_up_file(file: &[u8], n_threads: usize) -> Vec<&[u8]> {
