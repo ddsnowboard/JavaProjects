@@ -10,7 +10,7 @@ const FILENAME: &str = "measurements.txt";
 
 type Temp = f64;
 
-struct Row {
+pub struct Row {
     city: String,
     temp: Temp,
 }
@@ -144,7 +144,7 @@ pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
 // or I can figure out how to add stuff to the HashMap in parallel too.
 // Also I could just split the whole file into pieces and then give each piece to a thread.
 // Got options.
-fn read_row(row: &str) -> Row {
+pub fn read_row(row: &str) -> Row {
     let semicolon_idx = match memchr(b';', row.as_bytes()) {
         Some(idx) => idx,
         None => panic!("There was no semicolon; row was \"{}\"", row),
