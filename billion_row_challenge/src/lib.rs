@@ -150,14 +150,10 @@ pub fn read_row(row: &str) -> Row {
         None => panic!("There was no semicolon; row was \"{}\"", row),
     };
     let city = String::from(&row[..semicolon_idx]);
-    let temp = String::from(if *row.as_bytes().last().unwrap() == b'\n' {
-        &row[(semicolon_idx + 1)..(row.len() - 1)]
-    } else {
-        &row[(semicolon_idx + 1)..]
-    });
+    let temp = &row[(semicolon_idx + 1)..];
     Row {
         city,
-        temp: dumb_parse_number(&temp),
+        temp: dumb_parse_number(temp),
     }
 }
 
