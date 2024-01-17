@@ -10,8 +10,8 @@ const FILENAME: &str = "measurements.txt";
 
 type Temp = f64;
 
-pub struct Row {
-    city: String,
+pub struct Row<'a> {
+    city: &'a str,
     temp: Temp,
 }
 
@@ -51,7 +51,7 @@ impl City {
     }
 }
 
-fn get_cities(file: &[u8]) -> Vec<(String, City)> {
+fn get_cities(file: &[u8]) -> Vec<(&str, City)> {
     let mut cities = FxHashMap::default();
     let mut current_index = 0;
     while current_index < file.len() {
@@ -67,7 +67,7 @@ fn get_cities(file: &[u8]) -> Vec<(String, City)> {
         city.process_temp(row.temp);
     }
     let mut cities: Vec<_> = cities.into_iter().collect();
-    cities.sort_unstable_by_key(|(c, _)| c.clone());
+    cities.sort_unstable_by_key(|(c, _)| *c);
     cities
 }
 
@@ -100,10 +100,10 @@ fn split_up_file(file: &[u8], n_threads: usize) -> Vec<&[u8]> {
         .collect()
 }
 
-fn merge_maps(
-    mut m1: FxHashMap<String, City>,
-    m2: FxHashMap<String, City>,
-) -> FxHashMap<String, City> {
+fn merge_maps<'a>(
+    mut m1: FxHashMap<&'a str, City>,
+    m2: FxHashMap<&'a str, City>,
+) -> FxHashMap<&'a str, City> {
     m2.into_iter().for_each(|(name, city)| {
         let value = m1.entry(name).or_insert_with(City::new);
         value.temps.extend(city.temps);
@@ -116,7 +116,7 @@ pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
     let n_threads = 2;
     let file = get_file();
     let file_handles: Vec<&[u8]> = split_up_file(&file, n_threads);
-    let mut cities: Vec<(String, City)> = file_handles
+    let mut cities: Vec<(&str, City)> = file_handles
         .into_par_iter()
         .flat_map(get_cities)
         .fold(FxHashMap::default, |mut hm, (name, city)| {
@@ -132,7 +132,7 @@ pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
 
     let strings: Vec<_> = cities
         .into_iter()
-        .map(|(name, city)| city.to_str(&name))
+        .map(|(name, city)| city.to_str(name))
         .collect();
     writer.write_all(b"{").unwrap();
     writer.write_all(strings.join(", ").as_bytes()).unwrap();
@@ -149,7 +149,7 @@ pub fn read_row(row: &str) -> Row {
         Some(idx) => idx,
         None => panic!("There was no semicolon; row was \"{}\"", row),
     };
-    let city = String::from(&row[..semicolon_idx]);
+    let city = &row[..semicolon_idx];
     let temp = &row[(semicolon_idx + 1)..];
     Row {
         city,
