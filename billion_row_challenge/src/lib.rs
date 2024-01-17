@@ -62,7 +62,7 @@ fn get_cities(file: &[u8]) -> Vec<(&str, City)> {
             }
         };
         current_index += next_line.len() + 1;
-        let row = read_row(std::str::from_utf8(next_line).unwrap());
+        let row = read_row(unsafe { std::str::from_utf8_unchecked(next_line) });
         let city = cities.entry(row.city).or_insert_with(City::new);
         city.process_temp(row.temp);
     }
