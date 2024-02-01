@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::io::Write;
 
-const FILENAME: &str = "measurements.txt";
+const FILENAME: &str = "medium_measurements.txt";
 
 type Temp = f64;
 
