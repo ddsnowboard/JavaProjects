@@ -2,6 +2,7 @@ use fxhash::FxHashMap;
 use memchr::memchr;
 use memmap::Mmap;
 use rayon::prelude::*;
+use std::cmp::Ordering;
 use std::fs::File;
 use std::io::BufWriter;
 use std::io::Write;
@@ -16,28 +17,61 @@ pub struct Row<'a> {
 }
 
 struct City {
-    temps: Vec<Temp>,
+    count: usize,
+    current_average: Option<Temp>,
+    current_min: Option<Temp>,
+    current_max: Option<Temp>,
+}
+
+fn max(a: Temp, b: Temp) -> Temp {
+    match a.partial_cmp(&b).unwrap() {
+        Ordering::Less => b,
+        _ => a,
+    }
+}
+
+fn min(a: Temp, b: Temp) -> Temp {
+    match a.partial_cmp(&b).unwrap() {
+        Ordering::Less => a,
+        _ => b,
+    }
 }
 
 impl City {
     fn new() -> Self {
-        City { temps: vec![] }
+        City {
+            count: 0,
+            current_max: None,
+            current_min: None,
+            current_average: None,
+        }
     }
     fn process_temp(&mut self, temp: Temp) {
-        self.temps.push(temp);
+        self.current_max = Some(match self.current_max {
+            Some(m) => max(m, temp),
+            None => temp,
+        });
+        self.current_min = Some(match self.current_min {
+            Some(m) => min(m, temp),
+            None => temp,
+        });
+        self.current_average = Some(match self.current_average {
+            Some(a) => ((a * (self.count as Temp)) + temp) / ((self.count + 1) as Temp),
+            None => temp,
+        });
+        self.count += 1;
     }
 
     fn get_min(&self) -> Temp {
-        self.temps.iter().fold(Temp::INFINITY, |a, &b| a.min(b))
+        self.current_min.unwrap()
     }
 
     fn get_max(&self) -> Temp {
-        self.temps.iter().fold(-Temp::INFINITY, |a, &b| a.max(b))
+        self.current_max.unwrap()
     }
 
     fn get_mean(&self) -> Temp {
-        let sum: Temp = self.temps.iter().sum();
-        sum / (self.temps.len() as Temp)
+        self.current_average.unwrap()
     }
 
     fn to_str(&self, name: &str) -> String {
@@ -48,6 +82,25 @@ impl City {
             self.get_mean(),
             self.get_max()
         )
+    }
+
+    fn combine(&mut self, other: &Self) {
+        if self.count != 0 {
+            let total_count = self.count + other.count;
+            self.current_max = Some(max(self.get_max(), other.get_max()));
+            self.current_min = Some(min(self.get_min(), other.get_min()));
+            self.current_average = Some(
+                (((self.count as Temp) * self.get_mean())
+                    + ((other.count as Temp) * other.get_mean()))
+                    / (total_count as Temp),
+            );
+            self.count = total_count;
+        } else {
+            self.count = other.count;
+            self.current_min = other.current_min;
+            self.current_max = other.current_max;
+            self.current_average = other.current_average;
+        }
     }
 }
 
@@ -104,14 +157,14 @@ fn merge_maps<'a>(
 ) -> FxHashMap<&'a str, City> {
     m2.into_iter().for_each(|(name, city)| {
         let value = m1.entry(name).or_insert_with(City::new);
-        value.temps.extend(city.temps);
+        value.combine(&city);
     });
     m1
 }
 
 pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
-    // 8 threads is best for the desktop, 2 for the laptop
-    let n_threads = 2;
+    // 16 threads is best for the desktop, 2 for the laptop
+    let n_threads = 16;
     let file = get_file();
     let file_handles: Vec<&[u8]> = split_up_file(&file, n_threads);
     let mut cities: Vec<(&str, City)> = file_handles
@@ -119,7 +172,7 @@ pub fn write_cities<W: std::io::Write>(mut writer: BufWriter<W>) {
         .flat_map(get_cities)
         .fold(FxHashMap::default, |mut hm, (name, city)| {
             let val = hm.entry(name).or_insert_with(City::new);
-            val.temps.extend(city.temps);
+            val.combine(&city);
             hm
         })
         .reduce_with(merge_maps)
