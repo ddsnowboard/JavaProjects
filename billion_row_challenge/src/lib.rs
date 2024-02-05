@@ -269,6 +269,71 @@ fn negative() {
 }
 
 #[cfg(test)]
+mod city_struct_tests {
+    use crate::City;
+    use crate::Temp;
+    use crate::{max, min};
+    use rand::prelude::*;
+
+    #[test]
+    fn big_random_test() {
+        const N_ITEMS: usize = 50_000;
+        let mut rng = rand::thread_rng();
+        let data: Vec<Temp> = (0..N_ITEMS).into_iter().map(|_| rng.gen()).collect();
+
+        let mut city = City::new();
+
+        data.iter().for_each(|d| city.process_temp(*d));
+
+        let actual_average: Temp = data.iter().sum::<Temp>() / (data.len() as Temp);
+        let actual_max = data.iter().copied().reduce(|l, r| max(l, r)).unwrap();
+        let actual_min = data.iter().copied().reduce(|l, r| min(l, r)).unwrap();
+        assert!((actual_average - city.get_mean()).abs() < 0.001);
+        assert_eq!(actual_min, city.get_min());
+        assert_eq!(actual_max, city.get_max());
+    }
+
+    #[test]
+    fn combine_test() {
+        const N_ITEMS: usize = 50_000;
+        let mut rng = rand::thread_rng();
+        let mut random_city = || {
+            let data: Vec<Temp> = (0..N_ITEMS).into_iter().map(|_| rng.gen()).collect();
+            let mut city = City::new();
+            data.iter().for_each(|d| city.process_temp(*d));
+            (data, city)
+        };
+        let (left_data, mut left_city) = random_city();
+        let (right_data, right_city) = random_city();
+
+        let total_dataset: Vec<_> = left_data.iter().chain(right_data.iter()).copied().collect();
+        let actual_average: Temp =
+            total_dataset.iter().sum::<Temp>() / (total_dataset.len() as Temp);
+        let actual_max = total_dataset
+            .iter()
+            .copied()
+            .reduce(|l, r| max(l, r))
+            .unwrap();
+        let actual_min = total_dataset
+            .iter()
+            .copied()
+            .reduce(|l, r| min(l, r))
+            .unwrap();
+
+        left_city.combine(&right_city);
+
+        assert_eq!(actual_min, left_city.get_min());
+        assert_eq!(actual_max, left_city.get_max());
+        assert!(
+            (actual_average - left_city.get_mean()).abs() < 0.001,
+            "Actual average {} was too different from expected average {}",
+            actual_average,
+            left_city.get_mean()
+        );
+    }
+}
+
+#[cfg(test)]
 mod reader_tests {
     use crate::split_up_file;
     const LINE_LENGTH: usize = 10;
