@@ -7,3 +7,4 @@ medium_output.txt
 perf.data
 perf.data.old
 *.swp
+*.sqlite
