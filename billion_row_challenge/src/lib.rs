@@ -215,7 +215,7 @@ fn get_file() -> Mmap {
 pub fn dumb_parse_number(s: &str) -> Temp {
     let mut sign: bool = true;
     let mut builder: Temp = 0.0;
-    let mut iter = s.chars();
+    let mut iter = s.as_bytes().iter();
     fn get_output(value: Temp, sign: bool) -> Temp {
         if !sign {
             value * -1.0
@@ -224,12 +224,12 @@ pub fn dumb_parse_number(s: &str) -> Temp {
         }
     }
     for c in iter.by_ref() {
-        if c == '-' {
+        if *c == b'-' {
             sign = false;
         } else if c.is_ascii_digit() {
             builder *= 10.0;
-            builder += c.to_digit(10).unwrap() as Temp;
-        } else if c == '.' {
+            builder += (c - b'0') as Temp;
+        } else if *c == b'.' {
             break;
         } else {
             return get_output(builder, sign);
@@ -239,7 +239,7 @@ pub fn dumb_parse_number(s: &str) -> Temp {
     let mut place: Temp = 10.0;
     for c in iter {
         if c.is_ascii_digit() {
-            builder += (c.to_digit(10).unwrap() as Temp) / (place as Temp);
+            builder += ((c - b'0') as Temp) / (place as Temp);
             place *= 10.0;
         } else {
             break;
