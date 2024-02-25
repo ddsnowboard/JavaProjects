@@ -1,3 +1,6 @@
+#![feature(portable_simd)]
+#[macro_use]
+extern crate lazy_static;
 use fxhash::FxHashMap;
 use memchr::memchr;
 use memmap::Mmap;
@@ -6,8 +9,21 @@ use std::cmp::Ordering;
 use std::fs::File;
 use std::io::BufWriter;
 use std::io::Write;
+use std::simd::f32x8;
+use std::simd::num::SimdUint;
+use std::simd::u8x8;
+use std::simd::usizex8;
 
 const FILENAME: &str = "medium_measurements.txt";
+type CharSimd = u8x8;
+type FloatSimd = f32x8;
+
+lazy_static! {
+    static ref VEC_MASK: usizex8 = usizex8::from_array([0, 1, 2, 3, 4, 5, 6, 7]);
+    static ref PLACE_VALUES: FloatSimd =
+        FloatSimd::from_array([100.0, 10.0, 1.0, 0.0, 0.1, 0.01, 0.001, 0.0001]);
+}
+const DECIMAL_IDX: i8 = 3;
 
 type Temp = f64;
 
@@ -213,9 +229,31 @@ fn get_file() -> Mmap {
 }
 
 pub fn dumb_parse_number(s: &str) -> Temp {
-    let mut sign: bool = true;
-    let mut builder: Temp = 0.0;
-    let mut iter = s.as_bytes().iter();
+    let s = s.as_bytes();
+    let (s, sign) = if s[0] == b'-' {
+        (&s[1..], false)
+    } else {
+        (s, true)
+    };
+    assert!(
+        s.len() <= 8,
+        "The string is too long to fit in the SIMD vector"
+    );
+    let zero_char_vector = CharSimd::splat(b'0');
+    let char_vector = CharSimd::gather_or(s, *VEC_MASK, zero_char_vector);
+    println!("Char vector is {:?}", char_vector.as_array());
+    let digit_values = char_vector - zero_char_vector;
+    let float_values: FloatSimd = digit_values.cast();
+    println!("float vector is {:?}", float_values.as_array());
+    let place_magnitudes: FloatSimd = {
+        let decimal_point_idx = memchr(b'.', s).unwrap_or(s.len()) as i8;
+        let left_shift_amount = -(decimal_point_idx - DECIMAL_IDX);
+        // I need rotate, not shift, but rotate is a a const generic function for some reason, so I
+        // can't just rotate it by a runtime amount. Hmm.
+        PLACE_VALUES << left_shift_amount
+    };
+    let place_values = float_values * place_magnitudes;
+    println!("place values is {:?}", place_values.as_array());
     fn get_output(value: Temp, sign: bool) -> Temp {
         if !sign {
             value * -1.0
@@ -223,29 +261,7 @@ pub fn dumb_parse_number(s: &str) -> Temp {
             value
         }
     }
-    for c in iter.by_ref() {
-        if *c == b'-' {
-            sign = false;
-        } else if c.is_ascii_digit() {
-            builder *= 10.0;
-            builder += (c - b'0') as Temp;
-        } else if *c == b'.' {
-            break;
-        } else {
-            return get_output(builder, sign);
-        }
-    }
-    // If we get here we're after the decimal
-    let mut place: Temp = 10.0;
-    for c in iter {
-        if c.is_ascii_digit() {
-            builder += ((c - b'0') as Temp) / (place as Temp);
-            place *= 10.0;
-        } else {
-            break;
-        }
-    }
-    get_output(builder, sign)
+    -5.09
 }
 
 #[test]
