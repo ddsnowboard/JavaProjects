@@ -24,5 +24,8 @@ combined.csv : decompositions.csv ordered_member_data.csv
 
 data.sqlite : .database
 
+graph.svg : combined.csv graph.py
+	python3 graph.py $< $@
+
 clean : 
-	$(RM) ${VOTE_FILE} votes_by_member.csv members.csv ordered_member_data.csv combined.csv data.sqlite .database decompositions.csv
+	$(RM) ${VOTE_FILE} votes_by_member.csv members.csv ordered_member_data.csv combined.csv data.sqlite .database decompositions.csv graph.svg
