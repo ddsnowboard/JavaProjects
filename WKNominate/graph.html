@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="./members.js"></script>
+        <script defer>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            let canvas = document.getElementById("canvas");
+            let ctx = canvas.getContext("2d");
+            let width = canvas.width - 10;
+            let height = canvas.height - 10;
+
+
+            function getMinAndMax(l) {
+                let big = l.reduce((a, b) => Math.max(a, b));
+                let small = l.reduce((a, b) => Math.min(a, b));
+                return [small, big];
+            }
+
+            let [minXComp, maxXComp] = getMinAndMax(members.map(x => x["component_1"]));
+            let [minYComp, maxYComp] = getMinAndMax(members.map(x => x["component_2"]));
+            function pxFromComp(xComp, yComp) {
+                let scale = (min, max, val) => {
+                    return (val - min) / (max - min); 
+                };
+                let xScale = scale(minXComp, maxXComp, xComp);
+                let yScale = scale(minYComp, maxYComp, yComp);
+                return [xScale * width + 5, yScale * height + 5];
+            }
+            class DataPoint {
+                constructor(dict) {
+                    this.data = dict;
+                    [this.x, this.y] = pxFromComp(dict["component_1"], dict["component_2"]);
+                    this.color = dict["party"] == "democrat" ?  "blue" : "red";
+                }
+            }
+
+            let data = members.map(m => new DataPoint(m));
+            const RADIUS = 5;
+            for(m of data.values()) {
+                ctx.fillStyle = m.color;
+                ctx.beginPath();
+                ctx.arc(m.x, m.y, RADIUS, 0, 2 * Math.PI, false);
+                ctx.fill();
+            }
+
+            canvas.onmousemove = function(event) {
+                let rect = this.getBoundingClientRect();
+                let x = event.clientX - rect.left;
+                let y = event.clientY - rect.top;
+                
+                I need to check if we're in a circle and draw here
+            };
+        });
+        </script>
+    </head>
+    <body>
+        <canvas id="canvas" width="1800" height="600"></canvas>
+    </body>
+</html>

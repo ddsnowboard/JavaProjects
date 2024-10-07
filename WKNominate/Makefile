@@ -27,5 +27,8 @@ data.sqlite : .database
 graph.svg : combined.csv graph.py
 	python3 graph.py $< $@
 
+members.js : combined.csv generateJson.py
+	python3 generateJson.py < $< > $@
+
 clean : 
-	$(RM) ${VOTE_FILE} votes_by_member.csv members.csv ordered_member_data.csv combined.csv data.sqlite .database decompositions.csv graph.svg
+	$(RM) ${VOTE_FILE} votes_by_member.csv members.csv ordered_member_data.csv combined.csv data.sqlite .database decompositions.csv graph.svg members.js
