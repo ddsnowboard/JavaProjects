@@ -36,19 +36,30 @@
 
             let data = members.map(m => new DataPoint(m));
             const RADIUS = 5;
-            for(m of data.values()) {
-                ctx.fillStyle = m.color;
-                ctx.beginPath();
-                ctx.arc(m.x, m.y, RADIUS, 0, 2 * Math.PI, false);
-                ctx.fill();
+            function drawGraph(data) {
+                for(m of data.values()) {
+                    ctx.fillStyle = m.color;
+                    ctx.beginPath();
+                    ctx.arc(m.x, m.y, RADIUS, 0, 2 * Math.PI, false);
+                    ctx.fill();
+                }
             }
+            drawGraph(data);
 
             canvas.onmousemove = function(event) {
                 let rect = this.getBoundingClientRect();
                 let x = event.clientX - rect.left;
                 let y = event.clientY - rect.top;
                 
-                I need to check if we're in a circle and draw here
+                for(d of data) {
+                    let dy = d.y - y;
+                    let dx = d.x - x;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if(distance <= RADIUS) {
+                        console.log(d.data["name"]);
+                        return;
+                    }
+                }
             };
         });
         </script>
