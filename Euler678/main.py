@@ -1,25 +1,29 @@
-from itertools import product
+from itertools import product, count
 from functools import partial
+from math import log, isclose
 # Damn this one is hard
 
-def good(N, t):
-    (a, b, c, e, f) = t
-    if a >= b:
-        return False
-    if e < 2:
-        return False
-    if f < 3:
-        return False
-    if c ** f > N:
-        return False
-
-    if a ** e + b ** e == c ** f:
-        return True
-    else:
-        return False
-
 def all_tuples(N):
-    everything = product(range(1, N), range(1, N), range(1, N), range(1, N), range(1, N))
-    return filter(partial(good, N), everything)
+    min_e = 2
+    min_f = 3
+    for b in count(1):
+        if b ** min_e > N:
+            break
+        for a in range(1, b):
+            if b ** min_e + a ** min_e > N:
+                break
+            for e in count(2):
+                if b ** e + a ** e > N:
+                    break
+                for f in count(3):
+                    # can we find an integral c?
+                    potential_c = (a ** e + b ** e) ** (1 / f)
+                    if isclose(potential_c, round(potential_c)):
+                        yield (a, b, round(potential_c), e, f)
+                    elif potential_c < 2.0:
+                        break
 
-print(next(all_tuples(28)))
+
+
+
+print(len(list(all_tuples(10 ** 7))))
