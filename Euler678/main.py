@@ -57,12 +57,5 @@ def all_tuples(N):
                     if potential_f is not None:
                         yield (a, b, c, e, potential_f)
 
-                    """
-                    potential_f = log(left_side) / log(c)
-                    # yield (a, b, c, e, round(potential_f))
-                    if isclose(potential_f, round(potential_f)) and round(potential_f) >= 3:
-                        yield (a, b, c, e, round(potential_f))
-                    """
-
 
 print(sum(1 for _ in all_tuples(10 ** 7)))
