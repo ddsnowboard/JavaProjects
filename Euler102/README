@@ -1,0 +1,20 @@
+My idea is that, if you extend each of the 3 segments that form the triangle forever, and then find the nearest points on those lines to the origin, those points will all be part of the segments iff the origin is contained within the triangle. Should I prove this? Or just try coding it?
+
+Let's do some math first. I need to find the nearest point on a given line y=mx+b to (0, 0). To do that, I need to draw a perpendicular line that goes through (0, 0) (ie, y=-1/mx), since we know that the line connecting the nearest point and (0, 0) will be perpendicular to the line itself. Then we solve mx+b = -x/m.
+mx+b=-x/m
+m^2x/m + b = -x/m
+(m^2+1)x/m=-b
+x = -mb/(m^2+1)
+
+I think that's right. Wolfram agrees with me. 
+How do I check if that's on the segment of the triangle? Just check if this x is between the two given xs. Easy. Is that it? Should I prove more or just code? I'm thinking about just coding.
+
+Oh wait that's not right. If you have an isosceles triangle (for example) right "above" the origin (ie, the two equal sides meet at x=0) with an infinitesimal altitude, I'm pretty sure that all 3 lines would have their nearest points to the origin on the triangle. The other thing might be true for right triangles, but not for all triangles. Hmm.
+I was thinking about Stokes theorem earlier. Can I use that for this? I think you can rephrase this as "There's a function f(x, y) that's 0 all the time except f(0, 0) = 1. You have some spots on the plane and you need to figure out if the area integral of F in these is 1 or not." So I think that means we can use Green's Theorem. So I think it says, in this context (defining F such that the partial derivative of F with respect to x is f; hmm) that the area integral of f equals the integral around the perimeter of the triangle dy. Right? Is that right? That seems reasonable I guess.
+
+I have another idea that involves no calculus. I think that you can do it like this. I haven't been able to find a counterexample, but we'll see. 
+So pick the point on the triangle furthest from the origin, the vector of which is F. The vectors to the other points are L and R. Iff the sum of the absolute values of the angles between L and F and between R and F are greater than or equal to 180, then the origin is inside the triangle. Otherwise it's outside. I think this is good. Gonna code this.
+I think I made a mistake. I want the "middle" point, not the furthest one. I think I can fix it though.
+Hmm "middle" is poorly defined. Can I just try all of them? I think it'll work for all of them if it's inside.
+
+Oh wow I'm embarassed now. I got it, but I should have done it one of tons of other, easier ways. Such as checking if the sum of the vector directions of all the points equal 360. How ignorant of me. I kinda did the same thing but it was way more complicated.
