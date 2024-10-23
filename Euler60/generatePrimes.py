@@ -6,7 +6,10 @@ primes[0] = False
 
 def find_next_prime(current_prime):
     try:
-        return next(current_prime + idx + 1 for (idx, is_prime) in enumerate(primes[current_prime:]) if is_prime)
+        nxt = next(current_prime + idx + 1 for (idx, is_prime) in enumerate(primes[current_prime:]) if is_prime)
+        if nxt >= max_n ** 0.5:
+            return None
+        return nxt
     except StopIteration:
         return None
 
