@@ -1,15 +1,16 @@
+use crossbeam::channel::bounded;
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use rayon::iter::ParallelBridge;
-use rayon::prelude::*;
 use std::collections::HashSet;
 use std::fs::read_to_string;
+use std::thread;
 
-type Num = u16;
+type Num = u32;
+
+const N_THREADS: usize = 5;
 
 lazy_static! {
-    // static ref primes: HashSet<Num> = read_to_string("../primes.txt")
-     static ref primes: HashSet<Num> = read_to_string("../somePrimes.txt")
+    static ref primes: HashSet<Num> = read_to_string("../primes.txt")
         .unwrap()
         .lines()
         .map(|l| l.parse::<Num>().unwrap())
@@ -17,20 +18,57 @@ lazy_static! {
 }
 
 fn main() {
-    // This doesn't work because itertools and rayon don't play nice. Maybe I can use a crossbeam
-    // channel for this. It's just like a go channel. How bad can it be?
-    let all_combinations: Vec<_> = primes
+    let chunk_iterable = primes
         .iter()
-        .filter(|p| **p < 1000)
-        .combinations(4)
-        .chunks(1_000_000)
-        .iter()
-        .par_bridge()
-        .flat_map(|vv| vv.filter(|v|is_prime_pair_set(v)))
-        .for_each(|s| println!("{:?}", s));
+        .cloned()
+        .filter(|p| *p < 10000)
+        .combinations(5)
+        .chunks(1_000_000);
+    let all_combinations = chunk_iterable.into_iter().map(|c| c.collect::<Vec<_>>());
+    let (send_tx, send_rx) = bounded::<Vec<Vec<Num>>>(1000);
+    let (recv_tx, recv_rx) = bounded::<Vec<Num>>(1000000);
+
+    let sets = thread::scope(|s| {
+        // This just receives stuff and adds it to the list
+        let catcher = s.spawn(|| {
+            let mut out: Vec<Vec<Num>> = vec![];
+            recv_rx.iter().for_each(|s| {
+                out.push(s);
+            });
+            out
+        });
+
+        // These are the workers
+        {
+            // These need to be dropped or else this code will run forever.
+            let send_rx = send_rx;
+            let recv_tx = recv_tx;
+            (0..N_THREADS).for_each(|_| {
+                let get_work = send_rx.clone();
+                let send_results = recv_tx.clone();
+                s.spawn(move || {
+                    get_work.iter().for_each(|sets| {
+                        for s in sets.into_iter() {
+                            if is_prime_pair_set(&s) {
+                                send_results.send(s).unwrap();
+                            }
+                        }
+                    })
+                });
+            });
+        }
+        all_combinations.for_each(|chunk| {
+            send_tx.send(chunk).unwrap();
+        });
+        drop(send_tx);
+        catcher.join().unwrap()
+    });
+    for s in sets {
+        println!("{:?}", s);
+    }
 }
 
-fn is_prime_pair_set(s: &[&Num]) -> bool {
+fn is_prime_pair_set(s: &[Num]) -> bool {
     fn is_concat_prime(l: &Num, r: &Num) -> bool {
         let concat: Num = format!("{}{}", l, r).parse().unwrap();
         primes.contains(&concat)

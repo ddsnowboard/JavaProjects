@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 lazy_static = "1.5.0"
 itertools = "0.13.0"
-rayon = "1.10.0"
+crossbeam = "0.8"
