@@ -7,6 +7,12 @@ use std::thread;
 
 type Num = u32;
 
+/**
+  This isn't using a N_THREADS threads because it turns out that generating the chunks
+  is actually slower than checking if they're prime, so most of the worker threads are sleeping. Not really sure how to
+  fix this. I have a suspicion that all the allocations (for example, the line c.collect::<Vec<_>>()) are being slow, but getting rid of those
+  is quite challenging, turns out.
+ */
 const N_THREADS: usize = 5;
 
 lazy_static! {
