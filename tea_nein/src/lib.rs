@@ -1,3 +1,4 @@
+use counter::Counter;
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -79,16 +80,74 @@ impl Predictor for RandomPredictor {
     }
 }
 
+#[derive(Eq, PartialEq, Hash, Clone, Copy)]
 enum MarkovState {
     Letter(char),
     Stop,
 }
 pub struct HMM {
+    // I'm going to use 2-grams
+    // I'd love to make this generic but I can't figure out how
     log_letter_edge_weights: HashMap<(MarkovState, MarkovState), HashMap<MarkovState, f64>>,
 }
 
 impl HMM {
     fn new() -> Self {
-I guess I count up the number of times each edge appears and then divide each by the total per (MarkovState, MarkovState)? Not sure
+        type Index = i16;
+        fn try_get(b: &[u8], idx: Index) -> MarkovState {
+            let as_option = || {
+                let idx: usize = idx.try_into().ok()?;
+                Some(char::from_u32(*b.get(idx)? as u32).unwrap())
+            };
+            match as_option() {
+                Some(c) => MarkovState::Letter(c),
+                None => MarkovState::Stop,
+            }
+        }
+        fn word_to_transitions(word: &str) -> Vec<(MarkovState, MarkovState, MarkovState)> {
+            let bytes = word.as_bytes();
+            (0..word.len())
+                .map(|last_index| {
+                    let last_index = last_index as Index;
+                    (
+                        try_get(bytes, last_index - 2),
+                        try_get(bytes, last_index - 1),
+                        try_get(bytes, last_index),
+                    )
+                })
+                .collect()
+        }
+        let all_transitions = WORDS.iter().flat_map(|s| word_to_transitions(s));
+        let grouped_by_first_2_chars = all_transitions.into_group_map_by(|(a, b, _)| (*a, *b));
+        let counts: HashMap<(MarkovState, MarkovState), Counter<MarkovState>> =
+            grouped_by_first_2_chars
+                .into_iter()
+                .map(|(first_two, all_transitions)| {
+                    (
+                        first_two,
+                        all_transitions
+                            .into_iter()
+                            .map(|(_, _, c)| c)
+                            .collect::<Counter<_>>(),
+                    )
+                })
+                .collect();
+
+        fn counter_to_log_proportions<T: std::hash::Hash + Eq>(c: Counter<T>) -> HashMap<T, f64> {
+            let total_observations: f64 = c.values().sum::<usize>() as f64;
+            c.into_iter()
+                .map(|(k, count)| (k, (count as f64 / total_observations).log(10.0)))
+                .collect()
+        }
+        Self {
+            log_letter_edge_weights: counts
+                .into_iter()
+                .map(|(k, c)| (k, counter_to_log_proportions(c)))
+                .collect(),
+        }
     }
+}
+
+impl Predictor for HMM {
+    // Gotta do this next time
 }
