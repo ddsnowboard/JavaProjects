@@ -8,6 +8,7 @@ use std::io::BufReader;
 use std::sync::LazyLock;
 
 pub type Number = u8;
+type Index = i16;
 static NUMBER_MAPPING: LazyLock<HashMap<Number, Vec<char>>> = LazyLock::new(|| {
     [
         (2, vec!['a', 'b', 'c']),
@@ -80,7 +81,7 @@ impl Predictor for RandomPredictor {
     }
 }
 
-#[derive(Eq, PartialEq, Hash, Clone, Copy)]
+#[derive(Eq, PartialEq, Hash, Clone, Copy, Debug)]
 enum MarkovState {
     Letter(char),
     Stop,
@@ -92,31 +93,7 @@ pub struct HMM {
 }
 
 impl HMM {
-    fn new() -> Self {
-        type Index = i16;
-        fn try_get(b: &[u8], idx: Index) -> MarkovState {
-            let as_option = || {
-                let idx: usize = idx.try_into().ok()?;
-                Some(char::from_u32(*b.get(idx)? as u32).unwrap())
-            };
-            match as_option() {
-                Some(c) => MarkovState::Letter(c),
-                None => MarkovState::Stop,
-            }
-        }
-        fn word_to_transitions(word: &str) -> Vec<(MarkovState, MarkovState, MarkovState)> {
-            let bytes = word.as_bytes();
-            (0..word.len())
-                .map(|last_index| {
-                    let last_index = last_index as Index;
-                    (
-                        try_get(bytes, last_index - 2),
-                        try_get(bytes, last_index - 1),
-                        try_get(bytes, last_index),
-                    )
-                })
-                .collect()
-        }
+    pub fn new() -> Self {
         let all_transitions = WORDS.iter().flat_map(|s| word_to_transitions(s));
         let grouped_by_first_2_chars = all_transitions.into_group_map_by(|(a, b, _)| (*a, *b));
         let counts: HashMap<(MarkovState, MarkovState), Counter<MarkovState>> =
@@ -148,6 +125,59 @@ impl HMM {
     }
 }
 
+impl Default for HMM {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Predictor for HMM {
     // Gotta do this next time
+    fn pick(&self, options: &[String]) -> String {
+        options
+            .iter()
+            .map(|s| {
+                (
+                    s,
+                    word_to_transitions(s)
+                        .into_iter()
+                        .map(|(s1, s2, n)| {
+                            self.log_letter_edge_weights
+                                .get(&(s1, s2))
+                                .and_then(|m| m.get(&n))
+                                .unwrap_or(&-1000.0)
+                        })
+                        .sum::<f64>(),
+                )
+            })
+            // .inspect(|p| println!("{:?}", p))
+            .max_by(|(_, l), (_, r)| l.partial_cmp(r).unwrap())
+            .unwrap()
+            .0
+            .to_owned()
+    }
+}
+
+fn word_to_transitions(word: &str) -> Vec<(MarkovState, MarkovState, MarkovState)> {
+    fn try_get(b: &[u8], idx: Index) -> MarkovState {
+        let as_option = || {
+            let idx: usize = idx.try_into().ok()?;
+            Some(char::from_u32(*b.get(idx)? as u32).unwrap())
+        };
+        match as_option() {
+            Some(c) => MarkovState::Letter(c),
+            None => MarkovState::Stop,
+        }
+    }
+    let bytes = word.as_bytes();
+    (0..word.len())
+        .map(|last_index| {
+            let last_index = last_index as Index;
+            (
+                try_get(bytes, last_index - 2),
+                try_get(bytes, last_index - 1),
+                try_get(bytes, last_index),
+            )
+        })
+        .collect()
 }
