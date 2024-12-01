@@ -1,6 +1,9 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use rayon::prelude::*;
 use std::cmp::{min, Ord, Ordering, PartialOrd};
+use std::collections::HashMap;
+use std::fmt;
 use std::io::stdin;
 use std::sync::LazyLock;
 
@@ -10,12 +13,38 @@ const BURN_COEFFICIENT: PotAmount = 2;
 const STARTING_BANKROLL: PotAmount = 800;
 
 fn main() {
-    let mut g = Game::new(vec![
-        Box::new(BasicStrategy {}),
-        Box::new(BasicStrategy {}),
-        Box::new(ManualStrategy {}),
-    ]);
-    g.play()
+    let results: Vec<_> = (0..50000)
+        .into_par_iter()
+        .map(|_idx| {
+            let mut g = Game::new(vec![
+                Box::new(BasicStrategy {
+                    bet_size_policy: BiggestBet {},
+                }),
+                Box::new(BasicStrategy {
+                    bet_size_policy: ConstantBet::new(200),
+                }),
+                Box::new(BasicStrategy {
+                    bet_size_policy: PoorMansKelly {},
+                }),
+            ]);
+            g.play()
+        })
+        .collect();
+    let mut amounts_by_player: HashMap<usize, Vec<PotAmount>> = HashMap::new();
+    results.into_iter().for_each(|r| {
+        r.player_amounts
+            .iter()
+            .enumerate()
+            .for_each(|(idx, amount)| {
+                amounts_by_player.entry(idx).or_insert(vec![]).push(*amount);
+            });
+    });
+    let mut averages: Vec<_> = amounts_by_player
+        .into_iter()
+        .map(|(idx, v)| (idx, (v.iter().sum::<i32>() as f64) / (v.len() as f64)))
+        .collect();
+    averages.sort_by_key(|(idx, _)| *idx);
+    println!("{:?}", averages);
 }
 
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
@@ -238,6 +267,22 @@ fn get_result(left_card: &TableCard, middle_card: &Card, right_card: &TableCard)
     }
 }
 
+struct GameResult {
+    pot: PotAmount,
+    player_amounts: Vec<PotAmount>,
+}
+
+impl fmt::Display for GameResult {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "Final pot: {}", self.pot)?;
+        writeln!(f, "Player amounts:")?;
+        for (idx, amt) in self.player_amounts.iter().enumerate() {
+            writeln!(f, "{}: {}", idx, amt)?;
+        }
+        fmt::Result::Ok(())
+    }
+}
+
 struct Game {
     discards: Vec<Card>,
     remaining_deck: Vec<Card>,
@@ -312,6 +357,7 @@ impl Game {
                         amount <= player.money,
                         "Amount must be less than your bankroll"
                     );
+                    assert!(amount > 0, "Amount must be positive");
                     let middle_card = self.draw_or_shuffle();
                     let player = &mut self.players[player_idx];
                     let amount_to_give_player =
@@ -325,25 +371,48 @@ impl Game {
                     self.discards.push(middle_card);
                 }
             }
-            self.discards.push(left_card.to_card());
-            self.discards.push(right_card.to_card());
         }
+        self.discards.push(left_card.to_card());
+        self.discards.push(right_card.to_card());
     }
 
-    fn play(&mut self) {
+    fn play(&mut self) -> GameResult {
         let player_indices_forever = (0..self.players.len()).cycle();
         for idx in player_indices_forever {
-            if self.current_pot == 0 {
-                return;
+            // If everyone is broke or the game is over
+            if self.players.iter().filter(|p| p.money > 0).next().is_none() || self.current_pot == 0
+            {
+                break;
             }
             let player = &self.players[idx];
-            if player.money == 0 {
+            if player.money <= 0 {
                 continue;
             } else {
                 self.play_once(idx);
             }
         }
+        self.to_result()
     }
+
+    fn to_result(&self) -> GameResult {
+        GameResult {
+            pot: self.current_pot,
+            player_amounts: self.players.iter().map(|p| p.money).collect(),
+        }
+    }
+}
+
+fn calculate_ev(left_card: &TableCard, right_card: &TableCard, potential_cards: &[Card]) -> f64 {
+    potential_cards
+        .iter()
+        .map(|c| get_result(left_card, &c, right_card))
+        .map(|r| match r {
+            PlayResult::Inside => 1,
+            PlayResult::Outside => -1,
+            PlayResult::Double => -2,
+        })
+        .sum::<i32>() as f64
+        / potential_cards.len() as f64
 }
 
 struct ManualStrategy {}
@@ -382,35 +451,91 @@ impl Strategy for ManualStrategy {
             if i.is_empty() {
                 return Response::Pass;
             } else if let Ok(amount) = i.parse() {
+                assert!(amount > 0, "You must bet a positive amount");
                 return Response::Play(amount);
             }
         }
     }
 }
 
-struct BasicStrategy {}
+trait BetSizePolicy {
+    fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, ev: f64) -> PotAmount;
+}
 
-impl Strategy for BasicStrategy {
+struct BiggestBet {}
+
+impl BetSizePolicy for BiggestBet {
+    fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, _ev: f64) -> PotAmount {
+        min(pot_size, bankroll)
+    }
+}
+
+struct ConstantBet {
+    amount: PotAmount,
+}
+
+impl ConstantBet {
+    fn new(amount: PotAmount) -> Self {
+        Self { amount }
+    }
+}
+
+impl BetSizePolicy for ConstantBet {
+    fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, _ev: f64) -> PotAmount {
+        min(self.amount, min(pot_size, bankroll))
+    }
+}
+
+struct PoorMansKelly {}
+
+impl BetSizePolicy for PoorMansKelly {
+    /// I really should derive the real Kelly fraction for this situation, but I'm going to use the
+    /// one that ignores double burning. What's the worst that could happen?
+    fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, ev: f64) -> PotAmount {
+        if bankroll < 2 && ev > 0.5 {
+            return 1;
+        }
+        // Wait is this right?
+        let coefficient = ev;
+        let bet = min(
+            pot_size,
+            min(bankroll, (bankroll as f64 * coefficient) as PotAmount),
+        );
+        // println!("Pot is {}, bank is {}, bet is {}", pot_size, bankroll, bet);
+        bet
+    }
+}
+
+struct BasicStrategy<P: BetSizePolicy> {
+    bet_size_policy: P,
+}
+
+impl<P: BetSizePolicy> Strategy for BasicStrategy<P> {
     fn witness(&mut self, _event: PlayEvent) {}
     fn call_ace(&self) -> AceChoice {
         AceChoice::Low
     }
     fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response {
         let Opportunity(left_card, right_card) = opp;
-        let known_remaining_cards = BASE_DECK
+        let known_remaining_cards: Vec<_> = BASE_DECK
             .clone()
             .into_iter()
-            .filter(|&c| c != left_card.to_card() && c != right_card.to_card());
-        let ev: i32 = known_remaining_cards
-            .map(|c| get_result(left_card, &c, right_card))
-            .map(|r| match r {
-                PlayResult::Inside => 1,
-                PlayResult::Outside => -1,
-                PlayResult::Double => -2,
-            })
-            .sum();
-        if ev > 0 {
-            Response::Play(min(50, min(pot_amount, bankroll)))
+            .filter(|&c| c != left_card.to_card() && c != right_card.to_card())
+            .collect();
+        let ev = calculate_ev(left_card, right_card, &known_remaining_cards);
+        /*
+        println!(
+            "Cards are {:?} and {:?} and ev is {}",
+            left_card, right_card, ev
+        );
+            */
+        if ev > 0.0 {
+            let potential_bet = self.bet_size_policy.get_bet_size(pot_amount, bankroll, ev);
+            if potential_bet > 0 {
+                Response::Play(potential_bet)
+            } else {
+                Response::Pass
+            }
         } else {
             Response::Pass
         }
