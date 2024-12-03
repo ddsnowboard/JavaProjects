@@ -13,41 +13,85 @@ const ANTE_AMOUNT: PotAmount = 200;
 const BURN_COEFFICIENT: PotAmount = 2;
 const STARTING_BANKROLL: PotAmount = 800;
 
+macro_rules! box_strategies {
+    () => {(Vec::<String>::new(), || {Vec::<Box<dyn Strategy>>::new()})};
+    // Handle hanging comma
+    ($($ss:expr),*,) => {box_strategies!($($ss),*)};
+    ($($ss:expr),*) => {{
+        let name_vec = vec![
+            $(stringify!($ss)),*
+        ];
+        fn f() -> Vec<Box<dyn Strategy>> {
+            vec![
+                $(Box::new($ss)),+
+            ]
+        }
+        (name_vec, f)
+    }};
+}
+
 fn main() {
+    let (names, generate_strategies) = box_strategies!(
+        /*
+        BasicStrategy {
+            bet_size_policy: BiggestBet {}
+        },
+        BasicStrategy {
+            bet_size_policy: ConstantBet::new(200)
+        },
+        BasicStrategy {
+            bet_size_policy: PoorMansKelly {}
+        },
+        OptimalStrategy::new(ConstantBet::new(10)),
+        OptimalStrategy::new(ConstantBet::new(50)),
+        OptimalStrategy::new(ConstantBet::new(200)),
+        OptimalStrategy::new(ConstantBet::new(500)),
+        OptimalStrategy::new(ConstantBet::new(800)),
+        OptimalStrategy::new(BiggestBet {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+
+        OptimalStrategyConstantAceChoice::new(AceChoice::Hi, PoorMansKelly {}),
+        OptimalStrategyConstantAceChoice::new(AceChoice::Low, PoorMansKelly {}),
+        */
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+        OptimalStrategy::new(PoorMansKelly {}),
+    );
     let results: Vec<_> = (0..100000)
         .into_par_iter()
         .map(|_idx| {
-            let mut g = Game::new(vec![
-                /*
-                Box::new(BasicStrategy {
-                    bet_size_policy: BiggestBet {},
-                }),
-                Box::new(BasicStrategy {
-                    bet_size_policy: ConstantBet::new(200),
-                }),
-                Box::new(BasicStrategy {
-                    bet_size_policy: PoorMansKelly {},
-                }),
-                */
-                Box::new(OptimalStrategy::new(ConstantBet::new(10))),
-                Box::new(OptimalStrategy::new(ConstantBet::new(50))),
-                Box::new(OptimalStrategy::new(ConstantBet::new(200))),
-                Box::new(OptimalStrategy::new(ConstantBet::new(500))),
-                Box::new(OptimalStrategy::new(ConstantBet::new(800))),
-                Box::new(OptimalStrategy::new(BiggestBet {})),
-                Box::new(OptimalStrategy::new(PoorMansKelly {})),
-                Box::new(OptimalStrategy::new(PoorMansKelly {})),
-                /*
-                Box::new(OptimalStrategyConstantAceChoice::new(
-                    AceChoice::Hi,
-                    PoorMansKelly {},
-                )),
-                Box::new(OptimalStrategyConstantAceChoice::new(
-                    AceChoice::Low,
-                    PoorMansKelly {},
-                )),
-                */
-            ]);
+            let mut g = Game::new(generate_strategies());
             g.play()
         })
         .collect();
@@ -65,7 +109,15 @@ fn main() {
         .map(|(idx, v)| (idx, (v.iter().sum::<i32>() as f64) / (v.len() as f64)))
         .collect();
     averages.sort_by_key(|(idx, _)| *idx);
-    println!("{:?}", averages);
+    let averages: Vec<_> = averages
+        .into_iter()
+        .map(|(_, final_amount)| final_amount)
+        .zip(names)
+        .map(|(final_amount, name)| (name, final_amount))
+        .collect();
+    for (name, final_amount) in averages.into_iter() {
+        println!("{} ended with {}", name, final_amount);
+    }
 }
 
 #[derive(PartialEq, Eq, Debug, Copy, Clone, Hash)]
