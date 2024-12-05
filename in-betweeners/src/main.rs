@@ -729,3 +729,60 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategyConstantAceChoice<P> {
         self.underlying_strategy.play(opp, pot_amount, bankroll)
     }
 }
+
+struct MiddleOutside<P: BetSizePolicy> {
+    low_value: Value,
+    high_value: Value,
+    count: i32,
+}
+
+impl<P: BetSizePolicy> MiddleOutside<P> {
+    fn new() -> Self {
+        let default_low = Value::Number(4);
+        let default_high = Value::Number(10);
+        Self::with_values(default_low, default_high)
+    }
+
+    fn with_values(low: Value, high: Value) -> Self {
+        if low.to_number_ace_high() > high.to_number_ace_high() {
+            Self::with_values(high, low)
+        } else {
+            Self {
+                low_value: low,
+                high_value: high,
+                count: 0,
+            }
+        }
+    }
+
+    fn is_outside(&self, card: &Card) -> bool {
+        let Card(_, value) = card;
+        let value_n = value.to_number_ace_high();
+        value_n >= self.high_value.to_number_ace_high()
+            || value_n <= self.low_value.to_number_ace_high()
+    }
+}
+
+impl<P: BetSizePolicy> Strategy for MiddleOutside<P> {
+    fn witness(&mut self, event: PlayEvent) {
+        match event {
+            PlayEvent::Shuffle(_) => {
+                self.count = 0;
+            }
+            PlayEvent::Flip(c) => {
+                if self.is_outside(&c) {
+                    self.count += 1;
+                } else {
+                    self.count -= 1;
+                }
+            }
+        }
+    }
+    fn call_ace(&self) -> AceChoice {
+        // Maybe we'll come back to this
+        AceChoice::Low
+    }
+    fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response {
+        // I actually don't know what this will look like quite yet
+    }
+}
