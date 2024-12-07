@@ -53,40 +53,22 @@ fn main() {
         OptimalStrategyConstantAceChoice::new(AceChoice::Hi, PoorMansKelly {}),
         OptimalStrategyConstantAceChoice::new(AceChoice::Low, PoorMansKelly {}),
         */
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
-        OptimalStrategy::new(PoorMansKelly {}),
+        MiddleOutside::with_values(Value::Number(3), Value::Number(10)),
+        MiddleOutside::with_values(Value::Number(3), Value::Jack),
+        MiddleOutside::with_values(Value::Number(3), Value::Queen),
+        MiddleOutside::with_values(Value::Number(3), Value::King),
+
+        MiddleOutside::with_values(Value::Number(4), Value::Number(10)),
+        MiddleOutside::with_values(Value::Number(4), Value::Jack),
+        MiddleOutside::with_values(Value::Number(4), Value::Queen),
+        MiddleOutside::with_values(Value::Number(4), Value::King),
+
+        MiddleOutside::with_values(Value::Number(5), Value::Jack),
+        MiddleOutside::with_values(Value::Number(5), Value::Queen),
+        MiddleOutside::with_values(Value::Number(5), Value::King),
+        BasicStrategy {
+            bet_size_policy: ConstantBet::new(200)
+        },
     );
     let results: Vec<_> = (0..100000)
         .into_par_iter()
@@ -260,6 +242,12 @@ static BASE_DECK: LazyLock<Vec<Card>> = LazyLock::new(|| {
 });
 
 struct Opportunity(TableCard, TableCard);
+impl Opportunity {
+    fn swapped(&self) -> Self {
+        let Self(l, r) = self;
+        Self(*r, *l)
+    }
+}
 enum Response {
     Pass,
     Play(PotAmount),
@@ -730,13 +718,15 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategyConstantAceChoice<P> {
     }
 }
 
-struct MiddleOutside<P: BetSizePolicy> {
+struct MiddleOutside<U: Strategy> {
     low_value: Value,
     high_value: Value,
     count: i32,
+    underlying: U,
+    bet_size_policy: ConstantBet,
 }
 
-impl<P: BetSizePolicy> MiddleOutside<P> {
+impl MiddleOutside<BasicStrategy<ConstantBet>> {
     fn new() -> Self {
         let default_low = Value::Number(4);
         let default_high = Value::Number(10);
@@ -744,13 +734,27 @@ impl<P: BetSizePolicy> MiddleOutside<P> {
     }
 
     fn with_values(low: Value, high: Value) -> Self {
+        Self::with_values_and_underlying(
+            low,
+            high,
+            BasicStrategy {
+                bet_size_policy: ConstantBet::new(100),
+            },
+        )
+    }
+}
+
+impl<U: Strategy> MiddleOutside<U> {
+    fn with_values_and_underlying(low: Value, high: Value, underlying: U) -> Self {
         if low.to_number_ace_high() > high.to_number_ace_high() {
-            Self::with_values(high, low)
+            Self::with_values_and_underlying(high, low, underlying)
         } else {
             Self {
                 low_value: low,
                 high_value: high,
                 count: 0,
+                underlying,
+                bet_size_policy: ConstantBet::new(100),
             }
         }
     }
@@ -763,7 +767,7 @@ impl<P: BetSizePolicy> MiddleOutside<P> {
     }
 }
 
-impl<P: BetSizePolicy> Strategy for MiddleOutside<P> {
+impl<U: Strategy> Strategy for MiddleOutside<U> {
     fn witness(&mut self, event: PlayEvent) {
         match event {
             PlayEvent::Shuffle(_) => {
@@ -783,6 +787,40 @@ impl<P: BetSizePolicy> Strategy for MiddleOutside<P> {
         AceChoice::Low
     }
     fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response {
-        // I actually don't know what this will look like quite yet
+        let Opportunity(left_card, right_card) = opp;
+        let TableCard(_, left_value) = left_card;
+        let TableCard(_, right_value) = right_card;
+        if left_value > right_value {
+            return self.play(&opp.swapped(), pot_amount, bankroll);
+        }
+        assert!(
+            left_value <= right_value,
+            "Left_card must be lower than right_card by now"
+        );
+        if self.is_outside(&left_card.clone().to_card())
+            && self.is_outside(&right_card.clone().to_card())
+        {
+            let n_burns = if *left_value == TableValue::LowAce && *right_value == TableValue::HiAce
+            {
+                2
+            } else {
+                6 // This assumes that the other 3 examples of each card are still in the deck
+            };
+            let n_wins = (right_value.to_number() - left_value.to_number() - 1) as i32;
+            let n_values = 13;
+            let n_losses = (n_values - n_wins - n_burns) as i32;
+            let ev_kinda = (n_wins + self.count - 2 * n_burns - n_losses) as f64
+                / (n_burns + n_losses + n_wins) as f64;
+            if ev_kinda > 0.0 {
+                Response::Play(
+                    self.bet_size_policy
+                        .get_bet_size(pot_amount, bankroll, ev_kinda),
+                )
+            } else {
+                Response::Pass
+            }
+        } else {
+            self.underlying.play(opp, pot_amount, bankroll)
+        }
     }
 }
