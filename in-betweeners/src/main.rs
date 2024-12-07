@@ -2,16 +2,15 @@ use ordered_float::OrderedFloat;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
-use std::cmp::{min, Ord, Ordering, PartialOrd};
+use std::cmp::min;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::io::stdin;
 use std::sync::LazyLock;
 
-type PotAmount = i32;
-const ANTE_AMOUNT: PotAmount = 200;
-const BURN_COEFFICIENT: PotAmount = 2;
-const STARTING_BANKROLL: PotAmount = 800;
+mod models;
+
+use crate::models::*;
 
 macro_rules! box_strategies {
     () => {(Vec::<String>::new(), || {Vec::<Box<dyn Strategy>>::new()})};
@@ -57,12 +56,10 @@ fn main() {
         MiddleOutside::with_values(Value::Number(3), Value::Jack),
         MiddleOutside::with_values(Value::Number(3), Value::Queen),
         MiddleOutside::with_values(Value::Number(3), Value::King),
-
         MiddleOutside::with_values(Value::Number(4), Value::Number(10)),
         MiddleOutside::with_values(Value::Number(4), Value::Jack),
         MiddleOutside::with_values(Value::Number(4), Value::Queen),
         MiddleOutside::with_values(Value::Number(4), Value::King),
-
         MiddleOutside::with_values(Value::Number(5), Value::Jack),
         MiddleOutside::with_values(Value::Number(5), Value::Queen),
         MiddleOutside::with_values(Value::Number(5), Value::King),
@@ -102,136 +99,6 @@ fn main() {
     }
 }
 
-#[derive(PartialEq, Eq, Debug, Copy, Clone, Hash)]
-enum Suit {
-    Hearts,
-    Diamonds,
-    Spades,
-    Clubs,
-}
-
-#[derive(PartialEq, Eq, Debug, Copy, Clone, Hash)]
-enum Value {
-    Ace,
-    King,
-    Queen,
-    Jack,
-    Number(u8),
-}
-
-impl Value {
-    fn to_table_value(self) -> Option<TableValue> {
-        match self {
-            Value::Ace => None,
-            Value::King => Some(TableValue::King),
-            Value::Queen => Some(TableValue::Queen),
-            Value::Jack => Some(TableValue::Jack),
-            Value::Number(n) => Some(TableValue::Number(n)),
-        }
-    }
-
-    fn to_number_ace_high(self) -> u8 {
-        match self {
-            Value::Number(n) => n,
-            Value::Jack => 11,
-            Value::Queen => 12,
-            Value::King => 13,
-            Value::Ace => 14,
-        }
-    }
-}
-
-#[derive(PartialEq, Eq, Debug, Copy, Clone)]
-enum TableValue {
-    HiAce,
-    LowAce,
-    King,
-    Queen,
-    Jack,
-    Number(u8),
-}
-
-impl PartialOrd for TableValue {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.to_number().cmp(&other.to_number()))
-    }
-}
-
-impl Ord for TableValue {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
-    }
-}
-
-impl TableValue {
-    fn to_number(self) -> u8 {
-        match self {
-            TableValue::LowAce => 1,
-            TableValue::Number(n) => n,
-            TableValue::Jack => 11,
-            TableValue::Queen => 12,
-            TableValue::King => 13,
-            TableValue::HiAce => 14,
-        }
-    }
-    fn to_value(self) -> Value {
-        match self {
-            TableValue::Number(n) => Value::Number(n),
-            TableValue::King => Value::King,
-            TableValue::Queen => Value::Queen,
-            TableValue::Jack => Value::Jack,
-            TableValue::HiAce | TableValue::LowAce => Value::Ace,
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
-struct Card(Suit, Value);
-
-impl Card {
-    fn to_table_card(self) -> FlipResult {
-        let Card(suit, value) = &self;
-        let table_value = value.to_table_value();
-        match table_value {
-            Some(v) => FlipResult::Other(TableCard(*suit, v)),
-            None => FlipResult::Ace(AcePicker::for_card(self)),
-        }
-    }
-}
-
-struct AcePicker {
-    card: Card,
-}
-
-impl AcePicker {
-    fn for_card(card: Card) -> Self {
-        Self { card }
-    }
-    fn pick(self, choice: &AceChoice) -> TableCard {
-        let Card(suit, _) = self.card;
-        let value = match choice {
-            AceChoice::Hi => TableValue::HiAce,
-            AceChoice::Low => TableValue::LowAce,
-        };
-        TableCard(suit, value)
-    }
-}
-
-enum FlipResult {
-    Ace(AcePicker),
-    Other(TableCard),
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-struct TableCard(Suit, TableValue);
-
-impl TableCard {
-    fn to_card(self) -> Card {
-        let TableCard(suit, table_value) = self;
-        Card(suit, table_value.to_value())
-    }
-}
-
 static BASE_DECK: LazyLock<Vec<Card>> = LazyLock::new(|| {
     let all_numbers = (2..=10).map(Value::Number);
     let all_values = all_numbers.chain(vec![Value::Ace, Value::King, Value::Queen, Value::Jack]);
@@ -240,56 +107,6 @@ static BASE_DECK: LazyLock<Vec<Card>> = LazyLock::new(|| {
         .flat_map(|v| all_suits.iter().copied().map(move |s| Card(s, v)))
         .collect::<Vec<_>>()
 });
-
-struct Opportunity(TableCard, TableCard);
-impl Opportunity {
-    fn swapped(&self) -> Self {
-        let Self(l, r) = self;
-        Self(*r, *l)
-    }
-}
-enum Response {
-    Pass,
-    Play(PotAmount),
-}
-
-#[derive(Clone, Copy, Eq, PartialEq, Debug)]
-enum AceChoice {
-    Hi,
-    Low,
-}
-
-#[derive(Eq, PartialEq, Clone)]
-enum PlayEvent {
-    Shuffle(Vec<Card>),
-    Flip(Card),
-}
-
-trait Strategy {
-    fn witness(&mut self, event: PlayEvent);
-    fn call_ace(&self) -> AceChoice;
-    fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response;
-}
-
-struct Player {
-    money: PotAmount,
-    strategy: Box<dyn Strategy>,
-}
-
-impl Player {
-    fn new(strategy: Box<dyn Strategy>) -> Self {
-        Self {
-            money: STARTING_BANKROLL,
-            strategy,
-        }
-    }
-}
-
-enum PlayResult {
-    Inside,
-    Outside,
-    Double,
-}
 
 fn is_playable(left_card: &TableCard, right_card: &TableCard) -> bool {
     let TableCard(_, left_value) = left_card;
