@@ -202,3 +202,7 @@ impl fmt::Display for GameResult {
         fmt::Result::Ok(())
     }
 }
+
+pub trait BetSizePolicy {
+    fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, ev: f64) -> PotAmount;
+}
