@@ -8,3 +8,6 @@ perf.data
 perf.data.old
 *.swp
 *.sqlite
+measurements.txt.?z
+medium_measurements.txt.?z
+timings.txt
