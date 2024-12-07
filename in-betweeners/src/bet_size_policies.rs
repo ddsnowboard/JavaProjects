@@ -36,11 +36,9 @@ impl BetSizePolicy for PoorMansKelly {
         }
         // Wait is this right?
         let coefficient = ev;
-        let bet = min(
+        min(
             pot_size,
             min(bankroll, (bankroll as f64 * coefficient) as PotAmount),
-        );
-        // println!("Pot is {}, bank is {}, bet is {}", pot_size, bankroll, bet);
-        bet
+        )
     }
 }

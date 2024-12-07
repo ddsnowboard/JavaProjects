@@ -35,7 +35,7 @@ pub fn get_result(left_card: &TableCard, middle_card: &Card, right_card: &TableC
         }
     }
     assert!(
-        is_playable(&left_card, &right_card),
+        is_playable(left_card, right_card),
         "It's impossible to hit on this"
     );
     let TableCard(_, left_value) = left_card;
@@ -55,7 +55,7 @@ pub fn calculate_ev(
 ) -> f64 {
     potential_cards
         .iter()
-        .map(|c| get_result(left_card, &c, right_card))
+        .map(|c| get_result(left_card, c, right_card))
         .map(|r| match r {
             PlayResult::Inside => 1,
             PlayResult::Outside => -1,

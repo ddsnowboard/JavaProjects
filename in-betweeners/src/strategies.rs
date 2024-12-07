@@ -133,10 +133,7 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategy<P> {
                         };
                         // If the EV is less than 0 or we can't play, we just won't
                         OrderedFloat(if is_playable(card, &other_table_card) {
-                            f64::max(
-                                0.0,
-                                calculate_ev(&card, &other_table_card, &remaining_cards),
-                            )
+                            f64::max(0.0, calculate_ev(card, &other_table_card, &remaining_cards))
                         } else {
                             0.0
                         })
@@ -191,7 +188,7 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategyConstantAceChoice<P> {
         self.underlying_strategy.witness(event)
     }
     fn call_ace(&self) -> AceChoice {
-        self.ace_choice.clone()
+        self.ace_choice
     }
     fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response {
         self.underlying_strategy.play(opp, pot_amount, bankroll)
@@ -204,6 +201,12 @@ pub struct MiddleOutside<U: Strategy> {
     pub count: i32,
     pub underlying: U,
     pub bet_size_policy: ConstantBet,
+}
+
+impl Default for MiddleOutside<BasicStrategy<ConstantBet>> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MiddleOutside<BasicStrategy<ConstantBet>> {
@@ -277,9 +280,7 @@ impl<U: Strategy> Strategy for MiddleOutside<U> {
             left_value <= right_value,
             "Left_card must be lower than right_card by now"
         );
-        if self.is_outside(&left_card.clone().to_card())
-            && self.is_outside(&right_card.clone().to_card())
-        {
+        if self.is_outside(&(*left_card).to_card()) && self.is_outside(&(*right_card).to_card()) {
             let n_burns = if *left_value == TableValue::LowAce && *right_value == TableValue::HiAce
             {
                 2
@@ -288,7 +289,7 @@ impl<U: Strategy> Strategy for MiddleOutside<U> {
             };
             let n_wins = (right_value.to_number() - left_value.to_number() - 1) as i32;
             let n_values = 13;
-            let n_losses = (n_values - n_wins - n_burns) as i32;
+            let n_losses = n_values - n_wins - n_burns;
             let ev_kinda = (n_wins + self.count - 2 * n_burns - n_losses) as f64
                 / (n_burns + n_losses + n_wins) as f64;
             if ev_kinda > 0.0 {

@@ -100,8 +100,7 @@ impl Game {
         let player_indices_forever = (0..self.players.len()).cycle();
         for idx in player_indices_forever {
             // If everyone is broke or the game is over
-            if self.players.iter().filter(|p| p.money > 0).next().is_none() || self.current_pot == 0
-            {
+            if !self.players.iter().any(|p| p.money > 0) || self.current_pot == 0 {
                 break;
             }
             let player = &self.players[idx];

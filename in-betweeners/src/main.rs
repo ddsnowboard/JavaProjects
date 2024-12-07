@@ -80,7 +80,7 @@ fn main() {
             .iter()
             .enumerate()
             .for_each(|(idx, amount)| {
-                amounts_by_player.entry(idx).or_insert(vec![]).push(*amount);
+                amounts_by_player.entry(idx).or_default().push(*amount);
             });
     });
     let mut averages: Vec<_> = amounts_by_player
