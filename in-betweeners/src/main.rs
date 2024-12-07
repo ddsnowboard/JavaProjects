@@ -52,6 +52,7 @@ fn main() {
         OptimalStrategyConstantAceChoice::new(AceChoice::Hi, PoorMansKelly {}),
         OptimalStrategyConstantAceChoice::new(AceChoice::Low, PoorMansKelly {}),
         */
+        /*
         MiddleOutside::with_values(Value::Number(3), Value::Number(10)),
         MiddleOutside::with_values(Value::Number(3), Value::Jack),
         MiddleOutside::with_values(Value::Number(3), Value::Queen),
@@ -63,6 +64,7 @@ fn main() {
         MiddleOutside::with_values(Value::Number(5), Value::Jack),
         MiddleOutside::with_values(Value::Number(5), Value::Queen),
         MiddleOutside::with_values(Value::Number(5), Value::King),
+        */
         BasicStrategy {
             bet_size_policy: ConstantBet::new(200)
         },

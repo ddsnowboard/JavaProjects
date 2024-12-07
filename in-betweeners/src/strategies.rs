@@ -46,6 +46,10 @@ impl Strategy for ManualStrategy {
             }
         }
     }
+
+    fn get_name(&self) -> String {
+        String::from("ManualStrategy")
+    }
 }
 
 pub struct BasicStrategy<P: BetSizePolicy> {
@@ -81,6 +85,13 @@ impl<P: BetSizePolicy> Strategy for BasicStrategy<P> {
         } else {
             Response::Pass
         }
+    }
+
+    fn get_name(&self) -> String {
+        format!(
+            "BasicStrategy<bet policy={}>",
+            self.bet_size_policy.get_name()
+        )
     }
 }
 
@@ -167,6 +178,13 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategy<P> {
             Response::Pass
         }
     }
+
+    fn get_name(&self) -> String {
+        format!(
+            "OptimalStrategy<bet policy={}>",
+            self.bet_size_policy.get_name()
+        )
+    }
 }
 
 pub struct OptimalStrategyConstantAceChoice<P: BetSizePolicy> {
@@ -192,6 +210,12 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategyConstantAceChoice<P> {
     }
     fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response {
         self.underlying_strategy.play(opp, pot_amount, bankroll)
+    }
+    fn get_name(&self) -> String {
+        format!(
+            "OptimalStrategyConstantAceChoice<bet policy={}>",
+            self.underlying_strategy.bet_size_policy.get_name()
+        )
     }
 }
 
@@ -303,5 +327,12 @@ impl<U: Strategy> Strategy for MiddleOutside<U> {
         } else {
             self.underlying.play(opp, pot_amount, bankroll)
         }
+    }
+
+    fn get_name(&self) -> String {
+        format!(
+            "MiddleOutside<bet policy={}>",
+            self.bet_size_policy.get_name()
+        )
     }
 }

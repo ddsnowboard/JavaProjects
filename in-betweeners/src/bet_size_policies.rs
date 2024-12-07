@@ -7,6 +7,9 @@ impl BetSizePolicy for BiggestBet {
     fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, _ev: f64) -> PotAmount {
         min(pot_size, bankroll)
     }
+    fn get_name(&self) -> String {
+        String::from("BiggestBet")
+    }
 }
 
 pub struct ConstantBet {
@@ -22,6 +25,9 @@ impl ConstantBet {
 impl BetSizePolicy for ConstantBet {
     fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, _ev: f64) -> PotAmount {
         min(self.amount, min(pot_size, bankroll))
+    }
+    fn get_name(&self) -> String {
+        format!("ConstantBet({})", self.amount)
     }
 }
 
@@ -40,5 +46,9 @@ impl BetSizePolicy for PoorMansKelly {
             pot_size,
             min(bankroll, (bankroll as f64 * coefficient) as PotAmount),
         )
+    }
+
+    fn get_name(&self) -> String {
+        String::from("PoorMansKelly")
     }
 }

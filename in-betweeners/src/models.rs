@@ -10,6 +10,7 @@ pub trait Strategy {
     fn witness(&mut self, event: PlayEvent);
     fn call_ace(&self) -> AceChoice;
     fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response;
+    fn get_name(&self) -> String;
 }
 
 #[derive(Eq, PartialEq, Clone)]
@@ -205,4 +206,5 @@ impl fmt::Display for GameResult {
 
 pub trait BetSizePolicy {
     fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, ev: f64) -> PotAmount;
+    fn get_name(&self) -> String;
 }
