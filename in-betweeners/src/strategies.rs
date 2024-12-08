@@ -69,12 +69,6 @@ impl<P: BetSizePolicy> Strategy for BasicStrategy<P> {
             .filter(|&c| c != left_card.to_card() && c != right_card.to_card())
             .collect();
         let ev = calculate_ev(left_card, right_card, &known_remaining_cards);
-        /*
-        println!(
-            "Cards are {:?} and {:?} and ev is {}",
-            left_card, right_card, ev
-        );
-            */
         if ev > 0.0 {
             let potential_bet = self.bet_size_policy.get_bet_size(pot_amount, bankroll, ev);
             if potential_bet > 0 {
@@ -161,12 +155,6 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategy<P> {
             right_card,
             &self.remaining_cards.iter().cloned().collect::<Vec<_>>(),
         );
-        /*
-        println!(
-            "Cards are {:?} and {:?} and ev is {}",
-            left_card, right_card, ev
-        );
-            */
         if ev > 0.0 {
             let potential_bet = self.bet_size_policy.get_bet_size(pot_amount, bankroll, ev);
             if potential_bet > 0 {
