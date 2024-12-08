@@ -89,6 +89,52 @@ impl<P: BetSizePolicy> Strategy for BasicStrategy<P> {
     }
 }
 
+#[cfg(test)]
+mod basic_strategy_test {
+    use crate::models::*;
+    use crate::strategies::*;
+
+    #[test]
+    fn basic_strategy_calls_bet_policy_on_good_opporunity() {
+        let mut s = BasicStrategy {
+            bet_size_policy: MockBetSizePolicy::new(),
+        };
+        let good_opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::Number(3)),
+            TableCard(Suit::Hearts, TableValue::HiAce),
+        );
+        let play_amount = 333;
+        s.bet_size_policy
+            .expect_get_bet_size()
+            .times(1)
+            .return_const(play_amount);
+        let pot_amount = 500;
+        let bankroll = 11000;
+        let response = s.play(&good_opportunity, pot_amount, bankroll);
+        assert_eq!(response, Response::Play(play_amount));
+    }
+
+    #[test]
+    fn basic_strategy_does_not_call_bet_policy_on_bad_opporunity() {
+        let mut s = BasicStrategy {
+            bet_size_policy: MockBetSizePolicy::new(),
+        };
+        let bad_opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::King),
+            TableCard(Suit::Hearts, TableValue::HiAce),
+        );
+        let play_amount = 333;
+        s.bet_size_policy
+            .expect_get_bet_size()
+            .times(0)
+            .return_const(play_amount);
+        let pot_amount = 500;
+        let bankroll = 11000;
+        let response = s.play(&bad_opportunity, pot_amount, bankroll);
+        assert_eq!(response, Response::Pass);
+    }
+}
+
 pub struct OptimalStrategy<P: BetSizePolicy> {
     remaining_cards: HashSet<Card>,
     bet_size_policy: P,

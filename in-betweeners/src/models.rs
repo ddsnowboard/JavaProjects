@@ -1,3 +1,4 @@
+use mockall::automock;
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::fmt;
 
@@ -155,6 +156,7 @@ pub enum AceChoice {
     Low,
 }
 
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Response {
     Pass,
     Play(PotAmount),
@@ -204,6 +206,7 @@ impl fmt::Display for GameResult {
     }
 }
 
+#[automock]
 pub trait BetSizePolicy {
     fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, ev: f64) -> PotAmount;
     fn get_name(&self) -> String;
