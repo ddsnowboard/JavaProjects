@@ -70,6 +70,15 @@ pub fn calculate_ev(
 }
 
 #[cfg(test)]
+macro_rules! assert_approx_eq (
+    ($l:expr, $r:expr) => {
+        let left = $l;
+        let right = $r;
+        assert!(relative_eq!(left, right), "Expected {}, not {}", left, right);
+    };
+);
+
+#[cfg(test)]
 mod tests {
     use crate::utils::*;
     use approx::*;
@@ -145,10 +154,7 @@ mod tests {
         let cards = (4..=10)
             .map(|n| Card(Suit::Hearts, Value::Number(n)))
             .collect::<Vec<_>>();
-        assert!(
-            relative_eq!(calculate_ev(&left, &right, &cards), 1.0),
-            "Ev was not 1"
-        );
+        assert_approx_eq!(calculate_ev(&left, &right, &cards), 1.0);
     }
 
     #[test]
@@ -160,7 +166,7 @@ mod tests {
             .map(|v| Card(Suit::Hearts, v))
             .collect::<Vec<_>>();
         let ev = calculate_ev(&left, &right, &cards);
-        assert!(relative_eq!(ev, -1.0), "Ev was {}, not -1", ev);
+        assert_approx_eq!(ev, -1.0);
     }
 
     #[test]
@@ -172,18 +178,41 @@ mod tests {
             .map(|v| Card(Suit::Hearts, v))
             .collect::<Vec<_>>();
         let ev = calculate_ev(&left, &right, &cards);
-        assert!(relative_eq!(ev, -2.0), "Ev was {}, not -2", ev);
+        assert_approx_eq!(ev, -2.0);
     }
 
     #[test]
     fn even_odds() {
         let left = TableCard(Suit::Clubs, TableValue::Number(3));
         let right = TableCard(Suit::Clubs, TableValue::Number(9));
-        let cards = [Value::Number(4), Value::Number(5), Value::Number(10),Value::Jack]
-            .into_iter()
-            .map(|v| Card(Suit::Hearts, v))
-            .collect::<Vec<_>>();
+        let cards = [
+            Value::Number(4),
+            Value::Number(5),
+            Value::Number(10),
+            Value::Jack,
+        ]
+        .into_iter()
+        .map(|v| Card(Suit::Hearts, v))
+        .collect::<Vec<_>>();
         let ev = calculate_ev(&left, &right, &cards);
-        assert!(relative_eq!(ev, 0.0), "Ev was {}, not 0", ev);
+
+        assert_approx_eq!(ev, 0.0);
+    }
+
+    #[test]
+    fn doubles_count_double() {
+        let left = TableCard(Suit::Clubs, TableValue::Number(3));
+        let right = TableCard(Suit::Clubs, TableValue::Number(9));
+        let cards = [
+            Value::Number(4),
+            Value::Number(5),
+            Value::Number(9),
+            Value::Jack,
+        ]
+        .into_iter()
+        .map(|v| Card(Suit::Hearts, v))
+        .collect::<Vec<_>>();
+        let ev = calculate_ev(&left, &right, &cards);
+        assert_approx_eq!(ev, -0.25);
     }
 }
