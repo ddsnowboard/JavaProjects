@@ -221,6 +221,70 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategy<P> {
     }
 }
 
+#[cfg(test)]
+mod optimal_strategy_test {
+    use crate::models::*;
+    use crate::strategies::*;
+    use crate::utils::BASE_DECK;
+
+    #[test]
+    fn optimal_strategy_plays_on_good_opporunity_with_full_deck() {
+        let bet_size = 20;
+        let mut s = OptimalStrategy::new(ConstantBet::new(bet_size));
+        s.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
+        let good_opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::Number(3)),
+            TableCard(Suit::Hearts, TableValue::HiAce),
+        );
+        let pot_amount = 500;
+        let bankroll = 11000;
+        let response = s.play(&good_opportunity, pot_amount, bankroll);
+        assert_eq!(response, Response::Play(bet_size));
+    }
+
+    #[test]
+    fn optimal_strategy_does_not_play_on_bad_opporunity_with_full_deck() {
+        let mut s = OptimalStrategy::new(ConstantBet::new(20));
+        s.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
+        let bad_opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::King),
+            TableCard(Suit::Hearts, TableValue::HiAce),
+        );
+        let pot_amount = 500;
+        let bankroll = 11000;
+        let response = s.play(&bad_opportunity, pot_amount, bankroll);
+        assert_eq!(response, Response::Pass);
+    }
+
+    #[test]
+    fn optimal_strategy_plays_bad_opportunity_when_only_good_cards_remain() {
+        let bet_size = 20;
+        let mut s = OptimalStrategy::new(ConstantBet::new(bet_size));
+        s.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
+        let bad_opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::Number(9)),
+            TableCard(Suit::Hearts, TableValue::HiAce),
+        );
+        {
+            let mut w = |c: &Card| {
+                s.witness(PlayEvent::Flip(*c));
+            };
+            BASE_DECK.iter().for_each(|c| {
+                let Card(_, value) = c;
+                match value {
+                    Value::Ace => w(c),
+                    Value::Number(n) if *n <= 9 => w(c),
+                    _ => {}
+                }
+            });
+        }
+        let pot_amount = 500;
+        let bankroll = 11000;
+        let response = s.play(&bad_opportunity, pot_amount, bankroll);
+        assert_eq!(response, Response::Play(bet_size));
+    }
+}
+
 pub struct OptimalStrategyConstantAceChoice<P: BetSizePolicy> {
     ace_choice: AceChoice,
     underlying_strategy: OptimalStrategy<P>,
