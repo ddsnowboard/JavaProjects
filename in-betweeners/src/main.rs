@@ -30,6 +30,10 @@ macro_rules! box_strategies {
 }
 
 fn main() {
+    simulate();
+}
+
+fn simulate() {
     let (names, generate_strategies) = box_strategies!(
         /*
         BasicStrategy {
