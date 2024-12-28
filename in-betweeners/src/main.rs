@@ -3,12 +3,14 @@ use std::collections::HashMap;
 
 mod bet_size_policies;
 mod game;
+mod logging;
 mod models;
 mod strategies;
 mod utils;
 
 use crate::bet_size_policies::*;
 use crate::game::*;
+use crate::logging::*;
 use crate::models::*;
 use crate::strategies::*;
 
@@ -69,10 +71,23 @@ fn simulate() {
         MiddleOutside::with_values(Value::Number(5), Value::Queen),
         MiddleOutside::with_values(Value::Number(5), Value::King),
         */
+
+        /*
+        MiddleOutside::new(),
+        MiddleOutside::with_values(Value::Number(5), Value::Number(9),),
+        MiddleOutside::with_values(Value::Number(4), Value::Number(9),),
+        MiddleOutside::with_values(Value::Number(5), Value::Number(8),),
+        MiddleOutside::with_values(Value::Number(3), Value::Jack),
+        MiddleOutside::with_values(Value::Number(3), Value::Queen),
         BasicStrategy {
             bet_size_policy: ConstantBet::new(200)
         },
+        MiddleOutside::with_values(Value::Number(4), Value::Queen,),
+        MiddleOutside::with_values(Value::Number(4), Value::Jack,),
+        */
+        MiddleOutside::with_values(Value::Number(4), Value::King,),
     );
+    let logger = Logger::new(Stdout::default());
     let results: Vec<_> = (0..100000)
         .into_par_iter()
         .map(|_idx| {
