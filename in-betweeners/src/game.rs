@@ -1,13 +1,24 @@
+use crate::logging::*;
 use crate::models::*;
 use crate::utils::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use serde::Serialize;
+
+#[derive(Serialize)]
+struct LogMessage {
+    discards: Vec<Card>,
+    remaining_deck: Vec<Card>,
+    opportunity: Opportunity,
+    play: Response,
+}
 
 pub struct Game {
     pub discards: Vec<Card>,
     pub remaining_deck: Vec<Card>,
     pub current_pot: PotAmount,
     pub players: Vec<Player>,
+    logger: Option<Logger>,
 }
 
 impl Game {
@@ -18,9 +29,20 @@ impl Game {
             remaining_deck: BASE_DECK.clone(),
             current_pot: ANTE_AMOUNT * (strategies.len() as PotAmount),
             players: strategies.into_iter().map(Player::new).collect(),
+            logger: None,
         };
         out.remaining_deck.shuffle(&mut rng);
         out
+    }
+
+    pub fn set_logger(&mut self, logger: Logger) {
+        self.logger = Some(logger);
+    }
+
+    fn log(&self, source: String, message: String, data: impl Serialize) {
+        if let Some(l) = self.logger.as_ref() {
+            l.log(source, message, data);
+        }
     }
 
     fn witness(&mut self, event: PlayEvent) {
@@ -63,15 +85,27 @@ impl Game {
 
         if is_playable(&left_card, &right_card) {
             let player = &mut self.players[player_idx];
-            match player.strategy.play(
-                &Opportunity(left_card, right_card),
-                self.current_pot,
-                player.money,
-            ) {
+            let player_name = player.strategy.get_name();
+            let opportunity = Opportunity(left_card, right_card);
+            let response = player
+                .strategy
+                .play(&opportunity, self.current_pot, player.money);
+            self.log(
+                player_name,
+                String::from("Played"),
+                LogMessage {
+                    discards: self.discards.clone(),
+                    remaining_deck: self.remaining_deck.clone(),
+                    opportunity,
+                    play: response,
+                },
+            );
+            match response {
                 Response::Pass => {
                     // Do nothing
                 }
                 Response::Play(amount) => {
+                    let player = &self.players[player_idx];
                     assert!(amount <= self.current_pot, "Amount must be less than pot");
                     assert!(
                         amount <= player.money,
@@ -79,7 +113,6 @@ impl Game {
                     );
                     assert!(amount > 0, "Amount must be positive");
                     let middle_card = self.draw_or_shuffle();
-                    let player = &mut self.players[player_idx];
                     let amount_to_give_player =
                         match get_result(&left_card, &middle_card, &right_card) {
                             PlayResult::Inside => amount,
@@ -87,7 +120,10 @@ impl Game {
                             PlayResult::Double => -BURN_COEFFICIENT * amount,
                         };
                     self.current_pot -= amount_to_give_player;
-                    player.money += amount_to_give_player;
+                    {
+                        let player = &mut self.players[player_idx];
+                        player.money += amount_to_give_player;
+                    }
                     self.discards.push(middle_card);
                 }
             }

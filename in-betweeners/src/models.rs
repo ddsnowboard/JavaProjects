@@ -1,4 +1,5 @@
 use mockall::automock;
+use serde::Serialize;
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::fmt;
 
@@ -23,7 +24,7 @@ pub enum PlayEvent {
     Flip(Card),
 }
 
-#[derive(PartialEq, Eq, Debug, Copy, Clone, Hash)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone, Hash, Serialize)]
 pub enum Suit {
     Hearts,
     Diamonds,
@@ -31,7 +32,7 @@ pub enum Suit {
     Clubs,
 }
 
-#[derive(PartialEq, Eq, Debug, Copy, Clone, Hash)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone, Hash, Serialize)]
 pub enum Value {
     Ace,
     King,
@@ -62,7 +63,7 @@ impl Value {
     }
 }
 
-#[derive(PartialEq, Eq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone, Serialize)]
 pub enum TableValue {
     HiAce,
     LowAce,
@@ -106,7 +107,7 @@ impl TableValue {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Serialize)]
 pub struct Card(pub Suit, pub Value);
 
 impl Card {
@@ -143,7 +144,7 @@ pub enum FlipResult {
     Other(TableCard),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize)]
 pub struct TableCard(pub Suit, pub TableValue);
 
 impl TableCard {
@@ -159,12 +160,13 @@ pub enum AceChoice {
     Low,
 }
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize)]
 pub enum Response {
     Pass,
     Play(PotAmount),
 }
 
+#[derive(Serialize)]
 pub struct Opportunity(pub TableCard, pub TableCard);
 impl Opportunity {
     pub fn swapped(&self) -> Self {

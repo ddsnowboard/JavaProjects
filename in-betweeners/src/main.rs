@@ -79,22 +79,24 @@ fn simulate() {
         MiddleOutside::with_values(Value::Number(5), Value::Number(8),),
         MiddleOutside::with_values(Value::Number(3), Value::Jack),
         MiddleOutside::with_values(Value::Number(3), Value::Queen),
+        */
         BasicStrategy {
             bet_size_policy: ConstantBet::new(200)
         },
         MiddleOutside::with_values(Value::Number(4), Value::Queen,),
         MiddleOutside::with_values(Value::Number(4), Value::Jack,),
-        */
         MiddleOutside::with_values(Value::Number(4), Value::King,),
     );
-    let logger = Logger::new(Stdout::default());
+    let logger = Logger::new(NoOp::default());
     let results: Vec<_> = (0..100000)
         .into_par_iter()
         .map(|_idx| {
             let mut g = Game::new(generate_strategies());
+            g.set_logger(logger.clone());
             g.play()
         })
         .collect();
+    drop(logger);
     let mut amounts_by_player: HashMap<usize, Vec<PotAmount>> = HashMap::new();
     results.into_iter().for_each(|r| {
         r.player_amounts

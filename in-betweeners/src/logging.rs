@@ -50,5 +50,5 @@ impl LogSink for Stdout {
 #[derive(Default)]
 pub struct NoOp {}
 impl LogSink for NoOp {
-    fn write(&mut self, message: &LogMessage) {}
+    fn write(&mut self, _message: &LogMessage) {}
 }
