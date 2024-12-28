@@ -350,6 +350,7 @@ impl MiddleOutside<BasicStrategy<ConstantBet>> {
 }
 
 impl<U: Strategy> MiddleOutside<U> {
+    const N_SUITS: u32 = 4;
     pub fn with_values_and_underlying(low: Value, high: Value, underlying: U) -> Self {
         if low.to_number_ace_high() > high.to_number_ace_high() {
             Self::with_values_and_underlying(high, low, underlying)
@@ -409,9 +410,8 @@ impl<U: Strategy> Strategy for MiddleOutside<U> {
             } else {
                 6 // This assumes that the other 3 examples of each card are still in the deck
             };
-            let n_wins = (right_value.to_number() - left_value.to_number() - 1) as i32;
-            let n_values = 13;
-            let n_losses = n_values - n_wins - n_burns;
+            let n_wins = (right_value.to_number() - left_value.to_number() - 1) as i32 * N_SUITS;
+            let n_losses = (N_VALUES * N_SUITS) - n_wins - n_burns;
             let ev_kinda = (n_wins + self.count - 2 * n_burns - n_losses) as f64
                 / (n_burns + n_losses + n_wins) as f64;
             if ev_kinda > 0.0 {
@@ -432,5 +432,107 @@ impl<U: Strategy> Strategy for MiddleOutside<U> {
             "MiddleOutside<bet policy={}>",
             self.bet_size_policy.get_name()
         )
+    }
+}
+
+#[cfg(test)]
+mod middle_outside_test {
+    use crate::models::*;
+    use crate::strategies::*;
+
+    const BET_SIZE: PotAmount = 100;
+
+    #[test]
+    fn middle_outside_calls_good_play_with_full_deck() {
+        let mut s = MiddleOutside::new();
+        s.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
+        let good_opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::Number(3)),
+            TableCard(Suit::Hearts, TableValue::HiAce),
+        );
+        let pot_amount = 500;
+        let bankroll = 11000;
+        let response = s.play(&good_opportunity, pot_amount, bankroll);
+        assert_eq!(response, Response::Play(BET_SIZE));
+    }
+
+    #[test]
+    fn middle_outside_skips_bad_play_with_full_deck() {
+        let mut s = MiddleOutside::new();
+        s.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
+        let bad_opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::King),
+            TableCard(Suit::Hearts, TableValue::HiAce),
+        );
+        let response = s.play(&bad_opportunity, 1000, 1000);
+        assert_eq!(response, Response::Pass);
+    }
+
+    fn play_for_bad_looking_opp(
+        strategy: &mut impl Strategy,
+        flip_outside_cards: bool,
+    ) -> Response {
+        strategy.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
+        if flip_outside_cards {
+            let cards_to_play = BASE_DECK.iter().filter(|Card(_, value)| {
+                value.to_number_ace_high() <= 4 || value.to_number_ace_high() >= 10
+            });
+            cards_to_play.for_each(|c| strategy.witness(PlayEvent::Flip(*c)));
+        }
+        let actually_good_opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::Number(4)),
+            TableCard(Suit::Hearts, TableValue::Number(10)),
+        );
+        strategy.play(&actually_good_opportunity, 1000, 1000)
+    }
+
+    #[test]
+    fn middle_outside_plays_best_case_scenario() {
+        let mut s = MiddleOutside::new();
+
+        let response = play_for_bad_looking_opp(&mut s, true);
+        assert_eq!(response, Response::Play(BET_SIZE));
+    }
+
+    #[test]
+    fn middle_outside_does_not_play_bad_opportunity_on_full_deck() {
+        let mut s = MiddleOutside::new();
+
+        let response = play_for_bad_looking_opp(&mut s, false);
+        assert_eq!(response, Response::Pass);
+    }
+
+    fn play_for_good_looking_opp(
+        strategy: &mut impl Strategy,
+        flip_inside_cards: bool,
+    ) -> Response {
+        strategy.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
+        if flip_inside_cards {
+            let cards_to_play = BASE_DECK.iter().filter(|Card(_, value)| {
+                value.to_number_ace_high() > 4 || value.to_number_ace_high() < 13
+            });
+            cards_to_play.for_each(|c| strategy.witness(PlayEvent::Flip(*c)));
+        }
+        let good_looking_opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::Number(2)),
+            TableCard(Suit::Hearts, TableValue::King),
+        );
+        strategy.play(&good_looking_opportunity, 1000, 1000)
+    }
+
+    #[test]
+    fn middle_outside_plays_good_opp() {
+        let mut s = MiddleOutside::new();
+
+        let response = play_for_good_looking_opp(&mut s, false);
+        assert_eq!(response, Response::Play(BET_SIZE));
+    }
+
+    #[test]
+    fn middle_outside_passes_on_actually_bad_opp() {
+        let mut s = MiddleOutside::new();
+
+        let response = play_for_good_looking_opp(&mut s, true);
+        assert_eq!(response, Response::Pass);
     }
 }

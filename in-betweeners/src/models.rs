@@ -6,6 +6,9 @@ pub type PotAmount = i32;
 pub const ANTE_AMOUNT: PotAmount = 200;
 pub const BURN_COEFFICIENT: PotAmount = 2;
 pub const STARTING_BANKROLL: PotAmount = 800;
+pub const N_SUITS: i32 = 4;
+pub const N_VALUES: i32 = 13;
+pub const N_CARDS: i32 = N_SUITS * N_VALUES;
 
 pub trait Strategy {
     fn witness(&mut self, event: PlayEvent);
