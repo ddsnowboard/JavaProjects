@@ -87,7 +87,7 @@ fn simulate() {
         MiddleOutside::with_values(Value::Number(4), Value::Jack,),
         MiddleOutside::with_values(Value::Number(4), Value::King,),
     );
-    let logger = Logger::new(FileSink::new("output.log"));
+    let logger = Logger::new(SqliteSink::new("log.sqlite"));
     let results: Vec<_> = (0..10000)
         .into_par_iter()
         .map(|_idx| {

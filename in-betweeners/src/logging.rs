@@ -1,4 +1,4 @@
-use rusqlite::{Connection, OpenFlags, Result};
+use rusqlite::Connection;
 use serde::Serialize;
 use std::fs::File;
 use std::io::prelude::*;
@@ -82,18 +82,58 @@ impl LogSink for FileSink {
     }
 }
 
-struct SqliteSink {
+pub struct SqliteSink {
     conn: Connection,
-    // I want to keep a prepared statement here, but that has to refer to the connection. How can I
-    // do that?
+    current_block: Vec<[String; 3]>,
 }
+
 impl SqliteSink {
-    fn new(path: &str) -> Self {
+    pub fn new(path: &str) -> Self {
         let conn = Connection::open(path)
             .unwrap_or_else(|e| panic!("Couldn't open sqlite database; {}", e));
-        conn.execute("CREATE TABLE IF NOT EXISTS logs (source TEXT, message TEXT, data TEXT)")
-            .unwrap();
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS logs (source TEXT, message TEXT, data TEXT)",
+            (),
+        )
+        .unwrap();
 
-        Self { conn }
+        Self {
+            conn,
+            current_block: vec![],
+        }
+    }
+
+    fn maybe_write_block(&mut self) {
+        const BLOCK_SIZE: usize = 5000;
+        if self.current_block.len() >= BLOCK_SIZE {
+            self.write_block();
+        }
+    }
+
+    fn write_block(&mut self) {
+        let tx = self.conn.transaction().unwrap();
+        {
+            let mut statement = tx
+                .prepare_cached(
+                    "INSERT INTO logs (source, message, data) 
+        VALUES (?1, ?2, ?3)",
+                )
+                .unwrap();
+            self.current_block.drain(..).for_each(|block| {
+                statement.execute(block).unwrap();
+            });
+        }
+        tx.commit().unwrap();
+    }
+}
+
+impl LogSink for SqliteSink {
+    fn write(&mut self, message: &LogMessage) {
+        self.current_block.push([
+            message.source.clone(),
+            message.message.clone(),
+            message.data.clone(),
+        ]);
+        self.maybe_write_block()
     }
 }
