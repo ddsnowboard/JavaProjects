@@ -1,8 +1,9 @@
+use rusqlite::{Connection, OpenFlags, Result};
 use serde::Serialize;
-use std::sync::mpsc::{channel, Sender};
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use std::sync::mpsc::{sync_channel, SyncSender};
 use std::thread;
 
 pub struct LogMessage {
@@ -17,12 +18,12 @@ pub trait LogSink: Send {
 
 #[derive(Clone)]
 pub struct Logger {
-    sender: Sender<LogMessage>,
+    sender: SyncSender<LogMessage>,
 }
 
 impl Logger {
     pub fn new(mut log_sink: impl LogSink + 'static) -> Self {
-        let (sender, receiver) = channel();
+        let (sender, receiver) = sync_channel(1_000_000);
         let _log_catcher = thread::spawn(move || {
             receiver.iter().for_each(|lm| {
                 log_sink.write(&lm);
@@ -78,5 +79,21 @@ impl LogSink for FileSink {
         self.file
             .write_all(stringify(message).as_bytes())
             .expect("Could not log; Yikes!")
+    }
+}
+
+struct SqliteSink {
+    conn: Connection,
+    // I want to keep a prepared statement here, but that has to refer to the connection. How can I
+    // do that?
+}
+impl SqliteSink {
+    fn new(path: &str) -> Self {
+        let conn = Connection::open(path)
+            .unwrap_or_else(|e| panic!("Couldn't open sqlite database; {}", e));
+        conn.execute("CREATE TABLE IF NOT EXISTS logs (source TEXT, message TEXT, data TEXT)")
+            .unwrap();
+
+        Self { conn }
     }
 }
