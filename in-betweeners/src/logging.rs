@@ -1,5 +1,8 @@
 use serde::Serialize;
 use std::sync::mpsc::{channel, Sender};
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
 use std::thread;
 
 pub struct LogMessage {
@@ -38,12 +41,16 @@ impl Logger {
     }
 }
 
+fn stringify(lm: &LogMessage) -> String {
+    format!("{}, {}, {}\n", lm.source, lm.message, lm.data)
+}
+
 #[derive(Default)]
 pub struct Stdout {}
 
 impl LogSink for Stdout {
     fn write(&mut self, message: &LogMessage) {
-        println!("{}, {}, {}", message.source, message.message, message.data);
+        print!("{}", stringify(message));
     }
 }
 
@@ -51,4 +58,25 @@ impl LogSink for Stdout {
 pub struct NoOp {}
 impl LogSink for NoOp {
     fn write(&mut self, _message: &LogMessage) {}
+}
+
+pub struct FileSink {
+    file: File,
+}
+
+impl FileSink {
+    pub fn new(filename: &str) -> Self {
+        let path = Path::new(filename);
+        let f = File::create(path)
+            .unwrap_or_else(|e| panic!("{} was not a valid path; error was {}", filename, e));
+        Self { file: f }
+    }
+}
+
+impl LogSink for FileSink {
+    fn write(&mut self, message: &LogMessage) {
+        self.file
+            .write_all(stringify(message).as_bytes())
+            .expect("Could not log; Yikes!")
+    }
 }
