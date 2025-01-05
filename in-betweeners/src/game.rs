@@ -11,6 +11,7 @@ struct LogMessage {
     remaining_deck: Vec<Card>,
     opportunity: Opportunity,
     play: Response,
+    outcome: Option<PlayResult>,
 }
 
 pub struct Game {
@@ -90,19 +91,23 @@ impl Game {
             let response = player
                 .strategy
                 .play(&opportunity, self.current_pot, player.money);
-            self.log(
-                player_name,
-                String::from("Played"),
-                LogMessage {
-                    discards: self.discards.clone(),
-                    remaining_deck: self.remaining_deck.clone(),
-                    opportunity,
-                    play: response,
-                },
-            );
+            let log = |this: &Self, outcome: Option<PlayResult>| {
+                this.log(
+                    player_name,
+                    String::from("Played"),
+                    LogMessage {
+                        discards: this.discards.clone(),
+                        remaining_deck: this.remaining_deck.clone(),
+                        opportunity,
+                        play: response,
+                        outcome,
+                    },
+                )
+            };
             match response {
                 Response::Pass => {
                     // Do nothing
+                    log(self, None);
                 }
                 Response::Play(amount) => {
                     let player = &self.players[player_idx];
@@ -113,12 +118,13 @@ impl Game {
                     );
                     assert!(amount > 0, "Amount must be positive");
                     let middle_card = self.draw_or_shuffle();
-                    let amount_to_give_player =
-                        match get_result(&left_card, &middle_card, &right_card) {
-                            PlayResult::Inside => amount,
-                            PlayResult::Outside => -amount,
-                            PlayResult::Double => -BURN_COEFFICIENT * amount,
-                        };
+                    let result = get_result(&left_card, &middle_card, &right_card);
+                    let amount_to_give_player = match result {
+                        PlayResult::Inside => amount,
+                        PlayResult::Outside => -amount,
+                        PlayResult::Double => -BURN_COEFFICIENT * amount,
+                    };
+                    log(self, Some(result));
                     self.current_pot -= amount_to_give_player;
                     {
                         let player = &mut self.players[player_idx];

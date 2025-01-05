@@ -175,7 +175,7 @@ impl Opportunity {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug)]
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize)]
 pub enum PlayResult {
     Inside,
     Outside,
