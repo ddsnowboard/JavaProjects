@@ -137,3 +137,9 @@ impl LogSink for SqliteSink {
         self.maybe_write_block()
     }
 }
+
+impl Drop for SqliteSink {
+    fn drop(&mut self) {
+        self.write_block();
+    }
+}
