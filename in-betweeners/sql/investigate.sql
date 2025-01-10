@@ -28,10 +28,23 @@ q1 AS (
     from q
     order by abs(improvement) desc nulls first
 ),
+profit_by_opp AS (
+    with q AS (
+        select left_value, right_value,
+        coalesce(sum(iif(source like 'Basic%', case data->>'$.outcome' when 'Inside' then 1.0 when 'Outside' then -1.0 when 'Double' then -2.0 else 0.0 END, 0.0)), 0) / sum(iif(source like 'Basic%', 1.0, 0.0)) AS basic_profit,
+        coalesce(sum(iif(source like 'Middle%', case data->>'$.outcome' when 'Inside' then 1.0 when 'Outside' then -1.0 when 'Double' then -2.0 else 0.0 END, 0.0)), 0) / sum(iif(source like 'Middle%', 1.0, 0.0)) AS middle_profit
+        from joined
+        group by 1, 2 order by 1, 2
+    )
+    select *, middle_profit - basic_profit  AS improvement
+    from q
+    order by abs(improvement) desc nulls first
+),
 three_jacks AS (
     select source, data->>'$.outcome' AS outcome, count(*)
     from joined
     where (3, 11) IN ((left_value, right_value), (right_value, left_value))
     group by 1, 2
 )
-select * from three_jacks;
+-- I still don't understand anything. This is a real trick.
+select * from profit_by_opp;
