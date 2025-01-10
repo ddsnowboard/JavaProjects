@@ -84,8 +84,18 @@ fn simulate() {
         BasicStrategy {
             bet_size_policy: ConstantBet::new(200)
         },
+        MiddleOutside::with_values(Value::Number(4), Value::Queen,),
+        BasicStrategy {
+            bet_size_policy: ConstantBet::new(200)
+        },
         MiddleOutside::with_values(Value::Number(4), Value::Jack,),
+        BasicStrategy {
+            bet_size_policy: ConstantBet::new(200)
+        },
         MiddleOutside::with_values(Value::Number(4), Value::King,),
+        BasicStrategy {
+            bet_size_policy: ConstantBet::new(200)
+        },
     );
     let logger = Logger::new(SqliteSink::new("log.sqlite"));
     let results: Vec<_> = (0..40000)
