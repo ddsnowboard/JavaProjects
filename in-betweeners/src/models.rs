@@ -214,6 +214,6 @@ impl fmt::Display for GameResult {
 
 #[automock]
 pub trait BetSizePolicy {
-    fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, ev: f64) -> PotAmount;
+    fn get_bet_size(&self, pot_size: PotAmount, bankroll: PotAmount, ev: f64) -> Option<PotAmount>;
     fn get_name(&self) -> String;
 }

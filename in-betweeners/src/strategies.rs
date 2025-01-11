@@ -71,8 +71,8 @@ impl<P: BetSizePolicy> Strategy for BasicStrategy<P> {
         let ev = calculate_ev(left_card, right_card, &known_remaining_cards);
         if ev > 0.0 {
             let potential_bet = self.bet_size_policy.get_bet_size(pot_amount, bankroll, ev);
-            if potential_bet > 0 {
-                Response::Play(potential_bet)
+            if let Some(bet) = potential_bet.filter(|bet| *bet > 0) {
+                Response::Play(bet)
             } else {
                 Response::Pass
             }
@@ -203,8 +203,8 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategy<P> {
         );
         if ev > 0.0 {
             let potential_bet = self.bet_size_policy.get_bet_size(pot_amount, bankroll, ev);
-            if potential_bet > 0 {
-                Response::Play(potential_bet)
+            if let Some(bet) = potential_bet.filter(|bet| *bet > 0) {
+                Response::Play(bet)
             } else {
                 Response::Pass
             }
@@ -415,10 +415,14 @@ impl<U: Strategy> Strategy for MiddleOutside<U> {
             let ev_kinda = (n_wins + self.count - 2 * n_burns - n_losses) as f64
                 / (n_burns + n_losses + n_wins) as f64;
             if ev_kinda > 0.0 {
-                Response::Play(
-                    self.bet_size_policy
-                        .get_bet_size(pot_amount, bankroll, ev_kinda),
-                )
+                if let Some(bet_size) = self
+                    .bet_size_policy
+                    .get_bet_size(pot_amount, bankroll, ev_kinda)
+                {
+                    Response::Play(bet_size)
+                } else {
+                    Response::Pass
+                }
             } else {
                 Response::Pass
             }
