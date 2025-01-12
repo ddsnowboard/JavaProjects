@@ -1,17 +1,28 @@
-with opportunity_by_id AS (
+with payout_by_outcome (outcome, payout) AS (
+    select 'Double', -2
+    UNION
+    select 'Inside', 1
+    UNION
+    select 'Outside', -1
+),
+opportunity_by_id AS (
     with card_values AS (
         SELECT rowid,
         data->'$.opportunity[0][1]' AS l,
         data->'$.opportunity[1][1]' AS r
         from logs
+    ),
+    as_number AS (
+        select rowid,
+        if(json_type(l) = 'OBJECT', l.Number::INTEGER, case l->>'$' when 'LowAce' then 1 when 'Jack' then 11 when 'Queen' then 12 when 'King' then 13 when 'HiAce' then 14 end) AS left_value,
+        if(json_type(r) = 'OBJECT', r.Number::INTEGER, case r->>'$' when 'LowAce' then 1 when 'Jack' then 11 when 'Queen' then 12 when 'King' then 13 when 'HiAce' then 14 end) AS right_value
+        from card_values
     )
-    select rowid,
-    if(json_type(l) = 'OBJECT', l.Number::INTEGER, case l->>'$' when 'LowAce' then 1 when 'Jack' then 11 when 'Queen' then 12 when 'King' then 13 when 'HiAce' then 14 end) AS left_value,
-    if(json_type(r) = 'OBJECT', r.Number::INTEGER, case r->>'$' when 'LowAce' then 1 when 'Jack' then 11 when 'Queen' then 12 when 'King' then 13 when 'HiAce' then 14 end) AS right_value
-    from card_values
+    select rowid, least(left_value, right_value) AS left_value, greatest(left_value, right_value) AS right_value
+    from as_number
 ),
 joined AS (
-    select l.*, o.left_value, o.right_value
+    select l.source, message, l.data->>'$.outcome' AS outcome, l.data, o.left_value, o.right_value
     from logs l
     inner join opportunity_by_id o ON o.rowid = l.rowid
 ),
@@ -36,7 +47,7 @@ profit_by_opp AS (
         from joined
         group by 1, 2 order by 1, 2
     )
-    select *, middle_profit - basic_profit  AS improvement
+    select *, middle_profit - basic_profit AS improvement
     from q
     order by abs(improvement) desc nulls first
 ),
@@ -46,8 +57,6 @@ three_jacks AS (
     where (3, 11) IN ((left_value, right_value), (right_value, left_value))
     group by 1, 2
 )
--- I still don't understand anything. This is a real trick.
-select source, data.play.Play, sum((data->>'$.play.Play')::INTEGER * CASE (data->>'$.outcome') WHEN 'Inside' THEN 1 WHEN 'Outside' THEN -1 WHEN 'Double' THEN -2 END) AS profit
-from joined 
-WHERE (data->>'$.play') <> 'Pass'
-group by 1, 2;
+select *
+from profit_by_opp
+where improvement < 0;
