@@ -190,3 +190,9 @@ impl LogSink for DuckDbSink {
         self.maybe_write_block()
     }
 }
+
+impl Drop for DuckDbSink {
+    fn drop(&mut self) {
+        self.write_block();
+    }
+}
