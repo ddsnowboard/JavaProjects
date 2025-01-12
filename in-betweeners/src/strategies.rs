@@ -343,7 +343,7 @@ impl MiddleOutside<BasicStrategy<ConstantBet>> {
             low,
             high,
             BasicStrategy {
-                bet_size_policy: ConstantBet::new(200),
+                bet_size_policy: ConstantBet::new(Self::BET_SIZE),
             },
         )
     }
@@ -351,6 +351,7 @@ impl MiddleOutside<BasicStrategy<ConstantBet>> {
 
 impl<U: Strategy> MiddleOutside<U> {
     const N_SUITS: u32 = 4;
+    const BET_SIZE: i32 = 200;
     pub fn with_values_and_underlying(low: Value, high: Value, underlying: U) -> Self {
         if low.to_number_ace_high() > high.to_number_ace_high() {
             Self::with_values_and_underlying(high, low, underlying)
@@ -360,7 +361,7 @@ impl<U: Strategy> MiddleOutside<U> {
                 high_value: high,
                 count: 0,
                 underlying,
-                bet_size_policy: ConstantBet::new(200),
+                bet_size_policy: ConstantBet::new(Self::BET_SIZE),
             }
         }
     }
