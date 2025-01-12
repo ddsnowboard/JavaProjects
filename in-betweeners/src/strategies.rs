@@ -343,7 +343,7 @@ impl MiddleOutside<BasicStrategy<ConstantBet>> {
             low,
             high,
             BasicStrategy {
-                bet_size_policy: ConstantBet::new(100),
+                bet_size_policy: ConstantBet::new(200),
             },
         )
     }
@@ -360,7 +360,7 @@ impl<U: Strategy> MiddleOutside<U> {
                 high_value: high,
                 count: 0,
                 underlying,
-                bet_size_policy: ConstantBet::new(100),
+                bet_size_policy: ConstantBet::new(200),
             }
         }
     }
@@ -440,7 +440,7 @@ mod middle_outside_test {
     use crate::models::*;
     use crate::strategies::*;
 
-    const BET_SIZE: PotAmount = 100;
+    const BET_SIZE: PotAmount = 200;
 
     #[test]
     fn middle_outside_calls_good_play_with_full_deck() {

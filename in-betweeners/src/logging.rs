@@ -1,3 +1,4 @@
+use duckdb::Connection as DDBConnection;
 use rusqlite::Connection;
 use serde::Serialize;
 use std::fs::File;
@@ -141,5 +142,51 @@ impl LogSink for SqliteSink {
 impl Drop for SqliteSink {
     fn drop(&mut self) {
         self.write_block();
+    }
+}
+
+pub struct DuckDbSink {
+    conn: DDBConnection,
+    current_block: Vec<[String; 3]>,
+}
+
+impl DuckDbSink {
+    pub fn new(filename: &str) -> Self {
+        let connection = DDBConnection::open(filename).unwrap();
+        connection
+            .execute(
+                "CREATE TABLE IF NOT EXISTS logs (source TEXT, message TEXT, data JSON)",
+                [],
+            )
+            .unwrap();
+        Self {
+            conn: connection,
+            current_block: vec![],
+        }
+    }
+
+    fn maybe_write_block(&mut self) {
+        const BLOCK_SIZE: usize = 100000;
+        if self.current_block.len() >= BLOCK_SIZE {
+            self.write_block();
+        }
+    }
+
+    fn write_block(&mut self) {
+        let mut appender = self.conn.appender("logs").unwrap();
+        self.current_block.drain(..).for_each(|block| {
+            appender.append_rows([block]).unwrap();
+        });
+    }
+}
+
+impl LogSink for DuckDbSink {
+    fn write(&mut self, message: &LogMessage) {
+        self.current_block.push([
+            message.source.clone(),
+            message.message.clone(),
+            message.data.clone(),
+        ]);
+        self.maybe_write_block()
     }
 }
