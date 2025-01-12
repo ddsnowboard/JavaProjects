@@ -509,7 +509,7 @@ mod middle_outside_test {
         strategy.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
         if flip_inside_cards {
             let cards_to_play = BASE_DECK.iter().filter(|Card(_, value)| {
-                value.to_number_ace_high() > 4 || value.to_number_ace_high() < 13
+                value.to_number_ace_high() > 4 && value.to_number_ace_high() < 13
             });
             cards_to_play.for_each(|c| strategy.witness(PlayEvent::Flip(*c)));
         }
@@ -530,7 +530,7 @@ mod middle_outside_test {
 
     #[test]
     fn middle_outside_passes_on_actually_bad_opp() {
-        let mut s = MiddleOutside::new();
+        let mut s = MiddleOutside::with_values(Value::Number(3), Value::King);
 
         let response = play_for_good_looking_opp(&mut s, true);
         assert_eq!(response, Response::Pass);
