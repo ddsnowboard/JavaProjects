@@ -84,20 +84,15 @@ fn simulate() {
         BasicStrategy {
             bet_size_policy: ConstantBet::new(200)
         },
-        MiddleOutside::with_values(Value::Number(4), Value::Queen,),
+        TwoAceStrategy::new(),
         BasicStrategy {
             bet_size_policy: ConstantBet::new(200)
         },
-        MiddleOutside::with_values(Value::Number(4), Value::Jack,),
-        BasicStrategy {
-            bet_size_policy: ConstantBet::new(200)
-        },
-        MiddleOutside::with_values(Value::Number(4), Value::King,),
-        BasicStrategy {
-            bet_size_policy: ConstantBet::new(200)
-        },
+        OptimalStrategy::new(ConstantBet::new(200)),
+        MiddleOutside::with_values(Value::Number(4), Value::Jack,)
     );
-    let logger = Logger::new(SqliteSink::new("log.sqlite"));
+    // let logger = Logger::new(DuckDbSink::new("data/twoAceLog.duckdb"));
+    let logger = Logger::new(NoOp::default());
     let results: Vec<_> = (0..40000)
         .into_par_iter()
         .map(|_idx| {

@@ -59,4 +59,4 @@ three_jacks AS (
 )
 select *
 from profit_by_opp
-where improvement < 0;
+order by improvement limit 20;
