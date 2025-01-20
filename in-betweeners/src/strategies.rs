@@ -196,11 +196,15 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategy<P> {
     }
     fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response {
         let Opportunity(left_card, right_card) = opp;
-        let ev = calculate_ev(
-            left_card,
-            right_card,
-            &self.remaining_cards.iter().cloned().collect::<Vec<_>>(),
-        );
+        fn copy_iter<'a>(it: impl Iterator<Item = &'a Card>) -> Vec<Card> {
+            it.cloned().collect()
+        }
+        let remaining_cards: Vec<_> = if !self.remaining_cards.is_empty() {
+            copy_iter(self.remaining_cards.iter())
+        } else {
+            copy_iter(BASE_DECK.iter())
+        };
+        let ev = calculate_ev(left_card, right_card, &remaining_cards);
         if ev > 0.0 {
             let potential_bet = self.bet_size_policy.get_bet_size(pot_amount, bankroll, ev);
             if let Some(bet) = potential_bet.filter(|bet| *bet > 0) {
@@ -282,6 +286,27 @@ mod optimal_strategy_test {
         let bankroll = 11000;
         let response = s.play(&bad_opportunity, pot_amount, bankroll);
         assert_eq!(response, Response::Play(bet_size));
+    }
+
+    #[test]
+    fn optimal_strategy_works_if_it_got_the_last_card() {
+        // If it got the last card, then it'll know that there's no card left. Will it panic? It
+        // shouldn't.
+        let bet_size = 20;
+        let mut s = OptimalStrategy::new(ConstantBet::new(bet_size));
+        s.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
+        BASE_DECK
+            .iter()
+            .for_each(|c| s.witness(PlayEvent::Flip(*c)));
+        // It doesn't matter what this is
+        let opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::Number(9)),
+            TableCard(Suit::Hearts, TableValue::HiAce),
+        );
+        let pot_amount = 500;
+        let bankroll = 11000;
+        let response = s.play(&opportunity, pot_amount, bankroll);
+        assert_eq!(response, Response::Pass);
     }
 }
 
