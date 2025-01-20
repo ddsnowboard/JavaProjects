@@ -147,6 +147,15 @@ impl<P: BetSizePolicy> OptimalStrategy<P> {
             bet_size_policy,
         }
     }
+
+    fn get_remaining_cards(&self) -> Vec<Card> {
+        let it: Box<dyn Iterator<Item = &Card>> = if !self.remaining_cards.is_empty() {
+            Box::new(self.remaining_cards.iter())
+        } else {
+            Box::new(BASE_DECK.iter())
+        };
+        it.cloned().collect()
+    }
 }
 
 impl<P: BetSizePolicy> Strategy for OptimalStrategy<P> {
@@ -166,20 +175,30 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategy<P> {
             (AceChoice::Low, TableCard(Suit::Hearts, TableValue::LowAce)),
             (AceChoice::Hi, TableCard(Suit::Hearts, TableValue::HiAce)),
         ];
+        let remaining_cards = self.get_remaining_cards();
         options
             .into_iter()
             .max_by_key(|(_, card)| {
-                self.remaining_cards
+                remaining_cards
                     .iter()
                     .map(|other_card| {
-                        let remaining_cards: Vec<_> = self
-                            .remaining_cards
-                            .iter()
-                            .filter(|c| *c != other_card)
-                            .cloned()
-                            .collect();
+                        let remaining_cards: Vec<_> = {
+                            let cards_after_next_flip: Vec<_> = self
+                                .remaining_cards
+                                .iter()
+                                .filter(|c| *c != other_card)
+                                .cloned()
+                                .collect();
+                            if cards_after_next_flip.is_empty() {
+                                // Our card will be after the shuffle
+                                BASE_DECK.iter().cloned().collect()
+                            } else {
+                                cards_after_next_flip
+                            }
+                        };
                         let other_table_card = match other_card.to_table_card() {
                             FlipResult::Other(table_card) => table_card,
+                            // If there's another ace, it will always be high
                             FlipResult::Ace(picker) => picker.pick(&AceChoice::Hi),
                         };
                         // If the EV is less than 0 or we can't play, we just won't
@@ -196,15 +215,7 @@ impl<P: BetSizePolicy> Strategy for OptimalStrategy<P> {
     }
     fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response {
         let Opportunity(left_card, right_card) = opp;
-        fn copy_iter<'a>(it: impl Iterator<Item = &'a Card>) -> Vec<Card> {
-            it.cloned().collect()
-        }
-        let remaining_cards: Vec<_> = if !self.remaining_cards.is_empty() {
-            copy_iter(self.remaining_cards.iter())
-        } else {
-            copy_iter(BASE_DECK.iter())
-        };
-        let ev = calculate_ev(left_card, right_card, &remaining_cards);
+        let ev = calculate_ev(left_card, right_card, &self.get_remaining_cards());
         if ev > 0.0 {
             let potential_bet = self.bet_size_policy.get_bet_size(pot_amount, bankroll, ev);
             if let Some(bet) = potential_bet.filter(|bet| *bet > 0) {
@@ -305,6 +316,36 @@ mod optimal_strategy_test {
         );
         let pot_amount = 500;
         let bankroll = 11000;
+        assert_eq!(s.call_ace(), AceChoice::Low);
+        let response = s.play(&opportunity, pot_amount, bankroll);
+        assert_eq!(response, Response::Pass);
+    }
+
+    #[test]
+    fn optimal_strategy_works_when_only_one_card_left() {
+        // If it got the last card, then it'll know that there's no card left. Will it panic? It
+        // shouldn't.
+        let bet_size = 20;
+        let mut s = OptimalStrategy::new(ConstantBet::new(bet_size));
+        s.witness(PlayEvent::Shuffle(BASE_DECK.clone()));
+        let deck_with_aces_first: Vec<_> = {
+            let mut deck: Vec<_> = BASE_DECK.iter().cloned().collect();
+            deck.sort_by_key(|Card(_, value)| if *value == Value::Ace { 0 } else { 1 });
+            deck
+        };
+        deck_with_aces_first
+            .into_iter()
+            // There must be 1 card left
+            .skip(1)
+            .for_each(|c| s.witness(PlayEvent::Flip(c)));
+        // It doesn't matter what this is
+        let opportunity = Opportunity(
+            TableCard(Suit::Hearts, TableValue::Number(9)),
+            TableCard(Suit::Hearts, TableValue::HiAce),
+        );
+        let pot_amount = 500;
+        let bankroll = 11000;
+        assert_eq!(s.call_ace(), AceChoice::Low);
         let response = s.play(&opportunity, pot_amount, bankroll);
         assert_eq!(response, Response::Pass);
     }
@@ -564,5 +605,94 @@ mod middle_outside_test {
 
         let response = play_for_good_looking_opp(&mut s, true);
         assert_eq!(response, Response::Pass);
+    }
+}
+
+pub struct TwoAceStrategy<BSP: BetSizePolicy = ConstantBet> {
+    bet_size_policy: BSP,
+    n_twos: i32,
+    n_aces: i32,
+}
+
+impl TwoAceStrategy {
+    const BET_SIZE: i32 = 200;
+    pub fn new() -> Self {
+        Self {
+            bet_size_policy: ConstantBet::new(Self::BET_SIZE),
+            n_twos: 0,
+            n_aces: 0,
+        }
+    }
+}
+
+impl Default for TwoAceStrategy {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Strategy for TwoAceStrategy {
+    fn witness(&mut self, event: PlayEvent) {
+        match event {
+            PlayEvent::Shuffle(_) => {
+                self.n_aces = 0;
+                self.n_twos = 0;
+            }
+            PlayEvent::Flip(Card(_, value)) => {
+                if value == Value::Number(2) {
+                    self.n_twos += 1;
+                } else if value == Value::Ace {
+                    self.n_aces += 1;
+                }
+            }
+        }
+    }
+    fn get_name(&self) -> String {
+        String::from("TwoAceStrategy")
+    }
+    fn call_ace(&self) -> AceChoice {
+        AceChoice::Low
+    }
+    fn play(&self, opp: &Opportunity, pot_amount: PotAmount, bankroll: PotAmount) -> Response {
+        let Opportunity(left, right) = opp;
+        let remaining_aces = {
+            let n = (N_SUITS
+                - self.n_aces
+                - opp.count_value(&TableValue::HiAce)
+                - opp.count_value(&TableValue::LowAce)) as usize;
+            BASE_DECK
+                .iter()
+                .filter(|Card(_, value)| *value == Value::Ace)
+                .take(n)
+        };
+        let remaining_twos = {
+            let n = (N_SUITS - self.n_twos - opp.count_value(&TableValue::Number(2))) as usize;
+            BASE_DECK
+                .iter()
+                .filter(|Card(_, value)| *value == Value::Number(2))
+                .take(n)
+        };
+        let representative_remaining_deck: Vec<Card> = BASE_DECK
+            .iter()
+            .filter(|c| {
+                let Card(_, value) = c;
+                **c != left.to_card()
+                    && **c != right.to_card()
+                    && *value != Value::Ace
+                    && *value != Value::Number(2)
+            })
+            .chain(remaining_twos)
+            .chain(remaining_aces)
+            .cloned()
+            .collect();
+        let ev =
+            Some(calculate_ev(left, right, &representative_remaining_deck)).filter(|ev| *ev > 0.0);
+        if let Some(bet) =
+            ev.and_then(|ev| self.bet_size_policy.get_bet_size(pot_amount, bankroll, ev))
+        {
+            Response::Play(bet)
+        } else {
+            Response::Pass
+        }
     }
 }

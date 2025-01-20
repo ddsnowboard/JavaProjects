@@ -173,6 +173,18 @@ impl Opportunity {
         let Self(l, r) = self;
         Self(*r, *l)
     }
+
+    pub fn count_value(&self, value: &TableValue) -> i32 {
+        let mut out = 0;
+        let Self(TableCard(_, l), TableCard(_, r)) = self;
+        if l == value {
+            out += 1;
+        }
+        if r == value {
+            out += 1;
+        }
+        out
+    }
 }
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize)]
