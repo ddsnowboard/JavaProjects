@@ -96,10 +96,10 @@ little_bird_house n_checked idx color =
 view : Model -> Html Msg
 view model =
   div [] [ 
-      div [style "display" "grid", style "grid-template-rows" "auto", style "grid-template-columns" "30% auto"] [
-      img [src "../res/whiteBirdhouse.png", style "grid-column" "1/1", style "grid-row" "1/1"] [],
-      img [src "../res/coloredBirdhouse.png", style "grid-column" "1/1", style "grid-row" "1/1", style "clip-path" ("xywh(0 " ++ (String.fromInt (max_paint_progress - model.paint_progress)) ++ "% 100% 100%)"), style "filter" ("hue-rotate(" ++ (String.fromInt model.current_color) ++ "deg)")] [],
-      div [style "grid-area" "1/2/1/2", style "display" "flex", style "flex-wrap" "wrap"] (List.indexedMap (little_bird_house model.n_checked) model.birdhouses)
+      div [style "display" "grid", style "grid-template-rows" "60%", style "grid-template-columns" "30% auto"] [
+      div [style "background-image" "url(../res/whiteBirdhouse.png)", style "background-size" "contain", style "background-repeat" "no-repeat", style "grid-column" "1/1", style "grid-row" "1/1", style "min-height" "50vh"] [],
+      div [style "background-image" "url(../res/coloredBirdhouse.png)", style "background-size" "contain", style "background-repeat" "no-repeat", style "grid-column" "1/1", style "grid-row" "1/1", style "clip-path" ("xywh(0 " ++ (String.fromInt (max_paint_progress - model.paint_progress)) ++ "% 100% 100%)"), style "filter" ("hue-rotate(" ++ (String.fromInt model.current_color) ++ "deg)")] [],
+      div [style "grid-area" "1/2/1/2", style "display" "flex", style "flex-wrap" "wrap", style "align-content" "flex-start"] (List.indexedMap (little_bird_house model.n_checked) model.birdhouses)
       ]
   ]
 
