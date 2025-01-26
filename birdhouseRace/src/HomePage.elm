@@ -90,15 +90,15 @@ subscriptions model =
 
 little_bird_house n_checked idx color = 
     let bg_color = if n_checked == idx then "yellow" else "transparent" 
-        in div [style "display" "inline-block", style "height" "fit-content", style "background-color" bg_color] [img [src "/res/coloredBirdhouse.png", style "height" "5em", style "filter" ("hue-rotate(" ++ (String.fromInt color) ++ "deg)")] []]
+        in div [style "display" "inline-block", style "height" "fit-content", style "background-color" bg_color] [img [src "../res/coloredBirdhouse.png", style "height" "5em", style "filter" ("hue-rotate(" ++ (String.fromInt color) ++ "deg)")] []]
 
 
 view : Model -> Html Msg
 view model =
   div [] [ 
       div [style "display" "grid", style "grid-template-rows" "auto", style "grid-template-columns" "30% auto"] [
-      img [src "/res/whiteBirdhouse.png", style "grid-column" "1/1", style "grid-row" "1/1"] [],
-      img [src "/res/coloredBirdhouse.png", style "grid-column" "1/1", style "grid-row" "1/1", style "clip-path" ("xywh(0 " ++ (String.fromInt (max_paint_progress - model.paint_progress)) ++ "% 100% 100%)"), style "filter" ("hue-rotate(" ++ (String.fromInt model.current_color) ++ "deg)")] [],
+      img [src "../res/whiteBirdhouse.png", style "grid-column" "1/1", style "grid-row" "1/1"] [],
+      img [src "../res/coloredBirdhouse.png", style "grid-column" "1/1", style "grid-row" "1/1", style "clip-path" ("xywh(0 " ++ (String.fromInt (max_paint_progress - model.paint_progress)) ++ "% 100% 100%)"), style "filter" ("hue-rotate(" ++ (String.fromInt model.current_color) ++ "deg)")] [],
       div [style "grid-area" "1/2/1/2", style "display" "flex", style "flex-wrap" "wrap"] (List.indexedMap (little_bird_house model.n_checked) model.birdhouses)
       ]
   ]
