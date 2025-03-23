@@ -10,7 +10,7 @@ use htmlescape::decode_html;
 fn main() {
     let mut easy = Easy::new();
     easy.follow_location(true).unwrap();
-    let arguments: Vec<String>> = env::args().collect();
+    let arguments: Vec<String> = env::args().collect();
     if arguments.len() == 1 {
         easy.url("http://xkcd.com").unwrap();
     }
