@@ -21,8 +21,8 @@ fn main() {
 
     let look_and_say = array_iterator();
 
-    println!("Total was {}",look_and_say
-        .take(40)
-        .map(|s| s.len())
-        .sum::<usize>());
+    println!(
+        "Total was {}",
+        look_and_say.take(50).map(|s| s.len()).sum::<usize>()
+    );
 }
