@@ -7,10 +7,12 @@ use std::task::{Context, Poll, Waker};
 use std::thread::{sleep, spawn};
 use std::time::Duration;
 
-type SharedMutex<T> = Arc<Mutex<T>>;
+const MAX_BLOCK_SIZE: usize = 10;
+type Buffer<Req, Res> = Arc<Mutex<Vec<ClientRequest<Req, Res>>>>;
 
 pub struct AutoBatcher<T: BatchyService + 'static> {
-    buffer: SharedMutex<Vec<ClientRequest<T::Request, T::Response>>>,
+    buffer: Buffer<T::Request, T::Response>,
+    service: T,
 }
 
 impl<T: BatchyService + 'static> AutoBatcher<T> {
@@ -18,49 +20,57 @@ impl<T: BatchyService + 'static> AutoBatcher<T> {
         let buffer = Arc::new(Mutex::new(vec![]));
         {
             let workers_buffer = Arc::clone(&buffer);
+            let workers_service = service.clone();
             spawn(move || {
-                let should_dump = RecurringWaiter::new(Duration::from_secs(5));
-                let service = service;
+                let waiter: RecurringWaiter = RecurringWaiter::new(Duration::from_secs(5));
+                let workers_service = workers_service;
                 loop {
                     sleep(Duration::from_millis(250));
-                    if should_dump.ready() {
-                        let current_request_block: Vec<ClientRequest<_, _>> = {
-                            let mut buffer = workers_buffer.lock().unwrap();
-                            buffer.drain(..).collect()
-                        };
-                        let new_service = service.clone();
-                        spawn(move || {
-                            let (stuff_to_request, targets): (Vec<_>, Vec<_>) =
-                                current_request_block
-                                    .into_iter()
-                                    .map(|cr: ClientRequest<_, _>| {
-                                        (cr.requested_object, cr.eventual_response)
-                                    })
-                                    .unzip();
-                            let response = new_service.batch_call(&stuff_to_request);
-                            for (target, response) in targets.into_iter().zip(response) {
-                                // This returns a mutable reference for some reason
-                                target.lock().unwrap().emplace(response);
-                            }
-                        });
+                    if waiter.ready() {
+                        Self::make_request_now(Arc::clone(&workers_buffer), workers_service.clone());
                     }
                 }
             })
         };
-        Self { buffer }
+        Self { buffer, service }
     }
+
+    fn make_request_now(buffer: Buffer<T::Request, T::Response>, service: T) {
+        let current_request_block: Vec<ClientRequest<_, _>> = {
+            let mut buffer = buffer.lock().unwrap();
+            buffer.drain(..).collect()
+        };
+        spawn(move || {
+            let (stuff_to_request, targets): (Vec<_>, Vec<_>) = current_request_block
+                .into_iter()
+                .map(|cr: ClientRequest<_, _>| (cr.requested_object, cr.eventual_response))
+                .unzip();
+            let response = service.batch_call(&stuff_to_request);
+            for (target, response) in targets.into_iter().zip(response) {
+                // This returns a mutable reference for some reason
+                target.lock().unwrap().emplace(response);
+            }
+        });
+    }
+
     pub fn request(
         &mut self,
         rq: T::Request,
     ) -> impl future::Future<Output = T::Response> + Unpin + use<T> {
         let target = Arc::new(Mutex::new(Expecter::default()));
-        self.buffer.lock().unwrap().push(ClientRequest {
+        let mut buffer = self.buffer.lock().unwrap();
+        buffer.push(ClientRequest {
             requested_object: rq,
             eventual_response: Arc::clone(&target),
         });
-        AutobatchWaiter {
+        let out = AutobatchWaiter {
             response: Arc::clone(&target),
+        };
+        if buffer.len() >= MAX_BLOCK_SIZE {
+            drop(buffer);
+            Self::make_request_now(Arc::clone(&self.buffer), self.service.clone())
         }
+        out
     }
 }
 
