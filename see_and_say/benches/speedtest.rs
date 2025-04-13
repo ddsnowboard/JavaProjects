@@ -2,7 +2,8 @@ use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use see_and_say::*;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-    for n in [60usize, 50usize, 40usize, 30usize, 20usize] {
+    for n in 1..40 {
+        let n = n * 2;
         c.bench_function(&format!("ll iterate {} times", n), |b| {
             b.iter(|| {
                 ll_iterator()
