@@ -10,6 +10,7 @@ impl BatchyService for Doubler {
     type Request = u32;
     type Response = u32;
     fn batch_call(&self, items: &[Self::Request]) -> Vec<Self::Response> {
+        println!("Got a request with {} items", items.len());
         items.iter().map(|i| *i * 2).collect()
     }
 }
