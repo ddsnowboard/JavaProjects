@@ -4,18 +4,19 @@ use std::future;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, Waker};
-use std::thread::{JoinHandle, sleep, spawn};
+use std::thread::{sleep, spawn};
 use std::time::Duration;
 
+type SharedMutex<T> = Arc<Mutex<T>>;
+
 pub struct AutoBatcher<T: BatchyService + 'static> {
-    buffer: Arc<Mutex<Vec<ClientRequest<T::Request, T::Response>>>>,
-    worker_thread: JoinHandle<()>,
+    buffer: SharedMutex<Vec<ClientRequest<T::Request, T::Response>>>,
 }
 
 impl<T: BatchyService + 'static> AutoBatcher<T> {
     pub fn new(service: T) -> Self {
         let buffer = Arc::new(Mutex::new(vec![]));
-        let worker_thread = {
+        {
             let workers_buffer = Arc::clone(&buffer);
             spawn(move || {
                 let should_dump = RecurringWaiter::new(Duration::from_secs(5));
@@ -39,17 +40,14 @@ impl<T: BatchyService + 'static> AutoBatcher<T> {
                             let response = new_service.batch_call(&stuff_to_request);
                             for (target, response) in targets.into_iter().zip(response) {
                                 // This returns a mutable reference for some reason
-                                 target.lock().unwrap().emplace(response);
+                                target.lock().unwrap().emplace(response);
                             }
                         });
                     }
                 }
             })
         };
-        Self {
-            buffer,
-            worker_thread,
-        }
+        Self { buffer }
     }
     pub fn request(
         &mut self,
