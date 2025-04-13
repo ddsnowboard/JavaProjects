@@ -19,7 +19,8 @@ fn main() {
         "311311222113111231131112132112311321322112111312211312111322212311322113212221",
     ];
 
-    let look_and_say = array_iterator();
+    // let look_and_say = array_iterator();
+    let look_and_say = ll_iterator();
 
     println!(
         "Total was {}",

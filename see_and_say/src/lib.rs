@@ -31,33 +31,27 @@ pub fn ll_iterator() -> impl Iterator<Item = String> {
     make_iterator(next_ll)
 }
 
-pub fn next_ll(i: &str) -> String {
-    if i.is_empty() {
-        String::new()
-    } else {
-        fn inner_rec(i: &str) -> LinkedList<[u8; 2]> {
-            fn chomp(i: &str) -> (&str, [u8; 2]) {
-                let mut chars = i.chars();
-                let countee = chars.next().expect("You passed an empty string to chomp()");
-                // There's always the first one
-                let n_countees = chars.take_while(|c| *c == countee).count() + 1;
-                let next_part = &i[n_countees..];
-                let result = [(n_countees as u8) + b'0', countee as u8];
-                (next_part, result)
-            }
-            let (next_part, this_result) = chomp(i);
-            let mut this_result = LinkedList::from([this_result]);
-            if !next_part.is_empty() {
-                this_result.append(&mut inner_rec(next_part));
-            }
-            this_result
+pub fn next_ll(mut i: &str) -> String {
+    let mut builder = LinkedList::new();
+
+    while !i.is_empty() {
+        fn chomp(i: &str) -> (&str, [u8; 2]) {
+            let mut chars = i.chars();
+            let countee = chars.next().expect("You passed an empty string to chomp()");
+            // There's always the first one
+            let n_countees = chars.take_while(|c| *c == countee).count() + 1;
+            let next_part = &i[n_countees..];
+            let result = [(n_countees as u8) + b'0', countee as u8];
+            (next_part, result)
         }
-        let ll = inner_rec(i);
-        let mut output: Vec<u8> = Vec::with_capacity(2 * ll.len());
-        for arr in ll.into_iter() {
-            output.push(arr[0]);
-            output.push(arr[1]);
-        }
-        unsafe { String::from_utf8_unchecked(output) }
+        let (next_part, this_result) = chomp(i);
+        builder.push_back(this_result);
+        i = next_part;
     }
+    let mut output: Vec<u8> = Vec::with_capacity(2 * builder.len());
+    for arr in builder.into_iter() {
+        output.push(arr[0]);
+        output.push(arr[1]);
+    }
+    unsafe { String::from_utf8_unchecked(output) }
 }
