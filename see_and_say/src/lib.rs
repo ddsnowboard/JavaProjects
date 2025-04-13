@@ -1,22 +1,22 @@
 use std::collections::LinkedList;
 use std::iter::successors;
-fn next_array(i: &str) -> String {
-    if i.is_empty() {
-        String::new()
-    } else {
-        fn chomp(i: &str) -> (&str, String) {
-            let mut chars = i.chars();
-            let countee = chars.next().expect("You passed an empty string to chomp()");
-            // There's always the first one
-            let n_countees = chars.take_while(|c| *c == countee).count() + 1;
-            let next_part = &i[n_countees..];
-            let result = format!("{}{}", n_countees, countee);
-            (next_part, result)
-        }
-        let (next_part, mut this_result) = chomp(i);
-        this_result.push_str(&next_array(next_part));
-        this_result
+fn next_array(mut i: &str) -> String {
+    fn chomp(i: &str) -> (&str, String) {
+        let mut chars = i.chars();
+        let countee = chars.next().expect("You passed an empty string to chomp()");
+        // There's always the first one
+        let n_countees = chars.take_while(|c| *c == countee).count() + 1;
+        let next_part = &i[n_countees..];
+        let result = format!("{}{}", n_countees, countee);
+        (next_part, result)
     }
+    let mut result = String::new();
+    while !i.is_empty() {
+        let (next_string, this_result) = chomp(i);
+        result.push_str(&this_result);
+        i = next_string;
+    }
+    result
 }
 
 fn make_iterator(f: impl Fn(&str) -> String + 'static) -> impl Iterator<Item = String> {
