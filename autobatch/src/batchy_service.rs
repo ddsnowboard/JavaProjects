@@ -1,6 +1,6 @@
 pub trait BatchyService: Clone + Send {
     type Request: Send + 'static;
-    type Response: Send + Sync + 'static;
+    type Response: Send + 'static;
     fn batch_call(&self, items: &[Self::Request]) -> Vec<Self::Response>;
 }
 
