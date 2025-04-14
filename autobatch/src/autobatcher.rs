@@ -8,6 +8,7 @@ use std::thread::{sleep, spawn};
 use std::time::Duration;
 
 const MAX_BLOCK_SIZE: usize = 10;
+const MAX_TIME_BETWEEN_CALLS_SECONDS: u64 = 5;
 type Buffer<Req, Res> = Arc<Mutex<Vec<ClientRequest<Req, Res>>>>;
 
 pub struct AutoBatcher<T: BatchyService + 'static> {
@@ -22,7 +23,8 @@ impl<T: BatchyService + 'static> AutoBatcher<T> {
             let workers_buffer = Arc::clone(&buffer);
             let workers_service = service.clone();
             spawn(move || {
-                let waiter: RecurringWaiter = RecurringWaiter::new(Duration::from_secs(5));
+                let waiter: RecurringWaiter =
+                    RecurringWaiter::new(Duration::from_secs(MAX_TIME_BETWEEN_CALLS_SECONDS));
                 let workers_service = workers_service;
                 loop {
                     sleep(Duration::from_millis(250));
@@ -43,16 +45,18 @@ impl<T: BatchyService + 'static> AutoBatcher<T> {
             let mut buffer = buffer.lock().unwrap();
             buffer.drain(..).collect()
         };
-        spawn(move || {
-            let (stuff_to_request, targets): (Vec<_>, Vec<_>) = current_request_block
-                .into_iter()
-                .map(|cr: ClientRequest<_, _>| (cr.requested_object, cr.eventual_response))
-                .unzip();
-            let response = service.batch_call(&stuff_to_request);
-            for (target, response) in targets.into_iter().zip(response) {
-                target.lock().unwrap().emplace(response);
-            }
-        });
+        if !current_request_block.is_empty() {
+            spawn(move || {
+                let (stuff_to_request, targets): (Vec<_>, Vec<_>) = current_request_block
+                    .into_iter()
+                    .map(|cr: ClientRequest<_, _>| (cr.requested_object, cr.eventual_response))
+                    .unzip();
+                let response = service.batch_call(&stuff_to_request);
+                for (target, response) in targets.into_iter().zip(response) {
+                    target.lock().unwrap().emplace(response);
+                }
+            });
+        }
     }
 
     pub fn request(
@@ -69,6 +73,7 @@ impl<T: BatchyService + 'static> AutoBatcher<T> {
             response: Arc::clone(&target),
         };
         if buffer.len() >= MAX_BLOCK_SIZE {
+            // Without this drop, it'll deadlock
             drop(buffer);
             Self::make_request_now(Arc::clone(&self.buffer), self.service.clone())
         }
