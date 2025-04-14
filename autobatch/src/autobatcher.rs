@@ -27,7 +27,10 @@ impl<T: BatchyService + 'static> AutoBatcher<T> {
                 loop {
                     sleep(Duration::from_millis(250));
                     if waiter.ready() {
-                        Self::make_request_now(Arc::clone(&workers_buffer), workers_service.clone());
+                        Self::make_request_now(
+                            Arc::clone(&workers_buffer),
+                            workers_service.clone(),
+                        );
                     }
                 }
             })
@@ -47,7 +50,6 @@ impl<T: BatchyService + 'static> AutoBatcher<T> {
                 .unzip();
             let response = service.batch_call(&stuff_to_request);
             for (target, response) in targets.into_iter().zip(response) {
-                // This returns a mutable reference for some reason
                 target.lock().unwrap().emplace(response);
             }
         });
